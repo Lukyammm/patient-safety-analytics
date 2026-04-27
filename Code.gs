@@ -691,7 +691,6 @@ function atualizarResumoPrazoResposta(resumo, dataClassificacao, diasResposta) {
   if (!resumo || !dataClassificacao) return;
 
   if (diasResposta == null) {
-    resumo.foraPrazo++;
     return;
   }
 
