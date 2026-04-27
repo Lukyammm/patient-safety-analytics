@@ -3354,15 +3354,7 @@
         pdf.addImage(imgData, 'PNG', 0, 0, larguraPagina, alturaPagina);
       }
 
-      const blobPdf = pdf.output('blob');
-      const urlPdf = URL.createObjectURL(blobPdf);
-      const link = document.createElement('a');
-      link.href = urlPdf;
-      link.download = nomeArquivo;
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      setTimeout(() => URL.revokeObjectURL(urlPdf), 2500);
+      pdf.save(nomeArquivo);
     }
 
     function criarCloneBoletimComCanvas() {
