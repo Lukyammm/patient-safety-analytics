@@ -409,10 +409,19 @@ function processarCaminhadas(ss, filtros) {
   const totalAvaliado = geralConformes + geralNaoConformes;
   const conformidadeGeral = totalAvaliado ? Number(((geralConformes / totalAvaliado) * 100).toFixed(1)) : 0;
 
+  const mesLimiteEvolucao = mesesFiltro.size
+    ? Math.max(...Array.from(mesesFiltro).map(mesParaOrdem))
+    : null;
+
   const evolucaoMensalMap = {};
   linhas
     .filter(row => !anosFiltro.size || anosFiltro.has(normalizarAno(row[3])))
     .filter(row => !unidadesFiltro.size || unidadesFiltro.has(getUnidade(row)))
+    .filter(row => {
+      if (mesLimiteEvolucao == null) return true;
+      const ordemMesLinha = mesParaOrdem(normalizarMes(row[2]));
+      return ordemMesLinha <= mesLimiteEvolucao;
+    })
     .forEach(row => {
       const mes = normalizarMes(row[2]) || 'Sem mês';
       if (!evolucaoMensalMap[mes]) {
