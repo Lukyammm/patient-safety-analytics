@@ -3318,8 +3318,9 @@
     }
 
     async function exportarFilaComoPdf(container, nomeArquivo) {
+      await getHtml2Pdf();
       const html2canvas = window.html2canvas;
-      const jsPDFRef = window.jspdf && window.jspdf.jsPDF;
+      const jsPDFRef = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
       if (!html2canvas || !jsPDFRef) {
         throw new Error('Dependências de PDF indisponíveis.');
       }
@@ -3353,7 +3354,15 @@
         pdf.addImage(imgData, 'PNG', 0, 0, larguraPagina, alturaPagina);
       }
 
-      pdf.save(nomeArquivo);
+      const blobPdf = pdf.output('blob');
+      const urlPdf = URL.createObjectURL(blobPdf);
+      const link = document.createElement('a');
+      link.href = urlPdf;
+      link.download = nomeArquivo;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      setTimeout(() => URL.revokeObjectURL(urlPdf), 2500);
     }
 
     function criarCloneBoletimComCanvas() {
