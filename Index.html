@@ -3289,6 +3289,57 @@
       return new Promise(resolve => setTimeout(resolve, ms));
     }
 
+    function aguardarFrame() {
+      return new Promise(resolve => requestAnimationFrame(() => resolve()));
+    }
+
+    async function aguardarEstabilidadeVisual() {
+      if (document.fonts && document.fonts.ready) {
+        try {
+          await document.fonts.ready;
+        } catch (_) {}
+      }
+      await aguardarFrame();
+      await aguardarFrame();
+      await aguardarRender(80);
+    }
+
+    async function exportarFilaComoPdf(container, nomeArquivo) {
+      const html2canvas = window.html2canvas;
+      const jsPDFRef = window.jspdf && window.jspdf.jsPDF;
+      if (!html2canvas || !jsPDFRef) {
+        throw new Error('Dependências de PDF indisponíveis.');
+      }
+
+      const paginas = Array.from(container.querySelectorAll('.document-page'));
+      if (!paginas.length) {
+        throw new Error('Nenhuma página encontrada para exportação.');
+      }
+
+      const pdf = new jsPDFRef({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+      const larguraPagina = pdf.internal.pageSize.getWidth();
+      const alturaPagina = pdf.internal.pageSize.getHeight();
+
+      for (let i = 0; i < paginas.length; i += 1) {
+        const pagina = paginas[i];
+        await aguardarEstabilidadeVisual();
+        const canvas = await html2canvas(pagina, {
+          scale: 2,
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          scrollY: 0,
+          scrollX: 0,
+          windowWidth: document.documentElement.scrollWidth
+        });
+        const imgData = canvas.toDataURL('image/png', 1);
+
+        if (i > 0) pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, 0, larguraPagina, alturaPagina);
+      }
+
+      pdf.save(nomeArquivo);
+    }
+
     function criarCloneBoletimComCanvas() {
       const original = document.getElementById('boletim');
       const clone = original.cloneNode(true);
@@ -3345,16 +3396,8 @@
         }
 
         document.body.classList.add('pdf-export');
-        const html2pdf = await getHtml2Pdf();
-        await aguardarRender();
-        await html2pdf().set({
-          margin: [0, 0, 0, 0],
-          filename: nomeArquivo,
-          image: { type: 'png', quality: 1 },
-          html2canvas: { scale: 2, useCORS: true, scrollY: 0, backgroundColor: '#ffffff' },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-          pagebreak: { mode: ['css', 'legacy'] }
-        }).from(container).save();
+        await getHtml2Pdf();
+        await exportarFilaComoPdf(container, nomeArquivo);
 
         if (preview) {
           preview.innerHTML = `<strong>Preview rápido</strong><p>Fila exportada com ${escapeHtml(String(filaBoletins.length))} boletins.</p>`;
