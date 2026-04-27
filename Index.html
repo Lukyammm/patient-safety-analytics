@@ -2003,7 +2003,7 @@
         </section>
 
         <section class="section-grid-2">
-          <div class="panel compact-panel" id="panel-tempo-resposta-gestor">
+          <div class="panel compact-panel" id="panel-status-notificacoes">
             <h3>Status das notificações</h3>
             <p>Situação dos registros no período filtrado.</p>
             <table class="compact-table">
@@ -2822,8 +2822,9 @@
 
     function resumoPrazoRespostaVazio(resumo) {
       if (!resumo || typeof resumo !== 'object') return true;
-      const campos = ['dentroPrazo', 'foraPrazo', 'metaDias', 'mediaDias'];
-      return campos.every((campo) => resumo[campo] === null || resumo[campo] === undefined || resumo[campo] === '');
+      const dentroPrazo = Number(resumo.dentroPrazo || 0);
+      const foraPrazo = Number(resumo.foraPrazo || 0);
+      return (dentroPrazo + foraPrazo) === 0;
     }
 
     function toggleCosepUnidadesCard(filtro) {
