@@ -2339,8 +2339,16 @@
 
     function adicionarAFila() {
       if (!existeFiltroMinimo()) return;
+      const filtrosAtuais = obterFiltrosTela();
       filaBoletins.push({
-        filtros: obterFiltrosTela()
+        filtros: {
+          anosCosep: [...(filtrosAtuais.anosCosep || [])],
+          mesesCosep: [...(filtrosAtuais.mesesCosep || [])],
+          unidadesCosep: [...(filtrosAtuais.unidadesCosep || [])],
+          anosNotifica: [...(filtrosAtuais.anosNotifica || [])],
+          mesesNotifica: [...(filtrosAtuais.mesesNotifica || [])],
+          unidadesNotifica: [...(filtrosAtuais.unidadesNotifica || [])]
+        }
       });
       fecharTodosMultiSelect();
       renderFila();
@@ -3284,19 +3292,26 @@
     function criarCloneBoletimComCanvas() {
       const original = document.getElementById('boletim');
       const clone = original.cloneNode(true);
+      clone.removeAttribute('id');
+      clone.classList.remove('hidden');
       const canvasOriginais = original.querySelectorAll('canvas');
       const canvasClone = clone.querySelectorAll('canvas');
       canvasClone.forEach((canvas, idx) => {
         const origem = canvasOriginais[idx];
         if (!origem) return;
         const img = document.createElement('img');
-        img.src = origem.toDataURL('image/png');
+        try {
+          img.src = origem.toDataURL('image/png');
+        } catch (_) {
+          return;
+        }
         img.alt = '';
         img.style.width = '100%';
         img.style.height = '100%';
         img.style.display = 'block';
         canvas.replaceWith(img);
       });
+      clone.querySelectorAll('[id]').forEach((el) => el.removeAttribute('id'));
       return clone;
     }
 
@@ -3314,6 +3329,7 @@
       try {
         loading.classList.remove('hidden');
         if (boletimEstavaOculto) boletim.classList.remove('hidden');
+        await aguardarRender(120);
         loading.textContent = `Preparando fila (${filaBoletins.length})...`;
 
         for (let i = 0; i < filaBoletins.length; i += 1) {
@@ -3322,7 +3338,7 @@
           const payload = await fetchAPIComRetry(item.filtros);
           renderCosep(payload.caminhadas || {}, (payload.aplicado || {}).caminhadas || {}, payload.geradoEm || '');
           renderNotifica(payload.notificacoes || {}, (payload.aplicado || {}).notificacoes || {}, payload.geradoEm || '');
-          await aguardarRender(140);
+          await aguardarRender(260);
 
           const clone = criarCloneBoletimComCanvas();
           Array.from(clone.children).forEach((page) => container.appendChild(page));
@@ -3335,7 +3351,7 @@
           margin: [0, 0, 0, 0],
           filename: nomeArquivo,
           image: { type: 'png', quality: 1 },
-          html2canvas: { scale: 3, useCORS: true, scrollY: 0, backgroundColor: '#ffffff' },
+          html2canvas: { scale: 2, useCORS: true, scrollY: 0, backgroundColor: '#ffffff' },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
           pagebreak: { mode: ['css', 'legacy'] }
         }).from(container).save();
