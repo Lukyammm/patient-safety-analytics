@@ -3093,6 +3093,15 @@
       atualizarTriggerMulti(id);
     }
 
+    function sincronizarSelecaoMulti(id) {
+      const select = document.getElementById(id);
+      if (!select) return;
+      const selecionados = new Set(Array.from(select.selectedOptions).map((opt) => opt.value));
+      Array.from(select.options).forEach((opt) => {
+        opt.selected = selecionados.has(opt.value);
+      });
+    }
+
     function fecharTodosMultiSelect() {
       document.querySelectorAll('.multi-select.open').forEach((el) => {
         el.classList.remove('open');
@@ -3101,6 +3110,7 @@
         const ref = multiSelectRefs[selectId];
         if (ref?.trigger) ref.trigger.setAttribute('aria-expanded', 'false');
         if (ref?.search) ref.search.value = '';
+        sincronizarSelecaoMulti(selectId);
         montarOptionsMulti(selectId, '');
         atualizarTriggerMulti(selectId);
       });
@@ -3162,6 +3172,7 @@
           if (!select) return;
           const option = Array.from(select.options).find(opt => opt.value === checkbox.value);
           if (option) option.selected = checkbox.checked;
+          sincronizarSelecaoMulti(id);
           select.dispatchEvent(new Event('change'));
           montarOptionsMulti(id, multiSelectRefs[id]?.search?.value || '');
           atualizarTriggerMulti(id);
@@ -3176,6 +3187,7 @@
           if (!select) return;
           const option = Array.from(select.options).find(opt => opt.value === value);
           if (option) option.selected = false;
+          sincronizarSelecaoMulti(id);
           select.dispatchEvent(new Event('change'));
           montarOptionsMulti(id, multiSelectRefs[id]?.search?.value || '');
           atualizarTriggerMulti(id);
