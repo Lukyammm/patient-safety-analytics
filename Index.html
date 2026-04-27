@@ -3335,14 +3335,17 @@
 
       for (let i = 0; i < paginas.length; i += 1) {
         const pagina = paginas[i];
+        pagina.scrollIntoView({ block: 'start', behavior: 'auto' });
         await aguardarEstabilidadeVisual();
         const canvas = await html2canvas(pagina, {
-          scale: 2,
+          scale: 1.6,
           useCORS: true,
           backgroundColor: '#ffffff',
-          scrollY: 0,
-          scrollX: 0,
-          windowWidth: document.documentElement.scrollWidth
+          width: pagina.scrollWidth,
+          height: pagina.scrollHeight,
+          windowWidth: pagina.scrollWidth,
+          windowHeight: pagina.scrollHeight,
+          logging: false
         });
         const imgData = canvas.toDataURL('image/png', 1);
 
@@ -3373,6 +3376,8 @@
         img.style.width = '100%';
         img.style.height = '100%';
         img.style.display = 'block';
+        img.width = origem.width || canvas.width || 0;
+        img.height = origem.height || canvas.height || 0;
         canvas.replaceWith(img);
       });
       clone.querySelectorAll('[id]').forEach((el) => el.removeAttribute('id'));
@@ -3388,6 +3393,13 @@
       const nomeArquivo = `boletins-fila-${filaBoletins.length}-itens.pdf`;
       const container = document.createElement('section');
       container.className = 'report-stack';
+      container.style.position = 'fixed';
+      container.style.top = '0';
+      container.style.left = '0';
+      container.style.width = '210mm';
+      container.style.opacity = '0';
+      container.style.pointerEvents = 'none';
+      container.style.zIndex = '-1';
       document.body.appendChild(container);
 
       try {
