@@ -1950,7 +1950,6 @@
             <img class="page-logo" src="https://i.ibb.co/ccny4xx5/NGQS-Caminhada-Pela-Seguran-a-Mascote-Toten-Mandala-24-x-25cm-final-1.png" alt="Logo">
             <div>
               <h2>Boletim da Segurança do Paciente · Notificações</h2>
-              <p>Consolidação da aba de notificações com filtro independente da página 1.</p>
             </div>
           </div>
           <div class="page-meta" id="periodo-notifica"></div>
@@ -2410,9 +2409,9 @@
       const unidades = (filtro && filtro.unidades) || [];
       const faixaMes = meses.length > 1 ? `${meses[0]}–${meses[meses.length - 1]}` : (meses[0] || 'Todos os meses');
       const anoResumo = anos.length ? anos.join(', ') : 'Todos os anos';
-      const unidadeResumo = unidades.length
-        ? `${unidades.length} ${unidades.length === 1 ? 'setor' : 'setores'}`
-        : 'Todos os setores';
+      const unidadeResumo = unidades.length === 1
+        ? unidades[0]
+        : (unidades.length > 1 ? `${unidades.length} setores` : 'Todos os setores');
       return {
         ano: anoResumo,
         mes: faixaMes,
@@ -3012,8 +3011,8 @@
         boletimGerado = false;
         atualizarEstadoAcoes();
         loading.classList.remove('hidden');
-        boletim.classList.add('hidden');
         loading.textContent = 'Não foi possível gerar o boletim agora. Confira as permissões do Apps Script e tente novamente.';
+        boletim.classList.add('hidden');
         if (preview) {
           preview.innerHTML = '<strong>Preview rápido</strong><p>Não foi possível atualizar o preview nesta tentativa.</p>';
         }
@@ -3285,6 +3284,7 @@
       if (!filaBoletins.length) return;
       const loading = document.getElementById('loading');
       const boletim = document.getElementById('boletim');
+      const boletimEstavaOculto = boletim.classList.contains('hidden');
       const preview = document.getElementById('preview-geracao');
       const nomeArquivo = `boletins-fila-${filaBoletins.length}-itens.pdf`;
       const container = document.createElement('section');
@@ -3293,7 +3293,7 @@
 
       try {
         loading.classList.remove('hidden');
-        boletim.classList.add('hidden');
+        if (boletimEstavaOculto) boletim.classList.remove('hidden');
         loading.textContent = `Preparando fila (${filaBoletins.length})...`;
 
         for (let i = 0; i < filaBoletins.length; i += 1) {
@@ -3330,9 +3330,9 @@
       } finally {
         document.body.classList.remove('pdf-export');
         container.remove();
+        if (boletimEstavaOculto) boletim.classList.add('hidden');
         loading.classList.remove('hidden');
         loading.textContent = 'Selecione os filtros e clique em “Gerar boletim”.';
-        boletim.classList.remove('hidden');
       }
     }
 
