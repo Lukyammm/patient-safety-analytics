@@ -2667,21 +2667,34 @@
     const pluginRotuloPontos = {
       id: 'rotuloPontos',
       afterDatasetsDraw(chart) {
-        const { ctx } = chart;
+        const { ctx, chartArea } = chart;
         const meta = chart.getDatasetMeta(0);
         const dataset = chart.data.datasets[0];
-        if (!meta || !dataset) return;
+        if (!meta || !dataset || !chartArea) return;
 
         meta.data.forEach((point, index) => {
           const valor = Number((dataset.data || [])[index] || 0);
           const texto = `${valor.toFixed(1).replace('.', ',')}%`;
-          const ajusteEixoVertical = index === 0 ? 14 : 0;
+          ctx.font = '700 11px Assistant, sans-serif';
+          const valorAnterior = index > 0 ? Number((dataset.data || [])[index - 1] || 0) : valor;
+          const valorSeguinte = index < (dataset.data || []).length - 1 ? Number((dataset.data || [])[index + 1] || 0) : valor;
+          const tendeSubir = valorSeguinte >= valor || valor >= valorAnterior;
+          const deslocamentoY = tendeSubir ? 12 : -10;
+          const larguraTexto = ctx.measureText(texto).width;
+          const margem = 6;
+          const xMin = chartArea.left + (larguraTexto / 2) + margem;
+          const xMax = chartArea.right - (larguraTexto / 2) - margem;
+          const yMin = chartArea.top + margem;
+          const yMax = chartArea.bottom - margem;
+          const xSeguro = Math.max(xMin, Math.min(point.x, xMax));
+          const ySeguro = Math.max(yMin, Math.min(point.y + deslocamentoY, yMax));
+
           ctx.save();
           ctx.fillStyle = '#1f2937';
           ctx.font = '700 11px Assistant, sans-serif';
           ctx.textAlign = 'center';
-          ctx.textBaseline = 'top';
-          ctx.fillText(texto, point.x + ajusteEixoVertical, point.y + 8);
+          ctx.textBaseline = 'middle';
+          ctx.fillText(texto, xSeguro, ySeguro);
           ctx.restore();
         });
       }
