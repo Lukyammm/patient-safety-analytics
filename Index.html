@@ -2424,9 +2424,9 @@
       const unidades = (filtro && filtro.unidades) || [];
       const faixaMes = meses.length > 1 ? `${meses[0]}–${meses[meses.length - 1]}` : (meses[0] || 'Todos os meses');
       const anoResumo = anos.length ? anos.join(', ') : 'Todos os anos';
-      const unidadeResumo = unidades.length === 1
-        ? unidades[0]
-        : (unidades.length > 1 ? `${unidades.length} setores` : 'Todos os setores');
+      const unidadeResumo = unidades.length === 0
+        ? 'Todos os setores'
+        : (unidades.length <= 2 ? unidades.join(', ') : `${unidades.length} setores`);
       return {
         ano: anoResumo,
         mes: faixaMes,
