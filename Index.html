@@ -3035,7 +3035,12 @@
         return 'Todos os setores';
       }
       if (selecionados.length === 1) return selecionados[0];
-      if (tipo === 'setor') return `${selecionados.length} setores selecionados`;
+      if (tipo === 'setor') {
+        const limite = selecionados.slice(0, 2);
+        return selecionados.length > 2
+          ? `${limite.join(', ')} +${selecionados.length - 2}`
+          : limite.join(', ');
+      }
       return `${selecionados[0]} +${selecionados.length - 1}`;
     }
 
@@ -3080,7 +3085,7 @@
       const selecionados = Array.from(select.selectedOptions).map(opt => opt.value);
       if (ref.root.classList.contains('open')) {
         ref.value.innerHTML = selecionados.length
-          ? selecionados.map(item => `<span class="chip">${escapeHtml(item)} <button type="button" class="chip-remove" data-remove-id="${escapeHtml(id)}" data-remove-value="${escapeHtml(item)}">✕</button></span>`).join('')
+          ? selecionados.map(item => `<span class="chip">${escapeHtml(item)} <span class="chip-remove" role="button" tabindex="0" aria-label="Remover ${escapeHtml(item)}" data-remove-id="${escapeHtml(id)}" data-remove-value="${escapeHtml(item)}">✕</span></span>`).join('')
           : `<span class="multi-select-summary">${escapeHtml(getResumoInteligente(cfg.tipo, selecionados))}</span>`;
       } else {
         ref.value.innerHTML = `<span class="multi-select-summary">${escapeHtml(getResumoInteligente(cfg.tipo, selecionados))}</span>`;
@@ -3145,6 +3150,7 @@
         multiSelectRefs[id] = { root, trigger, value, search, options };
 
         trigger.addEventListener('click', (event) => {
+          if (event.target.closest('.chip-remove')) return;
           event.stopPropagation();
           const abrir = !root.classList.contains('open');
           fecharTodosMultiSelect();
@@ -3160,6 +3166,14 @@
         });
 
         search.addEventListener('input', () => montarOptionsMulti(id, search.value || ''));
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key !== 'Enter' && event.key !== ' ') return;
+        const chipBtn = event.target.closest('.chip-remove');
+        if (!chipBtn) return;
+        event.preventDefault();
+        chipBtn.click();
       });
 
       document.addEventListener('click', (event) => {
