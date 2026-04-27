@@ -2182,12 +2182,11 @@
       preencherSelect('unidade-notifica', filtrosNotifica.unidades);
 
       const hoje = new Date();
-      const anoAtual = String(hoje.getFullYear());
       const mesAtual = hoje.toLocaleDateString('pt-BR', { month: 'long' });
       const mesAtualCapitalizado = mesAtual.charAt(0).toUpperCase() + mesAtual.slice(1);
 
-      selecionarValores('ano-cosep', [anoAtual]);
-      selecionarValores('ano-notifica', [anoAtual]);
+      selecionarTodosValores('ano-cosep');
+      selecionarTodosValores('ano-notifica');
       selecionarValores('mes-cosep', [mesAtualCapitalizado]);
       selecionarValores('mes-notifica', [mesAtualCapitalizado]);
 
@@ -2253,6 +2252,13 @@
         opcao.selected = conjunto.has(opcao.value);
       });
       atualizarMultiSelect(id);
+    }
+
+    function selecionarTodosValores(id) {
+      const campo = document.getElementById(id);
+      if (!campo) return;
+      const valores = Array.from(campo.options).map(opcao => String(opcao.value || '').trim()).filter(Boolean);
+      selecionarValores(id, valores);
     }
 
     function obterValoresSelecionados(id) {
@@ -2372,13 +2378,12 @@
 
     function limparFiltros() {
       const hoje = new Date();
-      const anoAtual = String(hoje.getFullYear());
       const mesAtual = hoje.toLocaleDateString('pt-BR', { month: 'long' });
       const mesAtualCapitalizado = mesAtual.charAt(0).toUpperCase() + mesAtual.slice(1);
-      selecionarValores('ano-cosep', [anoAtual]);
+      selecionarTodosValores('ano-cosep');
       selecionarValores('mes-cosep', [mesAtualCapitalizado]);
       selecionarValores('unidade-cosep', []);
-      selecionarValores('ano-notifica', [anoAtual]);
+      selecionarTodosValores('ano-notifica');
       selecionarValores('mes-notifica', [mesAtualCapitalizado]);
       selecionarValores('unidade-notifica', []);
       salvarUltimosFiltros();
