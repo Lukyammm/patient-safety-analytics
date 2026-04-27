@@ -496,6 +496,31 @@
             loadData({});
         }
 
+
+        function enableMultiSelectPersistence() {
+            const multiSelectIds = ['unidades', 'categorias', 'momentos', 'situacoes', 'metodos', 'preenchimentos'];
+
+            multiSelectIds.forEach(id => {
+                const select = document.getElementById(id);
+                if (!select || select.dataset.persistBound === 'true') return;
+
+                select.dataset.persistBound = 'true';
+                select.addEventListener('mousedown', (event) => {
+                    const option = event.target.closest('option');
+                    if (!option) return;
+
+                    event.preventDefault();
+                    option.selected = !option.selected;
+
+                    const scrollTop = select.scrollTop;
+                    requestAnimationFrame(() => {
+                        select.focus();
+                        select.scrollTop = scrollTop;
+                    });
+                });
+            });
+        }
+
         // ====================== GRÁFICOS ======================
         function renderAllCharts(chartData) {
             if (window.ChartDataLabels) {
@@ -886,6 +911,7 @@
         // ====================== INICIALIZAÇÃO ======================
         function initializeSystem() {
             initTailwind();
+            enableMultiSelectPersistence();
             loadData({}); // carrega todos os dados
             console.log('Sistema de Higiene das Mãos carregado com layout e gráficos otimizados.');
         }
