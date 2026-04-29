@@ -299,12 +299,14 @@
     .fields {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 22px;
+      gap: 14px;
+      align-items: end;
     }
 
     .field {
       display: grid;
       gap: 8px;
+      min-width: 0;
     }
 
     .field label {
@@ -361,14 +363,21 @@
       display: none;
     }
 
-    .fields {
-      grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 14px;
-      align-items: end;
-    }
-
     .multi-select {
       position: relative;
+      min-width: 0;
+      width: 100%;
+    }
+
+    .field.field-ano,
+    .field.field-mes,
+    .field.field-setor {
+      min-width: 0;
+    }
+
+    .field.field-setor .multi-select-trigger,
+    .field.field-setor .multi-select-dropdown {
+      max-width: 100%;
     }
 
     .multi-select-trigger {
@@ -505,6 +514,15 @@
       cursor: pointer;
       font-size: 14px;
       transition: background-color 0.16s ease;
+      min-width: 0;
+    }
+
+    .multi-option span {
+      min-width: 0;
+      flex: 1 1 auto;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .multi-option:hover {
@@ -1514,6 +1532,17 @@
       }
     }
 
+
+    @media (max-width: 980px) {
+      .fields {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .field.field-setor {
+        grid-column: 1 / -1;
+      }
+    }
+
     @media (max-width: 768px) {
       body::before,
       body::after {
@@ -1749,17 +1778,17 @@
                 <h2>Caminhadas</h2>
               </div>
               <div class="fields">
-                <div class="field searchable-field">
+                <div class="field field-ano searchable-field">
                   <label for="ano-cosep">Ano</label>
                   <input id="busca-ano-cosep" class="filter-search" type="search" placeholder="Buscar ano..." data-target="ano-cosep">
                   <select id="ano-cosep" multiple></select>
                 </div>
-                <div class="field searchable-field">
+                <div class="field field-mes searchable-field">
                   <label for="mes-cosep">Mês</label>
                   <input id="busca-mes-cosep" class="filter-search" type="search" placeholder="Buscar mês..." data-target="mes-cosep">
                   <select id="mes-cosep" multiple></select>
                 </div>
-                <div class="field searchable-field">
+                <div class="field field-setor searchable-field">
                   <label for="unidade-cosep">Setor <small id="contador-unidade-cosep">0 selecionados</small></label>
                   <input id="busca-unidade-cosep" class="filter-search" type="search" placeholder="Buscar setor..." data-target="unidade-cosep">
                   <select id="unidade-cosep" multiple></select>
@@ -1777,17 +1806,17 @@
                 <h2>Notificações</h2>
               </div>
               <div class="fields">
-                <div class="field searchable-field">
+                <div class="field field-ano searchable-field">
                   <label for="ano-notifica">Ano</label>
                   <input id="busca-ano-notifica" class="filter-search" type="search" placeholder="Buscar ano..." data-target="ano-notifica">
                   <select id="ano-notifica" multiple></select>
                 </div>
-                <div class="field searchable-field">
+                <div class="field field-mes searchable-field">
                   <label for="mes-notifica">Mês</label>
                   <input id="busca-mes-notifica" class="filter-search" type="search" placeholder="Buscar mês..." data-target="mes-notifica">
                   <select id="mes-notifica" multiple></select>
                 </div>
-                <div class="field searchable-field">
+                <div class="field field-setor searchable-field">
                   <label for="unidade-notifica">Setor <small id="contador-unidade-notifica">0 selecionados</small></label>
                   <input id="busca-unidade-notifica" class="filter-search" type="search" placeholder="Buscar setor..." data-target="unidade-notifica">
                   <select id="unidade-notifica" multiple></select>
@@ -3106,6 +3135,13 @@
       `).join('') || '<div class="multi-option">Nenhum resultado.</div>';
     }
 
+
+    function getTooltipResumo(cfg, selecionados) {
+      if (!selecionados.length) return '';
+      if (cfg?.tipo === 'setor') return selecionados.join(', ');
+      return selecionados.join(' • ');
+    }
+
     function atualizarTriggerMulti(id) {
       const ref = multiSelectRefs[id];
       const select = document.getElementById(id);
@@ -3115,9 +3151,9 @@
       if (ref.root.classList.contains('open')) {
         ref.value.innerHTML = selecionados.length
           ? selecionados.map(item => `<span class="chip">${escapeHtml(item)} <span class="chip-remove" role="button" tabindex="0" aria-label="Remover ${escapeHtml(item)}" data-remove-id="${escapeHtml(id)}" data-remove-value="${escapeHtml(item)}">✕</span></span>`).join('')
-          : `<span class="multi-select-summary">${escapeHtml(getResumoInteligente(cfg.tipo, selecionados))}</span>`;
+          : `<span class="multi-select-summary" title="${escapeHtml(getTooltipResumo(cfg, selecionados))}">${escapeHtml(getResumoInteligente(cfg.tipo, selecionados))}</span>`;
       } else {
-        ref.value.innerHTML = `<span class="multi-select-summary">${escapeHtml(getResumoInteligente(cfg.tipo, selecionados))}</span>`;
+        ref.value.innerHTML = `<span class="multi-select-summary" title="${escapeHtml(getTooltipResumo(cfg, selecionados))}">${escapeHtml(getResumoInteligente(cfg.tipo, selecionados))}</span>`;
       }
     }
 
