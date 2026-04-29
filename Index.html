@@ -3375,43 +3375,22 @@
     }
 
     async function exportarFilaComoPdf(container, nomeArquivo) {
-      await getHtml2Pdf();
-      const html2canvas = window.html2canvas;
-      const jsPDFRef = (window.jspdf && window.jspdf.jsPDF) || window.jsPDF;
-      if (!html2canvas || !jsPDFRef) {
-        throw new Error('Dependências de PDF indisponíveis.');
-      }
+      const html2pdf = await getHtml2Pdf();
+      await aguardarEstabilidadeVisual();
 
-      const paginas = Array.from(container.querySelectorAll('.document-page'));
-      if (!paginas.length) {
-        throw new Error('Nenhuma página encontrada para exportação.');
-      }
-
-      const pdf = new jsPDFRef({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-      const larguraPagina = pdf.internal.pageSize.getWidth();
-      const alturaPagina = pdf.internal.pageSize.getHeight();
-
-      for (let i = 0; i < paginas.length; i += 1) {
-        const pagina = paginas[i];
-        pagina.scrollIntoView({ block: 'start', behavior: 'auto' });
-        await aguardarEstabilidadeVisual();
-        const canvas = await html2canvas(pagina, {
-          scale: 1.6,
+      await html2pdf().set({
+        margin: [0, 0, 0, 0],
+        filename: nomeArquivo,
+        image: { type: 'png', quality: 1 },
+        html2canvas: {
+          scale: 2,
           useCORS: true,
-          backgroundColor: '#ffffff',
-          width: pagina.scrollWidth,
-          height: pagina.scrollHeight,
-          windowWidth: pagina.scrollWidth,
-          windowHeight: pagina.scrollHeight,
-          logging: false
-        });
-        const imgData = canvas.toDataURL('image/png', 1);
-
-        if (i > 0) pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, 0, larguraPagina, alturaPagina);
-      }
-
-      pdf.save(nomeArquivo);
+          scrollY: 0,
+          backgroundColor: '#ffffff'
+        },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'] }
+      }).from(container).save();
     }
 
     function criarCloneBoletimComCanvas() {
@@ -3453,9 +3432,9 @@
       container.className = 'report-stack';
       container.style.position = 'fixed';
       container.style.top = '0';
-      container.style.left = '0';
+      container.style.left = '-99999px';
       container.style.width = '210mm';
-      container.style.opacity = '0';
+      container.style.opacity = '1';
       container.style.pointerEvents = 'none';
       container.style.zIndex = '-1';
       document.body.appendChild(container);
@@ -3473,7 +3452,7 @@
           renderCosep(payload.caminhadas || {}, (payload.aplicado || {}).caminhadas || {}, payload.geradoEm || '');
           renderNotifica(payload.notificacoes || {}, (payload.aplicado || {}).notificacoes || {}, payload.geradoEm || '');
           atualizarStatus(payload.aplicado || {}, payload.geradoEm || '', payload);
-          await aguardarRender(260);
+          await aguardarEstabilidadeVisual();
 
           const clone = criarCloneBoletimComCanvas();
           Array.from(clone.children).forEach((page) => container.appendChild(page));
