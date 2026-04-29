@@ -3026,12 +3026,31 @@
       `;
     }
 
-    function atualizarStatus(filtrosAplicados, geradoEm) {
+    function atualizarVisibilidadePaginas(payload) {
+      if (!payload || (!payload.caminhadas && !payload.notificacoes)) return;
+      const dadosCosep = payload.caminhadas || {};
+      const dadosNotifica = (payload && payload.notificacoes) || {};
+      const possuiDadosCosep = Number(dadosCosep.totalAvaliacoes || 0) > 0;
+      const possuiDadosNotifica = Number(dadosNotifica.total || 0) > 0;
+
+      const paginaCosep = document.getElementById('pagina-cosep');
+      const paginaNotifica = document.getElementById('pagina-notifica');
+      const statusCosep = document.getElementById('status-cosep');
+      const statusNotifica = document.getElementById('status-notifica');
+
+      if (paginaCosep) paginaCosep.classList.toggle('hidden', !possuiDadosCosep);
+      if (paginaNotifica) paginaNotifica.classList.toggle('hidden', !possuiDadosNotifica);
+      if (statusCosep) statusCosep.classList.toggle('hidden', !possuiDadosCosep);
+      if (statusNotifica) statusNotifica.classList.toggle('hidden', !possuiDadosNotifica);
+    }
+
+    function atualizarStatus(filtrosAplicados, geradoEm, payload) {
       const periodoCosep = formatPeriodo(filtrosAplicados.caminhadas || {}, 'cosep');
       const periodoNotifica = formatPeriodo(filtrosAplicados.notificacoes || {}, 'notifica');
 
       renderSummaryRow('status-cosep', 'Página 1 · Caminhadas', periodoCosep, 'page-caminhadas');
       renderSummaryRow('status-notifica', 'Página 2 · Notificações', periodoNotifica, 'page-notificacoes');
+      atualizarVisibilidadePaginas(payload || {});
       document.getElementById('status-gerado').innerHTML = `
         <span class="icon-inline slate" aria-hidden="true">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
@@ -3053,7 +3072,7 @@
         const payload = await fetchAPIComRetry(obterFiltrosTela());
         renderCosep(payload.caminhadas || {}, (payload.aplicado || {}).caminhadas || {}, payload.geradoEm || '');
         renderNotifica(payload.notificacoes || {}, (payload.aplicado || {}).notificacoes || {}, payload.geradoEm || '');
-        atualizarStatus(payload.aplicado || {}, payload.geradoEm || '');
+        atualizarStatus(payload.aplicado || {}, payload.geradoEm || '', payload);
         if (preview) {
           const c = payload.caminhadas || {};
           const n = payload.notificacoes || {};
@@ -3453,6 +3472,7 @@
           const payload = await fetchAPIComRetry(item.filtros);
           renderCosep(payload.caminhadas || {}, (payload.aplicado || {}).caminhadas || {}, payload.geradoEm || '');
           renderNotifica(payload.notificacoes || {}, (payload.aplicado || {}).notificacoes || {}, payload.geradoEm || '');
+          atualizarStatus(payload.aplicado || {}, payload.geradoEm || '', payload);
           await aguardarRender(260);
 
           const clone = criarCloneBoletimComCanvas();
