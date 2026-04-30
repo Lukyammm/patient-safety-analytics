@@ -2338,10 +2338,9 @@
 
     function existeFiltroMinimo() {
       const filtros = obterFiltrosTela();
-      return Boolean(
-        filtros.anosCosep.length && filtros.mesesCosep.length &&
-        filtros.anosNotifica.length && filtros.mesesNotifica.length
-      );
+      const possuiRecorteCaminhadas = Boolean(filtros.anosCosep.length && filtros.mesesCosep.length);
+      const possuiRecorteNotificacoes = Boolean(filtros.anosNotifica.length && filtros.mesesNotifica.length);
+      return possuiRecorteCaminhadas || possuiRecorteNotificacoes;
     }
 
     function atualizarEstadoAcoes() {
@@ -2396,7 +2395,7 @@
 
     function adicionarAFila() {
       if (!existeFiltroMinimo()) {
-        mostrarAvisoFila('Selecione ano e mês de Caminhadas e Notificações antes de adicionar à fila.');
+        mostrarAvisoFila('Selecione ano e mês em Caminhadas ou em Notificações antes de adicionar à fila.');
         return;
       }
       const filtrosAtuais = obterFiltrosTela();
