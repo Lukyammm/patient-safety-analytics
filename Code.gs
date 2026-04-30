@@ -345,9 +345,10 @@ function processarCaminhadas(ss, filtros) {
     const mes = normalizarMes(row[2]);
     const unidade = getUnidade(row);
 
-    if (anosFiltro.size && !anosFiltro.has(ano)) return false;
-    if (mesesFiltro.size && !mesesFiltro.has(mes)) return false;
-    if (unidadesFiltro.size && !unidadesFiltro.has(unidade)) return false;
+    if (!anosFiltro.size || !mesesFiltro.size || !unidadesFiltro.size) return false;
+    if (!anosFiltro.has(ano)) return false;
+    if (!mesesFiltro.has(mes)) return false;
+    if (!unidadesFiltro.has(unidade)) return false;
     return true;
   });
 
@@ -588,9 +589,10 @@ function processarNotificacoes(ss, filtros) {
     const ano = normalizarAno(row[3]);
     const setor = String(row[6] || '').trim();
 
-    if (anosFiltro.size && !anosFiltro.has(ano)) return false;
-    if (mesesFiltro.size && !mesesFiltro.has(mes)) return false;
-    if (unidadesFiltro.size && !unidadesFiltro.has(setor)) return false;
+    if (!anosFiltro.size || !mesesFiltro.size || !unidadesFiltro.size) return false;
+    if (!anosFiltro.has(ano)) return false;
+    if (!mesesFiltro.has(mes)) return false;
+    if (!unidadesFiltro.has(setor)) return false;
     return true;
   });
 
