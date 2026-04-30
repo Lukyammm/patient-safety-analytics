@@ -3195,13 +3195,15 @@
       if (!ref || !select) return;
       const cfg = MULTI_CONFIG[id] || {};
       const selecionados = Array.from(select.selectedOptions).map(opt => opt.value);
-      if (ref.root.classList.contains('open')) {
-        ref.value.innerHTML = selecionados.length
-          ? selecionados.map(item => `<span class="chip">${escapeHtml(item)} <span class="chip-remove" role="button" tabindex="0" aria-label="Remover ${escapeHtml(item)}" data-remove-id="${escapeHtml(id)}" data-remove-value="${escapeHtml(item)}">✕</span></span>`).join('')
-          : `<span class="multi-select-summary" title="${escapeHtml(getTooltipResumo(cfg, selecionados))}">${escapeHtml(getResumoInteligente(cfg.tipo, selecionados))}</span>`;
-      } else {
-        ref.value.innerHTML = `<span class="multi-select-summary" title="${escapeHtml(getTooltipResumo(cfg, selecionados))}">${escapeHtml(getResumoInteligente(cfg.tipo, selecionados))}</span>`;
+      const limiteChipsAbertos = 8;
+      const exibirChips = ref.root.classList.contains('open') && selecionados.length > 0 && selecionados.length <= limiteChipsAbertos;
+
+      if (exibirChips) {
+        ref.value.innerHTML = selecionados.map(item => `<span class="chip">${escapeHtml(item)} <span class="chip-remove" role="button" tabindex="0" aria-label="Remover ${escapeHtml(item)}" data-remove-id="${escapeHtml(id)}" data-remove-value="${escapeHtml(item)}">✕</span></span>`).join('');
+        return;
       }
+
+      ref.value.innerHTML = `<span class="multi-select-summary" title="${escapeHtml(getTooltipResumo(cfg, selecionados))}">${escapeHtml(getResumoInteligente(cfg.tipo, selecionados))}</span>`;
     }
 
     function atualizarMultiSelect(id) {
