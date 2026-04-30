@@ -3483,11 +3483,11 @@
       const nomeArquivo = `boletins-fila-${filaBoletins.length}-itens.pdf`;
       const container = document.createElement('section');
       container.className = 'report-stack';
-      container.style.position = 'fixed';
+      container.style.position = 'absolute';
       container.style.top = '0';
-      container.style.left = '-99999px';
+      container.style.left = '0';
       container.style.width = '210mm';
-      container.style.opacity = '1';
+      container.style.opacity = '0.01';
       container.style.pointerEvents = 'none';
       container.style.zIndex = '-1';
       document.body.appendChild(container);
