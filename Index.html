@@ -2368,8 +2368,19 @@
       `).join('');
     }
 
+    function mostrarAvisoFila(mensagem) {
+      const loading = document.getElementById('loading');
+      if (loading) {
+        loading.classList.remove('hidden');
+        loading.textContent = mensagem;
+      }
+    }
+
     function adicionarAFila() {
-      if (!existeFiltroMinimo()) return;
+      if (!existeFiltroMinimo()) {
+        mostrarAvisoFila('Selecione ano e mês de Caminhadas e Notificações antes de adicionar à fila.');
+        return;
+      }
       const filtrosAtuais = obterFiltrosTela();
       filaBoletins.push({
         filtros: {
@@ -3422,7 +3433,10 @@
     }
 
     async function imprimirFilaPDF() {
-      if (!filaBoletins.length) return;
+      if (!filaBoletins.length) {
+        mostrarAvisoFila('A fila está vazia. Adicione pelo menos um boletim antes de imprimir.');
+        return;
+      }
       const loading = document.getElementById('loading');
       const boletim = document.getElementById('boletim');
       const boletimEstavaOculto = boletim.classList.contains('hidden');
