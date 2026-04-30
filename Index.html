@@ -488,6 +488,24 @@
       margin-bottom: 8px;
     }
 
+    .multi-select-actions {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .multi-select-action-btn {
+      flex: 1 1 50%;
+      min-height: 32px;
+      border: 1px solid #c8d6ea;
+      border-radius: 8px;
+      background: #f7fbff;
+      color: #31507a;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
     .multi-select-options {
       max-height: 230px;
       overflow-y: auto;
@@ -3118,9 +3136,9 @@
 
     function getResumoInteligente(tipo, selecionados) {
       if (!selecionados.length) {
-        if (tipo === 'ano') return 'Todos os anos';
-        if (tipo === 'mes') return 'Todos os meses';
-        return 'Todos os setores';
+        if (tipo === 'ano') return 'Nenhum ano';
+        if (tipo === 'mes') return 'Nenhum mês';
+        return 'Nenhum setor';
       }
       if (selecionados.length === 1) return selecionados[0];
       if (tipo === 'setor') {
@@ -3234,6 +3252,10 @@
           </button>
           <div class="multi-select-dropdown">
             <input type="search" class="multi-select-search" placeholder="Buscar ${cfg.label.toLowerCase()}...">
+            <div class="multi-select-actions">
+              <button type="button" class="multi-select-action-btn" data-action="select-all" data-id="${escapeHtml(id)}">Selecionar tudo</button>
+              <button type="button" class="multi-select-action-btn" data-action="clear-all" data-id="${escapeHtml(id)}">Limpar tudo</button>
+            </div>
             <div class="multi-select-options"></div>
           </div>
         `;
@@ -3294,6 +3316,23 @@
           if (!select) return;
           const option = Array.from(select.options).find(opt => opt.value === value);
           if (option) option.selected = false;
+          sincronizarSelecaoMulti(id);
+          select.dispatchEvent(new Event('change'));
+          montarOptionsMulti(id, multiSelectRefs[id]?.search?.value || '');
+          atualizarTriggerMulti(id);
+          return;
+        }
+
+        const actionBtn = event.target.closest('.multi-select-action-btn');
+        if (actionBtn) {
+          const id = actionBtn.dataset.id;
+          const select = document.getElementById(id);
+          if (!select) return;
+          const action = actionBtn.dataset.action;
+          const marcar = action === 'select-all';
+          Array.from(select.options).forEach((opt) => {
+            opt.selected = marcar;
+          });
           sincronizarSelecaoMulti(id);
           select.dispatchEvent(new Event('change'));
           montarOptionsMulti(id, multiSelectRefs[id]?.search?.value || '');
