@@ -3544,11 +3544,8 @@
       const mesNotificaArquivo = filtros.mesesNotifica.length ? filtros.mesesNotifica.join('-') : 'todos';
       const nomeArquivo = `boletim-seguranca-paciente-${mesCosepArquivo}-${anoCosepArquivo}-notifica-${mesNotificaArquivo}-${anoNotificaArquivo}.pdf`;
 
-      const clone = elemento.cloneNode(true);
-      clone.removeAttribute('id');
-      clone.classList.remove('hidden');
+      const clone = criarCloneBoletimComCanvas();
       clone.querySelectorAll('.document-page.hidden, .summary-row.hidden').forEach((el) => el.remove());
-      clone.querySelectorAll('[id]').forEach((el) => el.removeAttribute('id'));
 
       if (!clone.querySelector('.document-page')) {
         if (loading) {
