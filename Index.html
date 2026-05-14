@@ -657,6 +657,20 @@
       display: block;
     }
 
+    .btn.is-loading {
+      cursor: wait;
+      opacity: 0.92;
+    }
+
+    .btn.is-loading svg {
+      animation: spinBtnIcon 0.9s linear infinite;
+    }
+
+    @keyframes spinBtnIcon {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+
     .btn-primary {
       min-height: 60px;
       font-size: 16px;
@@ -1934,7 +1948,7 @@
       </section>
     </section>
 
-    <section id="loading" class="loading-box">Carregando dados do boletim...</section>
+    <section id="loading" class="loading-box" role="status" aria-live="polite">Carregando dados do boletim...</section>
 
     <section id="boletim" class="report-stack hidden">
       <article class="document-page page-break" id="pagina-cosep">
@@ -3087,12 +3101,32 @@
       `;
     }
 
+    function atualizarEstadoGeracao(gerando) {
+      const btnGerar = document.getElementById('btn-gerar');
+      if (!btnGerar) return;
+      const label = btnGerar.querySelector('span');
+
+      if (gerando) {
+        btnGerar.classList.add('is-loading');
+        btnGerar.disabled = true;
+        btnGerar.setAttribute('aria-busy', 'true');
+        if (label) label.textContent = 'Gerando...';
+        return;
+      }
+
+      btnGerar.classList.remove('is-loading');
+      btnGerar.removeAttribute('aria-busy');
+      if (label) label.textContent = 'Gerar boletim';
+      atualizarEstadoAcoes();
+    }
+
     async function carregarDados() {
       const loading = document.getElementById('loading');
       const boletim = document.getElementById('boletim');
       const preview = document.getElementById('preview-geracao');
 
       try {
+        atualizarEstadoGeracao(true);
         loading.classList.remove('hidden');
         boletim.classList.add('hidden');
         loading.textContent = 'Gerando boletim...';
@@ -3109,12 +3143,10 @@
 
         boletimGerado = true;
         salvarUltimosFiltros();
-        atualizarEstadoAcoes();
         loading.classList.add('hidden');
         boletim.classList.remove('hidden');
       } catch (erro) {
         boletimGerado = false;
-        atualizarEstadoAcoes();
         loading.classList.remove('hidden');
         loading.textContent = 'Não foi possível gerar o boletim agora. Confira as permissões do Apps Script e tente novamente.';
         boletim.classList.add('hidden');
@@ -3122,6 +3154,8 @@
           preview.innerHTML = '<strong>Preview rápido</strong><p>Não foi possível atualizar o preview nesta tentativa.</p>';
         }
         console.error(erro);
+      } finally {
+        atualizarEstadoGeracao(false);
       }
     }
 
