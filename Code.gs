@@ -18,6 +18,33 @@ const ORDEM_MESES = {
   'NOVEMBRO': 11,
   'DEZEMBRO': 12
 };
+
+const CACHE_TTL_SEGUNDOS = 180;
+
+function criarChaveCache(filtros) {
+  const partes = [
+    filtros?.caminhadas?.anos || [],
+    filtros?.caminhadas?.meses || [],
+    filtros?.caminhadas?.unidades || [],
+    filtros?.notificacoes?.anos || [],
+    filtros?.notificacoes?.meses || [],
+    filtros?.notificacoes?.unidades || []
+  ].map(lista => Array.isArray(lista) ? lista.join('|') : '');
+  return 'boletim_payload_v2:' + Utilities.base64EncodeWebSafe(partes.join('||'));
+}
+
+function obterLinhasValidas(sheet, linhasCabecalho) {
+  const primeiraLinhaDados = Number(linhasCabecalho || 1) + 1;
+  const ultimaLinha = sheet.getLastRow();
+  const ultimaColuna = sheet.getLastColumn();
+
+  if (ultimaLinha < primeiraLinhaDados || ultimaColuna < 1) {
+    return [];
+  }
+
+  return sheet.getRange(primeiraLinhaDados, 1, ultimaLinha - primeiraLinhaDados + 1, ultimaColuna).getValues();
+}
+
 const MESES_CANONICOS = {
   1: 'Janeiro',
   2: 'Fevereiro',
@@ -133,9 +160,24 @@ function doGet(e) {
   const params = (e && e.parameter) || {};
 
   if (params.api === '1') {
+    const filtrosAplicados = extrairFiltros(params);
+    const cache = CacheService.getScriptCache();
+    const chaveCache = criarChaveCache(filtrosAplicados);
+    const payloadCache = cache.get(chaveCache);
+
+    if (payloadCache) {
+      return ContentService
+        .createTextOutput(payloadCache)
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     const ss = SpreadsheetApp.openById(ID_PLANILHA);
+    const dadosPlanilhas = carregarDadosPlanilhas(ss);
+    const payload = JSON.stringify(montarPayload(ss, filtrosAplicados, dadosPlanilhas));
+    cache.put(chaveCache, payload, CACHE_TTL_SEGUNDOS);
+
     return ContentService
-      .createTextOutput(JSON.stringify(montarPayload(ss, extrairFiltros(params))))
+      .createTextOutput(payload)
       .setMimeType(ContentService.MimeType.JSON);
   }
 
@@ -173,21 +215,22 @@ function extrairListaFiltros(rawValue, normalizerFn) {
   return [...new Set(valores)];
 }
 
-function montarPayload(ss, filtros) {
+function montarPayload(ss, filtros, dadosPlanilhas) {
   const filtrosAplicados = filtros || { caminhadas: {}, notificacoes: {} };
   return {
     success: true,
     geradoEm: Utilities.formatDate(new Date(), FUSO_HORARIO, "dd/MM/yyyy 'às' HH:mm"),
-    filtros: getFiltros(ss),
+    filtros: getFiltros(dadosPlanilhas),
     aplicado: filtrosAplicados,
-    caminhadas: processarCaminhadas(ss, filtrosAplicados.caminhadas || {}),
-    notificacoes: processarNotificacoes(ss, filtrosAplicados.notificacoes || {})
+    caminhadas: processarCaminhadas(dadosPlanilhas.caminhadas, filtrosAplicados.caminhadas || {}),
+    notificacoes: processarNotificacoes(dadosPlanilhas.notificacoes, filtrosAplicados.notificacoes || {})
   };
 }
 
 function obterPayload(filtros) {
   const ss = SpreadsheetApp.openById(ID_PLANILHA);
-  return montarPayload(ss, extrairFiltros(filtros || {}));
+  const dadosPlanilhas = carregarDadosPlanilhas(ss);
+  return montarPayload(ss, extrairFiltros(filtros || {}), dadosPlanilhas);
 }
 
 function normalizarTexto(valor) {
@@ -281,12 +324,19 @@ function coletarFiltros(dados, config) {
   };
 }
 
-function getFiltros(ss) {
+function carregarDadosPlanilhas(ss) {
   const shCaminhadas = ss.getSheetByName(ABA_CAMINHADAS);
   const shNotifica = ss.getSheetByName(ABA_NOTIFICA);
 
-  const dadosCaminhadas = shCaminhadas.getDataRange().getValues().slice(1);
-  const dadosNotifica = shNotifica.getDataRange().getValues().slice(2);
+  return {
+    caminhadas: obterLinhasValidas(shCaminhadas, 1),
+    notificacoes: obterLinhasValidas(shNotifica, 2)
+  };
+}
+
+function getFiltros(dadosPlanilhas) {
+  const dadosCaminhadas = (dadosPlanilhas && dadosPlanilhas.caminhadas) || [];
+  const dadosNotifica = (dadosPlanilhas && dadosPlanilhas.notificacoes) || [];
 
   return {
     caminhadas: coletarFiltros(dadosCaminhadas, {
@@ -302,9 +352,7 @@ function getFiltros(ss) {
   };
 }
 
-function processarCaminhadas(ss, filtros) {
-  const sh = ss.getSheetByName(ABA_CAMINHADAS);
-  const linhas = sh.getDataRange().getValues().slice(1);
+function processarCaminhadas(linhas, filtros) {
 
   const metas = METAS_CAMINHADAS.map(meta => ({
     codigo: meta.codigo,
@@ -571,9 +619,7 @@ function processarCaminhadas(ss, filtros) {
   };
 }
 
-function processarNotificacoes(ss, filtros) {
-  const sh = ss.getSheetByName(ABA_NOTIFICA);
-  const linhas = sh.getDataRange().getValues().slice(2);
+function processarNotificacoes(linhas, filtros) {
 
   const desempenhoResposta = {
     meta5: criarResumoPrazoResposta(5),
