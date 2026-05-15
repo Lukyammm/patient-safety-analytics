@@ -657,20 +657,6 @@
       display: block;
     }
 
-    .btn.is-loading {
-      cursor: wait;
-      opacity: 0.92;
-    }
-
-    .btn.is-loading svg {
-      animation: spinBtnIcon 0.9s linear infinite;
-    }
-
-    @keyframes spinBtnIcon {
-      from { transform: rotate(0deg); }
-      to { transform: rotate(360deg); }
-    }
-
     .btn-primary {
       min-height: 60px;
       font-size: 16px;
@@ -1948,7 +1934,7 @@
       </section>
     </section>
 
-    <section id="loading" class="loading-box" role="status" aria-live="polite">Carregando dados do boletim...</section>
+    <section id="loading" class="loading-box">Carregando dados do boletim...</section>
 
     <section id="boletim" class="report-stack hidden">
       <article class="document-page page-break" id="pagina-cosep">
@@ -2107,7 +2093,6 @@
     let boletimGerado = false;
     let filaBoletins = [];
     let html2pdfLoader = null;
-    let exportacaoPdfEmAndamento = false;
     let buscaFiltrosConfigurada = false;
     let tabsConfiguradas = false;
     let listenersFiltrosConfigurados = false;
@@ -2353,9 +2338,10 @@
 
     function existeFiltroMinimo() {
       const filtros = obterFiltrosTela();
-      const possuiRecorteCaminhadas = Boolean(filtros.anosCosep.length && filtros.mesesCosep.length);
-      const possuiRecorteNotificacoes = Boolean(filtros.anosNotifica.length && filtros.mesesNotifica.length);
-      return possuiRecorteCaminhadas || possuiRecorteNotificacoes;
+      return Boolean(
+        filtros.anosCosep.length && filtros.mesesCosep.length &&
+        filtros.anosNotifica.length && filtros.mesesNotifica.length
+      );
     }
 
     function atualizarEstadoAcoes() {
@@ -2410,7 +2396,7 @@
 
     function adicionarAFila() {
       if (!existeFiltroMinimo()) {
-        mostrarAvisoFila('Selecione ano e mês em Caminhadas ou em Notificações antes de adicionar à fila.');
+        mostrarAvisoFila('Selecione ano e mês de Caminhadas e Notificações antes de adicionar à fila.');
         return;
       }
       const filtrosAtuais = obterFiltrosTela();
@@ -3102,32 +3088,12 @@
       `;
     }
 
-    function atualizarEstadoGeracao(gerando) {
-      const btnGerar = document.getElementById('btn-gerar');
-      if (!btnGerar) return;
-      const label = btnGerar.querySelector('span');
-
-      if (gerando) {
-        btnGerar.classList.add('is-loading');
-        btnGerar.disabled = true;
-        btnGerar.setAttribute('aria-busy', 'true');
-        if (label) label.textContent = 'Gerando...';
-        return;
-      }
-
-      btnGerar.classList.remove('is-loading');
-      btnGerar.removeAttribute('aria-busy');
-      if (label) label.textContent = 'Gerar boletim';
-      atualizarEstadoAcoes();
-    }
-
     async function carregarDados() {
       const loading = document.getElementById('loading');
       const boletim = document.getElementById('boletim');
       const preview = document.getElementById('preview-geracao');
 
       try {
-        atualizarEstadoGeracao(true);
         loading.classList.remove('hidden');
         boletim.classList.add('hidden');
         loading.textContent = 'Gerando boletim...';
@@ -3144,10 +3110,12 @@
 
         boletimGerado = true;
         salvarUltimosFiltros();
+        atualizarEstadoAcoes();
         loading.classList.add('hidden');
         boletim.classList.remove('hidden');
       } catch (erro) {
         boletimGerado = false;
+        atualizarEstadoAcoes();
         loading.classList.remove('hidden');
         loading.textContent = 'Não foi possível gerar o boletim agora. Confira as permissões do Apps Script e tente novamente.';
         boletim.classList.add('hidden');
@@ -3155,8 +3123,6 @@
           preview.innerHTML = '<strong>Preview rápido</strong><p>Não foi possível atualizar o preview nesta tentativa.</p>';
         }
         console.error(erro);
-      } finally {
-        atualizarEstadoGeracao(false);
       }
     }
 
@@ -3230,15 +3196,13 @@
       if (!ref || !select) return;
       const cfg = MULTI_CONFIG[id] || {};
       const selecionados = Array.from(select.selectedOptions).map(opt => opt.value);
-      const limiteChipsAbertos = 8;
-      const exibirChips = ref.root.classList.contains('open') && selecionados.length > 0 && selecionados.length <= limiteChipsAbertos;
-
-      if (exibirChips) {
-        ref.value.innerHTML = selecionados.map(item => `<span class="chip">${escapeHtml(item)} <span class="chip-remove" role="button" tabindex="0" aria-label="Remover ${escapeHtml(item)}" data-remove-id="${escapeHtml(id)}" data-remove-value="${escapeHtml(item)}">✕</span></span>`).join('');
-        return;
+      if (ref.root.classList.contains('open')) {
+        ref.value.innerHTML = selecionados.length
+          ? selecionados.map(item => `<span class="chip">${escapeHtml(item)} <span class="chip-remove" role="button" tabindex="0" aria-label="Remover ${escapeHtml(item)}" data-remove-id="${escapeHtml(id)}" data-remove-value="${escapeHtml(item)}">✕</span></span>`).join('')
+          : `<span class="multi-select-summary" title="${escapeHtml(getTooltipResumo(cfg, selecionados))}">${escapeHtml(getResumoInteligente(cfg.tipo, selecionados))}</span>`;
+      } else {
+        ref.value.innerHTML = `<span class="multi-select-summary" title="${escapeHtml(getTooltipResumo(cfg, selecionados))}">${escapeHtml(getResumoInteligente(cfg.tipo, selecionados))}</span>`;
       }
-
-      ref.value.innerHTML = `<span class="multi-select-summary" title="${escapeHtml(getTooltipResumo(cfg, selecionados))}">${escapeHtml(getResumoInteligente(cfg.tipo, selecionados))}</span>`;
     }
 
     function atualizarMultiSelect(id) {
@@ -3463,8 +3427,6 @@
     async function exportarFilaComoPdf(container, nomeArquivo) {
       const html2pdf = await getHtml2Pdf();
       await aguardarEstabilidadeVisual();
-      const larguraRender = Math.max(container.scrollWidth, container.offsetWidth, 794);
-      const alturaRender = Math.max(container.scrollHeight, container.offsetHeight, 1123);
 
       await html2pdf().set({
         margin: [0, 0, 0, 0],
@@ -3473,31 +3435,12 @@
         html2canvas: {
           scale: 2,
           useCORS: true,
-          backgroundColor: '#ffffff',
-          windowWidth: larguraRender,
-          windowHeight: alturaRender
+          scrollY: 0,
+          backgroundColor: '#ffffff'
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['css', 'legacy'] }
       }).from(container).save();
-    }
-
-    function criarContainerExportacaoPdf() {
-      const container = document.createElement('section');
-      container.className = 'report-stack';
-      container.style.position = 'fixed';
-      container.style.top = '0';
-      container.style.left = '0';
-      container.style.width = '210mm';
-      container.style.minHeight = '297mm';
-      container.style.opacity = '0.01';
-      container.style.pointerEvents = 'none';
-      container.style.background = '#ffffff';
-      container.style.zIndex = '-1';
-      container.style.overflow = 'visible';
-      container.style.transform = 'none';
-      container.style.contain = 'layout style';
-      return container;
     }
 
     function criarCloneBoletimComCanvas() {
@@ -3538,7 +3481,15 @@
       const boletimEstavaOculto = boletim.classList.contains('hidden');
       const preview = document.getElementById('preview-geracao');
       const nomeArquivo = `boletins-fila-${filaBoletins.length}-itens.pdf`;
-      const container = criarContainerExportacaoPdf();
+      const container = document.createElement('section');
+      container.className = 'report-stack';
+      container.style.position = 'fixed';
+      container.style.top = '0';
+      container.style.left = '-99999px';
+      container.style.width = '210mm';
+      container.style.opacity = '1';
+      container.style.pointerEvents = 'none';
+      container.style.zIndex = '-1';
       document.body.appendChild(container);
 
       try {
@@ -3580,18 +3531,9 @@
       }
     }
 
-    function definirEstadoBotaoBaixar(emProcessamento) {
-      const btnBaixar = document.getElementById('btn-baixar');
-      if (!btnBaixar) return;
-      btnBaixar.disabled = emProcessamento;
-      btnBaixar.textContent = emProcessamento ? 'Gerando PDF...' : 'Baixar PDF';
-      btnBaixar.setAttribute('aria-busy', emProcessamento ? 'true' : 'false');
-    }
-
     async function baixarPDF() {
-      if (!boletimGerado || exportacaoPdfEmAndamento) return;
-
-      const loading = document.getElementById('loading');
+      if (!boletimGerado) return;
+      const elemento = document.getElementById('boletim');
       const filtros = obterFiltrosTela();
       const anoCosepArquivo = filtros.anosCosep.length ? filtros.anosCosep.join('-') : 'todos';
       const mesCosepArquivo = filtros.mesesCosep.length ? filtros.mesesCosep.join('-') : 'todos';
@@ -3599,67 +3541,23 @@
       const mesNotificaArquivo = filtros.mesesNotifica.length ? filtros.mesesNotifica.join('-') : 'todos';
       const nomeArquivo = `boletim-seguranca-paciente-${mesCosepArquivo}-${anoCosepArquivo}-notifica-${mesNotificaArquivo}-${anoNotificaArquivo}.pdf`;
 
-      const clone = criarCloneBoletimComCanvas();
-      clone.querySelectorAll('.document-page.hidden, .summary-row.hidden').forEach((el) => el.remove());
-
-      if (!clone.querySelector('.document-page')) {
-        if (loading) {
-          loading.classList.remove('hidden');
-          loading.textContent = 'Não há páginas com dados para exportar em PDF.';
-        }
-        return;
-      }
-
-      const container = criarContainerExportacaoPdf();
-      container.appendChild(clone);
-      document.body.appendChild(container);
-
-      exportacaoPdfEmAndamento = true;
-      definirEstadoBotaoBaixar(true);
-      if (loading) {
-        loading.classList.remove('hidden');
-        loading.textContent = 'Preparando PDF...';
-      }
-
       document.body.classList.add('pdf-export');
+      const html2pdf = await getHtml2Pdf();
+      await aguardarRender();
 
       try {
-        await aguardarEstabilidadeVisual();
-        await aguardarRender(140);
-
-        const primeiraPagina = container.querySelector('.document-page');
-        if (!primeiraPagina || primeiraPagina.offsetHeight === 0 || container.scrollHeight === 0) {
-          throw new Error('Layout do boletim ainda não estabilizou para exportação.');
-        }
-
-        const html2pdf = await getHtml2Pdf();
         await html2pdf().set({
           margin: [0, 0, 0, 0],
           filename: nomeArquivo,
           image: { type: 'png', quality: 1 },
-          html2canvas: { scale: 3, useCORS: true, backgroundColor: '#ffffff', windowWidth: Math.max(container.scrollWidth, 794), windowHeight: Math.max(container.scrollHeight, 1123) },
+          html2canvas: { scale: 3, useCORS: true, scrollY: 0, backgroundColor: '#ffffff' },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
           pagebreak: { mode: ['css', 'legacy'] }
-        }).from(container).save();
-
-        if (loading) {
-          loading.classList.add('hidden');
-          loading.textContent = 'Selecione os filtros e clique em “Gerar boletim”.';
-        }
-      } catch (erro) {
-        if (loading) {
-          loading.classList.remove('hidden');
-          loading.textContent = 'Não foi possível baixar o PDF agora. Tente novamente.';
-        }
-        console.error(erro);
+        }).from(elemento).save();
       } finally {
-        exportacaoPdfEmAndamento = false;
-        definirEstadoBotaoBaixar(false);
         document.body.classList.remove('pdf-export');
-        container.remove();
       }
     }
-
 
     init();
   </script>
