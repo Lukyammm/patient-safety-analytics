@@ -3463,6 +3463,8 @@
     async function exportarFilaComoPdf(container, nomeArquivo) {
       const html2pdf = await getHtml2Pdf();
       await aguardarEstabilidadeVisual();
+      const larguraRender = Math.max(container.scrollWidth, container.offsetWidth, 794);
+      const alturaRender = Math.max(container.scrollHeight, container.offsetHeight, 1123);
 
       await html2pdf().set({
         margin: [0, 0, 0, 0],
@@ -3471,12 +3473,31 @@
         html2canvas: {
           scale: 2,
           useCORS: true,
-          scrollY: 0,
-          backgroundColor: '#ffffff'
+          backgroundColor: '#ffffff',
+          windowWidth: larguraRender,
+          windowHeight: alturaRender
         },
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['css', 'legacy'] }
       }).from(container).save();
+    }
+
+    function criarContainerExportacaoPdf() {
+      const container = document.createElement('section');
+      container.className = 'report-stack';
+      container.style.position = 'fixed';
+      container.style.top = '0';
+      container.style.left = '0';
+      container.style.width = '210mm';
+      container.style.minHeight = '297mm';
+      container.style.opacity = '0.01';
+      container.style.pointerEvents = 'none';
+      container.style.background = '#ffffff';
+      container.style.zIndex = '-1';
+      container.style.overflow = 'visible';
+      container.style.transform = 'none';
+      container.style.contain = 'layout style';
+      return container;
     }
 
     function criarCloneBoletimComCanvas() {
@@ -3517,17 +3538,7 @@
       const boletimEstavaOculto = boletim.classList.contains('hidden');
       const preview = document.getElementById('preview-geracao');
       const nomeArquivo = `boletins-fila-${filaBoletins.length}-itens.pdf`;
-      const container = document.createElement('section');
-      container.className = 'report-stack';
-      container.style.position = 'fixed';
-      container.style.top = '0';
-      container.style.left = '-10000px';
-      container.style.width = '210mm';
-      container.style.pointerEvents = 'none';
-      container.style.opacity = '1';
-      container.style.transform = 'none';
-      container.style.background = '#ffffff';
-      container.style.zIndex = '99999';
+      const container = criarContainerExportacaoPdf();
       document.body.appendChild(container);
 
       try {
@@ -3599,17 +3610,7 @@
         return;
       }
 
-      const container = document.createElement('section');
-      container.className = 'report-stack';
-      container.style.position = 'fixed';
-      container.style.top = '0';
-      container.style.left = '-10000px';
-      container.style.width = '210mm';
-      container.style.opacity = '1';
-      container.style.transform = 'none';
-      container.style.pointerEvents = 'none';
-      container.style.background = '#ffffff';
-      container.style.zIndex = '99999';
+      const container = criarContainerExportacaoPdf();
       container.appendChild(clone);
       document.body.appendChild(container);
 
@@ -3636,7 +3637,7 @@
           margin: [0, 0, 0, 0],
           filename: nomeArquivo,
           image: { type: 'png', quality: 1 },
-          html2canvas: { scale: 3, useCORS: true, scrollY: 0, backgroundColor: '#ffffff' },
+          html2canvas: { scale: 3, useCORS: true, backgroundColor: '#ffffff', windowWidth: Math.max(container.scrollWidth, 794), windowHeight: Math.max(container.scrollHeight, 1123) },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
           pagebreak: { mode: ['css', 'legacy'] }
         }).from(container).save();
