@@ -2107,6 +2107,7 @@
     let boletimGerado = false;
     let filaBoletins = [];
     let html2pdfLoader = null;
+    let exportacaoPdfEmAndamento = false;
     let buscaFiltrosConfigurada = false;
     let tabsConfiguradas = false;
     let listenersFiltrosConfigurados = false;
@@ -3568,9 +3569,17 @@
       }
     }
 
+    function definirEstadoBotaoBaixar(emProcessamento) {
+      const btnBaixar = document.getElementById('btn-baixar');
+      if (!btnBaixar) return;
+      btnBaixar.disabled = emProcessamento;
+      btnBaixar.textContent = emProcessamento ? 'Gerando PDF...' : 'Baixar PDF';
+      btnBaixar.setAttribute('aria-busy', emProcessamento ? 'true' : 'false');
+    }
+
     async function baixarPDF() {
-      if (!boletimGerado) return;
-      const elemento = document.getElementById('boletim');
+      if (!boletimGerado || exportacaoPdfEmAndamento) return;
+
       const loading = document.getElementById('loading');
       const filtros = obterFiltrosTela();
       const anoCosepArquivo = filtros.anosCosep.length ? filtros.anosCosep.join('-') : 'todos';
@@ -3604,10 +3613,24 @@
       container.appendChild(clone);
       document.body.appendChild(container);
 
+      exportacaoPdfEmAndamento = true;
+      definirEstadoBotaoBaixar(true);
+      if (loading) {
+        loading.classList.remove('hidden');
+        loading.textContent = 'Preparando PDF...';
+      }
+
       document.body.classList.add('pdf-export');
-      await aguardarEstabilidadeVisual();
 
       try {
+        await aguardarEstabilidadeVisual();
+        await aguardarRender(140);
+
+        const primeiraPagina = container.querySelector('.document-page');
+        if (!primeiraPagina || primeiraPagina.offsetHeight === 0 || container.scrollHeight === 0) {
+          throw new Error('Layout do boletim ainda não estabilizou para exportação.');
+        }
+
         const html2pdf = await getHtml2Pdf();
         await html2pdf().set({
           margin: [0, 0, 0, 0],
@@ -3617,6 +3640,11 @@
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
           pagebreak: { mode: ['css', 'legacy'] }
         }).from(container).save();
+
+        if (loading) {
+          loading.classList.add('hidden');
+          loading.textContent = 'Selecione os filtros e clique em “Gerar boletim”.';
+        }
       } catch (erro) {
         if (loading) {
           loading.classList.remove('hidden');
@@ -3624,10 +3652,13 @@
         }
         console.error(erro);
       } finally {
+        exportacaoPdfEmAndamento = false;
+        definirEstadoBotaoBaixar(false);
         document.body.classList.remove('pdf-export');
         container.remove();
       }
     }
+
 
     init();
   </script>
