@@ -2338,10 +2338,9 @@
 
     function existeFiltroMinimo() {
       const filtros = obterFiltrosTela();
-      return Boolean(
-        filtros.anosCosep.length && filtros.mesesCosep.length &&
-        filtros.anosNotifica.length && filtros.mesesNotifica.length
-      );
+      const caminhadasPreenchido = filtros.anosCosep.length && filtros.mesesCosep.length;
+      const notificacoesPreenchido = filtros.anosNotifica.length && filtros.mesesNotifica.length;
+      return Boolean(caminhadasPreenchido || notificacoesPreenchido);
     }
 
     function atualizarEstadoAcoes() {
