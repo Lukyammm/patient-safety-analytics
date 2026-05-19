@@ -400,9 +400,9 @@ function processarCaminhadas(ss, filtros) {
   });
 
   metas.forEach(meta => {
-    meta.percentual = meta.avaliados ? Number(((meta.conformes / meta.avaliados) * 100).toFixed(1)) : 0;
+    meta.percentual = meta.avaliados ? Number(((meta.conformes / meta.avaliados) * 100).toFixed(1)) : null;
     meta.itens.forEach(item => {
-      item.percentual = item.avaliados ? Number(((item.conformes / item.avaliados) * 100).toFixed(1)) : 0;
+      item.percentual = item.avaliados ? Number(((item.conformes / item.avaliados) * 100).toFixed(1)) : null;
     });
     meta.observacoes = meta.observacoes.slice(0, 3);
   });

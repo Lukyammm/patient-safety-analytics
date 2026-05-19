@@ -2245,7 +2245,8 @@
     }
 
     function formatPct(value) {
-      return `${Number(value || 0).toFixed(1)}%`;
+      if (value == null || value === '' || Number.isNaN(Number(value))) return '-';
+      return `${Number(value).toFixed(1)}%`;
     }
 
     function ordenarEntriesDesc(entries) {
