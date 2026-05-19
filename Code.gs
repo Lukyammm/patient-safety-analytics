@@ -145,6 +145,67 @@ function doGet(e) {
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
+function doPost(e) {
+  try {
+    const body = e && e.postData && e.postData.contents ? JSON.parse(e.postData.contents) : {};
+    const action = String(body.action || '').trim();
+
+    if (action === 'deleteBusinessRecord') {
+      return responderJSON(excluirRegistroNegocio(body));
+    }
+
+    return responderJSON({ success: false, message: 'Ação inválida.' });
+  } catch (error) {
+    return responderJSON({ success: false, message: error.message || 'Erro ao processar solicitação.' });
+  }
+}
+
+function responderJSON(payload) {
+  return ContentService
+    .createTextOutput(JSON.stringify(payload || {}))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function excluirRegistroNegocio(params) {
+  const configMap = {
+    processos: { aba: 'PROCESSOS', primeiraLinhaDados: 2 },
+    acompanhamento: { aba: 'ACOMPANHAMENTO', primeiraLinhaDados: 2 },
+    indicadores: { aba: 'INDICADORES', primeiraLinhaDados: 2 }
+  };
+
+  const tipo = normalizarTexto(params && params.tipo).toLowerCase();
+  const config = configMap[tipo];
+  if (!config) {
+    throw new Error('Tipo de registro inválido. Use: processos, acompanhamento ou indicadores.');
+  }
+
+  const linha = Number(params && params.linha);
+  if (!Number.isInteger(linha) || linha < config.primeiraLinhaDados) {
+    throw new Error(`Linha inválida para ${tipo}. Informe um número maior ou igual a ${config.primeiraLinhaDados}.`);
+  }
+
+  const ss = SpreadsheetApp.openById(ID_PLANILHA);
+  const sh = ss.getSheetByName(config.aba);
+  if (!sh) {
+    throw new Error(`A aba ${config.aba} não foi encontrada na planilha.`);
+  }
+
+  const ultimaLinha = sh.getLastRow();
+  if (linha > ultimaLinha) {
+    throw new Error(`Linha ${linha} inexistente na aba ${config.aba}. Última linha disponível: ${ultimaLinha}.`);
+  }
+
+  sh.deleteRow(linha);
+
+  return {
+    success: true,
+    message: `Registro excluído com sucesso da aba ${config.aba}, linha ${linha}.`,
+    tipo,
+    aba: config.aba,
+    linha
+  };
+}
+
 function extrairFiltros(params) {
   const bruto = params || {};
   return {
