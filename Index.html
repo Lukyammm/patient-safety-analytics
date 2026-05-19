@@ -1704,22 +1704,6 @@
       }
     }
 
-
-    .input-mini {
-      width: 100%;
-      border: 1px solid rgba(186, 202, 209, 0.95);
-      border-radius: 10px;
-      padding: 10px 12px;
-      font: inherit;
-      background: #fff;
-      color: #1f2a30;
-    }
-
-    #delete-feedback {
-      color: #5f6d75;
-      line-height: 1.4;
-    }
-
     @media print {
       body { background: #fff; }
       .hero-card, .loading-box { display: none !important; }
@@ -1895,22 +1879,6 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="m19 6-1 14H6L5 6"></path></svg>
               <span>Limpar filtros</span>
             </button>
-          </section>
-
-
-          <section class="action-group">
-            <h4>Exclusão operacional</h4>
-            <select id="delete-tipo" class="input-mini">
-              <option value="processos">Processos</option>
-              <option value="acompanhamento">Acompanhamento</option>
-              <option value="indicadores">Indicadores</option>
-            </select>
-            <input type="number" id="delete-linha" class="input-mini" min="2" placeholder="Linha da planilha (ex.: 12)">
-            <button type="button" class="btn" id="btn-excluir-registro" onclick="excluirRegistroOperacional()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="m19 6-1 14H6L5 6"></path></svg>
-              <span>Excluir registro</span>
-            </button>
-            <small id="delete-feedback">Exclusão controlada direto no app, sem editar planilha manualmente.</small>
           </section>
 
           <section class="queue-box" id="queue-box">
@@ -3155,37 +3123,6 @@
           preview.innerHTML = '<strong>Preview rápido</strong><p>Não foi possível atualizar o preview nesta tentativa.</p>';
         }
         console.error(erro);
-      }
-    }
-
-
-    async function excluirRegistroOperacional() {
-      const tipo = (document.getElementById('delete-tipo') || {}).value || '';
-      const linha = Number((document.getElementById('delete-linha') || {}).value || 0);
-      const feedback = document.getElementById('delete-feedback');
-      if (!tipo || !Number.isInteger(linha) || linha < 2) {
-        if (feedback) feedback.textContent = 'Informe tipo e linha válida (mínimo 2).';
-        return;
-      }
-
-      if (!window.confirm(`Confirma excluir o registro de ${tipo} na linha ${linha}? Esta ação é permanente.`)) {
-        return;
-      }
-
-      try {
-        if (feedback) feedback.textContent = 'Excluindo registro...';
-        const resp = await fetch(window.location.href, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'deleteBusinessRecord', tipo, linha })
-        });
-        const data = await resp.json();
-        if (!resp.ok || !data.success) {
-          throw new Error((data && data.message) || 'Falha ao excluir registro.');
-        }
-        if (feedback) feedback.textContent = data.message || 'Registro excluído com sucesso.';
-      } catch (error) {
-        if (feedback) feedback.textContent = `Erro: ${error.message || 'não foi possível excluir.'}`;
       }
     }
 
