@@ -302,6 +302,60 @@ function getFiltros(ss) {
   };
 }
 
+
+function ehMesmoSetor(nomeSetor, referencia) {
+  return normalizarTexto(nomeSetor) === normalizarTexto(referencia);
+}
+
+function aplicarExcecaoMeta4CentroCirurgico(metas, linhas, filtros) {
+  const setoresSelecionados = (filtros.unidades || []).map(item => String(item || '').trim()).filter(Boolean);
+  const selecionouB2 = setoresSelecionados.some(setor => ehMesmoSetor(setor, 'B2 - Centro Cirúrgico'));
+  if (!selecionouB2) return;
+
+  const meta4 = metas.find(meta => meta.codigo === '4');
+  if (!meta4 || meta4.avaliados > 0) return;
+
+  const anoFiltro = new Set((filtros.anos || []).map(normalizarAno).filter(Boolean));
+  const mesFiltro = new Set((filtros.meses || []).map(normalizarMes).filter(Boolean));
+
+  meta4.avaliados = 0;
+  meta4.conformes = 0;
+  meta4.naoConformes = 0;
+  meta4.itens.forEach(item => {
+    item.avaliados = 0;
+    item.conformes = 0;
+    item.naoConformes = 0;
+  });
+
+  linhas
+    .filter(row => !anoFiltro.size || anoFiltro.has(normalizarAno(row[3])))
+    .filter(row => !mesFiltro.size || mesFiltro.has(normalizarMes(row[2])))
+    .filter(row => !ehMesmoSetor(getUnidade(row), 'C6 - Clínica Obstétrica e Hemodinâmica'))
+    .forEach(row => {
+      METAS_CAMINHADAS[3].itens.forEach((itemDef, itemIndex) => {
+        const valor = row[itemDef.idx];
+        const item = meta4.itens[itemIndex];
+
+        if (ehSim(valor)) {
+          item.conformes++;
+          item.avaliados++;
+          meta4.conformes++;
+          meta4.avaliados++;
+        } else if (ehNao(valor)) {
+          item.naoConformes++;
+          item.avaliados++;
+          meta4.naoConformes++;
+          meta4.avaliados++;
+        }
+      });
+    });
+
+  meta4.percentual = meta4.avaliados ? Number(((meta4.conformes / meta4.avaliados) * 100).toFixed(1)) : null;
+  meta4.itens.forEach(item => {
+    item.percentual = item.avaliados ? Number(((item.conformes / item.avaliados) * 100).toFixed(1)) : null;
+  });
+}
+
 function processarCaminhadas(ss, filtros) {
   const sh = ss.getSheetByName(ABA_CAMINHADAS);
   const linhas = sh.getDataRange().getValues().slice(1);
@@ -452,6 +506,8 @@ function processarCaminhadas(ss, filtros) {
   const unidadesOrdenadas = Object.entries(porUnidade)
     .sort((a, b) => b[1] - a[1])
     .map(([nome, quantidade]) => ({ nome, quantidade }));
+
+  aplicarExcecaoMeta4CentroCirurgico(metas, linhas, filtros);
 
   const metasCriticas = metas
     .slice()
