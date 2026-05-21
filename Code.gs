@@ -1,6 +1,7 @@
 const ID_PLANILHA = '1XUtI9TSMJmTpbtfLjZbJ-uarRN94lu_Aqpsc46Lxmt4';
 const ABA_CAMINHADAS = 'BASE DE DADOS CAMINHADAS';
 const ABA_NOTIFICA = 'NOTIFICA - BASE';
+const ABA_EXCECOES = 'CONFIG - EXCECOES';
 const META_INSTITUCIONAL = 80;
 const FUSO_HORARIO = 'America/Fortaleza';
 const ORDEM_MESES = {
@@ -307,29 +308,128 @@ function ehMesmoSetor(nomeSetor, referencia) {
   return normalizarTexto(nomeSetor) === normalizarTexto(referencia);
 }
 
-function montarSetoresExcecaoMeta4(setoresSelecionados) {
+const EXCECOES_PADRAO = [
+  {
+    regraId: 'META4_B2_CC',
+    nome: 'Cirurgia Segura - B2 Centro Cirúrgico',
+    ativo: true,
+    metaCodigo: '4',
+    origemSetor: 'B2 - Centro Cirúrgico',
+    setorDestino: 'A6 - Clínica Cirúrgica (Geral/Digestiva)'
+  },
+  {
+    regraId: 'META4_B2_CC_ONCO',
+    nome: 'Cirurgia Segura - B2 Centro Cirúrgico',
+    ativo: true,
+    metaCodigo: '4',
+    origemSetor: 'B2 - Centro Cirúrgico',
+    setorDestino: 'B5 - Clínica Cirúrgica Oncológica'
+  },
+  {
+    regraId: 'META4_B2_CC_CP',
+    nome: 'Cirurgia Segura - B2 Centro Cirúrgico',
+    ativo: true,
+    metaCodigo: '4',
+    origemSetor: 'B2 - Centro Cirúrgico',
+    setorDestino: 'B6 - Cabeça e Pescoço'
+  },
+  {
+    regraId: 'META4_B2_CC_URO',
+    nome: 'Cirurgia Segura - B2 Centro Cirúrgico',
+    ativo: true,
+    metaCodigo: '4',
+    origemSetor: 'B2 - Centro Cirúrgico',
+    setorDestino: 'B6 - Urologia'
+  },
+  {
+    regraId: 'META4_B2_CC_ORTO',
+    nome: 'Cirurgia Segura - B2 Centro Cirúrgico',
+    ativo: true,
+    metaCodigo: '4',
+    origemSetor: 'B2 - Centro Cirúrgico',
+    setorDestino: 'C7 - Clínica Ortopédica'
+  },
+  {
+    regraId: 'META4_B6_VASC',
+    nome: 'Cirurgia Segura - B6 Vascular',
+    ativo: true,
+    metaCodigo: '4',
+    origemSetor: 'B6 - Clínica Cirúrgica Vascular',
+    setorDestino: 'Hemodinâmica'
+  },
+  {
+    regraId: 'META4_C3_CCO',
+    nome: 'Cirurgia Segura - C3 Centro Cirúrgico Obstétrico',
+    ativo: true,
+    metaCodigo: '4',
+    origemSetor: 'C3 - Centro Cirúrgico Obstétrico',
+    setorDestino: 'C6 - Clínica Ginecológica'
+  },
+  {
+    regraId: 'META4_C3_CCO_OBS',
+    nome: 'Cirurgia Segura - C3 Centro Cirúrgico Obstétrico',
+    ativo: true,
+    metaCodigo: '4',
+    origemSetor: 'C3 - Centro Cirúrgico Obstétrico',
+    setorDestino: 'C6 - Clínica Obstétrica'
+  }
+];
+
+function garantirAbaExcecoes(ss) {
+  let sh = ss.getSheetByName(ABA_EXCECOES);
+  if (!sh) {
+    sh = ss.insertSheet(ABA_EXCECOES);
+  }
+
+  const headers = ['regraId', 'nome', 'ativo', 'metaCodigo', 'origemSetor', 'setorDestino', 'origem'];
+  const primeiraLinha = sh.getRange(1, 1, 1, headers.length).getValues()[0];
+  const precisaHeader = primeiraLinha.every(col => !String(col || '').trim());
+  if (precisaHeader) {
+    sh.getRange(1, 1, 1, headers.length).setValues([headers]);
+  }
+
+  return sh;
+}
+
+function semearExcecoesPadrao(shExcecoes) {
+  const dados = shExcecoes.getDataRange().getValues();
+  const existentes = new Set(dados.slice(1).map(row => String(row[0] || '').trim()).filter(Boolean));
+  const novas = EXCECOES_PADRAO
+    .filter(regra => !existentes.has(regra.regraId))
+    .map(regra => [regra.regraId, regra.nome, regra.ativo ? 'SIM' : 'NAO', regra.metaCodigo, regra.origemSetor, regra.setorDestino, 'seed_codigo']);
+
+  if (novas.length) {
+    const start = shExcecoes.getLastRow() + 1;
+    shExcecoes.getRange(start, 1, novas.length, novas[0].length).setValues(novas);
+  }
+}
+
+function obterExcecoesAtivas(ss) {
+  const shExcecoes = garantirAbaExcecoes(ss);
+  semearExcecoesPadrao(shExcecoes);
+
+  const linhas = shExcecoes.getDataRange().getValues().slice(1);
+  return linhas
+    .map(row => ({
+      regraId: String(row[0] || '').trim(),
+      nome: String(row[1] || '').trim(),
+      ativo: ehSim(row[2]),
+      metaCodigo: String(row[3] || '').trim(),
+      origemSetor: String(row[4] || '').trim(),
+      setorDestino: String(row[5] || '').trim()
+    }))
+    .filter(item => item.ativo && item.metaCodigo && item.origemSetor && item.setorDestino);
+}
+
+function montarSetoresExcecaoMeta(setoresSelecionados, metaCodigo, excecoesAtivas) {
   const setoresExcecao = [];
+  const regrasMeta = (excecoesAtivas || []).filter(item => String(item.metaCodigo || '') === String(metaCodigo || ''));
 
-  if (setoresSelecionados.some(setor => ehMesmoSetor(setor, 'B2 - Centro Cirúrgico'))) {
-    setoresExcecao.push(
-      'A6 - Clínica Cirúrgica (Geral/Digestiva)',
-      'B5 - Clínica Cirúrgica Oncológica',
-      'B6 - Cabeça e Pescoço',
-      'B6 - Urologia',
-      'C7 - Clínica Ortopédica'
-    );
-  }
-
-  if (setoresSelecionados.some(setor => ehMesmoSetor(setor, 'B6 - Clínica Cirúrgica Vascular'))) {
-    setoresExcecao.push('Hemodinâmica');
-  }
-
-  if (setoresSelecionados.some(setor => ehMesmoSetor(setor, 'C3 - Centro Cirúrgico Obstétrico'))) {
-    setoresExcecao.push(
-      'C6 - Clínica Ginecológica',
-      'C6 - Clínica Obstétrica'
-    );
-  }
+  regrasMeta.forEach(regra => {
+    if (setoresSelecionados.some(setor => ehMesmoSetor(setor, regra.origemSetor))) {
+      setoresExcecao.push(regra.setorDestino);
+    }
+  });
 
   const mapaSetores = {};
   setoresExcecao.forEach(setor => {
@@ -339,22 +439,25 @@ function montarSetoresExcecaoMeta4(setoresSelecionados) {
   return mapaSetores;
 }
 
-function aplicarExcecaoMeta4CentroCirurgico(metas, linhas, filtros) {
+function aplicarExcecaoPorMeta(metas, linhas, filtros, metaCodigo, excecoesAtivas) {
   const setoresSelecionados = (filtros.unidades || []).map(item => String(item || '').trim()).filter(Boolean);
-  const setoresExcecao = montarSetoresExcecaoMeta4(setoresSelecionados);
+  const setoresExcecao = montarSetoresExcecaoMeta(setoresSelecionados, metaCodigo, excecoesAtivas);
   const chavesSetoresExcecao = Object.keys(setoresExcecao);
   if (!chavesSetoresExcecao.length) return;
 
-  const meta4 = metas.find(meta => meta.codigo === '4');
-  if (!meta4) return;
+  const metaAlvo = metas.find(meta => String(meta.codigo) === String(metaCodigo));
+  if (!metaAlvo) return;
 
   const anoFiltro = new Set((filtros.anos || []).map(normalizarAno).filter(Boolean));
   const mesFiltro = new Set((filtros.meses || []).map(normalizarMes).filter(Boolean));
 
-  meta4.avaliados = 0;
-  meta4.conformes = 0;
-  meta4.naoConformes = 0;
-  meta4.itens.forEach(item => {
+  const indiceMeta = METAS_CAMINHADAS.findIndex(meta => String(meta.codigo) === String(metaCodigo));
+  if (indiceMeta < 0) return;
+
+  metaAlvo.avaliados = 0;
+  metaAlvo.conformes = 0;
+  metaAlvo.naoConformes = 0;
+  metaAlvo.itens.forEach(item => {
     item.avaliados = 0;
     item.conformes = 0;
     item.naoConformes = 0;
@@ -365,26 +468,26 @@ function aplicarExcecaoMeta4CentroCirurgico(metas, linhas, filtros) {
     .filter(row => !mesFiltro.size || mesFiltro.has(normalizarMes(row[2])))
     .filter(row => chavesSetoresExcecao.includes(normalizarTexto(getUnidade(row))))
     .forEach(row => {
-      METAS_CAMINHADAS[3].itens.forEach((itemDef, itemIndex) => {
+      METAS_CAMINHADAS[indiceMeta].itens.forEach((itemDef, itemIndex) => {
         const valor = row[itemDef.idx];
-        const item = meta4.itens[itemIndex];
+        const item = metaAlvo.itens[itemIndex];
 
         if (ehSim(valor)) {
           item.conformes++;
           item.avaliados++;
-          meta4.conformes++;
-          meta4.avaliados++;
+          metaAlvo.conformes++;
+          metaAlvo.avaliados++;
         } else if (ehNao(valor)) {
           item.naoConformes++;
           item.avaliados++;
-          meta4.naoConformes++;
-          meta4.avaliados++;
+          metaAlvo.naoConformes++;
+          metaAlvo.avaliados++;
         }
       });
     });
 
-  meta4.percentual = meta4.avaliados ? Number(((meta4.conformes / meta4.avaliados) * 100).toFixed(1)) : null;
-  meta4.itens.forEach(item => {
+  metaAlvo.percentual = metaAlvo.avaliados ? Number(((metaAlvo.conformes / metaAlvo.avaliados) * 100).toFixed(1)) : null;
+  metaAlvo.itens.forEach(item => {
     item.percentual = item.avaliados ? Number(((item.conformes / item.avaliados) * 100).toFixed(1)) : null;
   });
 }
@@ -540,7 +643,11 @@ function processarCaminhadas(ss, filtros) {
     .sort((a, b) => b[1] - a[1])
     .map(([nome, quantidade]) => ({ nome, quantidade }));
 
-  aplicarExcecaoMeta4CentroCirurgico(metas, linhas, filtros);
+  const excecoesAtivas = obterExcecoesAtivas(ss);
+  const metasComExcecao = [...new Set(excecoesAtivas.map(item => String(item.metaCodigo || '')).filter(Boolean))];
+  metasComExcecao.forEach(metaCodigo => {
+    aplicarExcecaoPorMeta(metas, linhas, filtros, metaCodigo, excecoesAtivas);
+  });
 
   const metasCriticas = metas
     .slice()
