@@ -143,6 +143,14 @@
       outline: none;
     }
 
+    .top-menu-link.is-hidden-feature {
+      display: none;
+    }
+
+    .top-menu-link.is-hidden-feature.enabled {
+      display: inline-flex;
+    }
+
     @media (max-width: 680px) {
       .top-menu-wrap {
         justify-content: center;
@@ -1768,6 +1776,7 @@
             <span class="top-menu-toggle" aria-hidden="true"><i class="fa-solid fa-bars"></i></span>
             <div class="top-menu-links">
               <a class="top-menu-link" href="#pagina-cosep">COSEP</a>
+              <a class="top-menu-link is-hidden-feature" href="#" id="btn-menu-gestor" aria-label="Abrir gestor de exceções">Gestor de Exceções</a>
               <a class="top-menu-link" href="https://script.google.com/macros/s/AKfycbyrFcu7qj-Ydr2nwWqaaYpzntLct0jjN2ylXnrL5hXP5vWuiYcG_c4LYVVilFvJy-tadg/exec" target="_blank" rel="noopener noreferrer">Painel NUGESP</a>
             </div>
           </div>
@@ -2083,13 +2092,23 @@
         </footer>
       </article>
     </section>
-  </main>
+  
+    <section id="painel-gestor-excecoes" class="hero-card hidden" aria-live="polite">
+      <header class="hero-header"><h1>Gestor de Exceções</h1><p>Gerencie exceções e grupos operacionais.</p></header>
+      <div class="section-divider"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+        <div><h3>Exceções</h3><div id="gestor-excecoes-lista"></div></div>
+        <div><h3>Grupos Operacionais</h3><div id="gestor-grupos-lista"></div></div>
+      </div>
+    </section>
+</main>
 
   <script>
     let chartEvolucao = null;
     let chartAfetou = null;
     let chartRespostaMeta5 = null;
     let chartRespostaMeta10 = null;
+    const FEATURE_MENU_GESTOR_EXCECOES = true;
     let boletimGerado = false;
     let filaBoletins = [];
     let html2pdfLoader = null;
@@ -2242,6 +2261,17 @@
       restaurarUltimosFiltros();
       atualizarContadoresFiltros();
       atualizarEstadoAcoes();
+    }
+
+    function inicializarMenuGestorExcecoes() {
+      const botaoGestor = document.getElementById('btn-menu-gestor');
+      if (!botaoGestor) return;
+
+      botaoGestor.classList.toggle('enabled', FEATURE_MENU_GESTOR_EXCECOES);
+      botaoGestor.addEventListener('click', (event) => {
+        event.preventDefault();
+        abrirGestorExcecoes();
+      });
     }
 
     function formatPct(value) {
@@ -3369,8 +3399,33 @@
       tabsConfiguradas = true;
     }
 
+
+    function renderGestorListas(config) {
+      const ex = (config && config.excecoes) || [];
+      const gr = (config && config.grupos) || [];
+      const exBox = document.getElementById('gestor-excecoes-lista');
+      const grBox = document.getElementById('gestor-grupos-lista');
+      if (exBox) exBox.innerHTML = ex.map(item => `<div class="summary-pill">${escapeHtml(item.metaCodigo)} · ${escapeHtml(item.origemSetor)} → ${escapeHtml(item.setorDestino)} (${item.ativo ? 'Ativo' : 'Inativo'})</div>`).join('') || '<div class="summary-pill">Sem exceções</div>';
+      if (grBox) grBox.innerHTML = gr.map(item => `<div class="summary-pill">${escapeHtml(item.nomeExibicao)} · ${escapeHtml(item.setoresCsv)}</div>`).join('') || '<div class="summary-pill">Sem grupos</div>';
+    }
+
+    async function abrirGestorExcecoes() {
+      const painel = document.getElementById('painel-gestor-excecoes');
+      if (!painel) return;
+      painel.classList.remove('hidden');
+      try {
+        const config = await new Promise((resolve, reject) => {
+          google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).getGestorExcecoesConfig();
+        });
+        renderGestorListas(config);
+      } catch (e) {
+        mostrarAvisoFila('Erro ao carregar gestor de exceções.');
+      }
+    }
+
     async function init() {
       try {
+        inicializarMenuGestorExcecoes();
         const payload = await fetchAPIComRetry();
         preencherFiltros(payload.filtros || {});
         configurarBuscaFiltros();
