@@ -1,7 +1,6 @@
 const ID_PLANILHA = '1XUtI9TSMJmTpbtfLjZbJ-uarRN94lu_Aqpsc46Lxmt4';
 const ABA_CAMINHADAS = 'BASE DE DADOS CAMINHADAS';
 const ABA_NOTIFICA = 'NOTIFICA - BASE';
-const ABA_EXCECOES = 'CONFIG - EXCECOES';
 const META_INSTITUCIONAL = 80;
 const FUSO_HORARIO = 'America/Fortaleza';
 const ORDEM_MESES = {
@@ -308,128 +307,29 @@ function ehMesmoSetor(nomeSetor, referencia) {
   return normalizarTexto(nomeSetor) === normalizarTexto(referencia);
 }
 
-const EXCECOES_PADRAO = [
-  {
-    regraId: 'META4_B2_CC',
-    nome: 'Cirurgia Segura - B2 Centro Cirúrgico',
-    ativo: true,
-    metaCodigo: '4',
-    origemSetor: 'B2 - Centro Cirúrgico',
-    setorDestino: 'A6 - Clínica Cirúrgica (Geral/Digestiva)'
-  },
-  {
-    regraId: 'META4_B2_CC_ONCO',
-    nome: 'Cirurgia Segura - B2 Centro Cirúrgico',
-    ativo: true,
-    metaCodigo: '4',
-    origemSetor: 'B2 - Centro Cirúrgico',
-    setorDestino: 'B5 - Clínica Cirúrgica Oncológica'
-  },
-  {
-    regraId: 'META4_B2_CC_CP',
-    nome: 'Cirurgia Segura - B2 Centro Cirúrgico',
-    ativo: true,
-    metaCodigo: '4',
-    origemSetor: 'B2 - Centro Cirúrgico',
-    setorDestino: 'B6 - Cabeça e Pescoço'
-  },
-  {
-    regraId: 'META4_B2_CC_URO',
-    nome: 'Cirurgia Segura - B2 Centro Cirúrgico',
-    ativo: true,
-    metaCodigo: '4',
-    origemSetor: 'B2 - Centro Cirúrgico',
-    setorDestino: 'B6 - Urologia'
-  },
-  {
-    regraId: 'META4_B2_CC_ORTO',
-    nome: 'Cirurgia Segura - B2 Centro Cirúrgico',
-    ativo: true,
-    metaCodigo: '4',
-    origemSetor: 'B2 - Centro Cirúrgico',
-    setorDestino: 'C7 - Clínica Ortopédica'
-  },
-  {
-    regraId: 'META4_B6_VASC',
-    nome: 'Cirurgia Segura - B6 Vascular',
-    ativo: true,
-    metaCodigo: '4',
-    origemSetor: 'B6 - Clínica Cirúrgica Vascular',
-    setorDestino: 'Hemodinâmica'
-  },
-  {
-    regraId: 'META4_C3_CCO',
-    nome: 'Cirurgia Segura - C3 Centro Cirúrgico Obstétrico',
-    ativo: true,
-    metaCodigo: '4',
-    origemSetor: 'C3 - Centro Cirúrgico Obstétrico',
-    setorDestino: 'C6 - Clínica Ginecológica'
-  },
-  {
-    regraId: 'META4_C3_CCO_OBS',
-    nome: 'Cirurgia Segura - C3 Centro Cirúrgico Obstétrico',
-    ativo: true,
-    metaCodigo: '4',
-    origemSetor: 'C3 - Centro Cirúrgico Obstétrico',
-    setorDestino: 'C6 - Clínica Obstétrica'
-  }
-];
-
-function garantirAbaExcecoes(ss) {
-  let sh = ss.getSheetByName(ABA_EXCECOES);
-  if (!sh) {
-    sh = ss.insertSheet(ABA_EXCECOES);
-  }
-
-  const headers = ['regraId', 'nome', 'ativo', 'metaCodigo', 'origemSetor', 'setorDestino', 'origem'];
-  const primeiraLinha = sh.getRange(1, 1, 1, headers.length).getValues()[0];
-  const precisaHeader = primeiraLinha.every(col => !String(col || '').trim());
-  if (precisaHeader) {
-    sh.getRange(1, 1, 1, headers.length).setValues([headers]);
-  }
-
-  return sh;
-}
-
-function semearExcecoesPadrao(shExcecoes) {
-  const dados = shExcecoes.getDataRange().getValues();
-  const existentes = new Set(dados.slice(1).map(row => String(row[0] || '').trim()).filter(Boolean));
-  const novas = EXCECOES_PADRAO
-    .filter(regra => !existentes.has(regra.regraId))
-    .map(regra => [regra.regraId, regra.nome, regra.ativo ? 'SIM' : 'NAO', regra.metaCodigo, regra.origemSetor, regra.setorDestino, 'seed_codigo']);
-
-  if (novas.length) {
-    const start = shExcecoes.getLastRow() + 1;
-    shExcecoes.getRange(start, 1, novas.length, novas[0].length).setValues(novas);
-  }
-}
-
-function obterExcecoesAtivas(ss) {
-  const shExcecoes = garantirAbaExcecoes(ss);
-  semearExcecoesPadrao(shExcecoes);
-
-  const linhas = shExcecoes.getDataRange().getValues().slice(1);
-  return linhas
-    .map(row => ({
-      regraId: String(row[0] || '').trim(),
-      nome: String(row[1] || '').trim(),
-      ativo: ehSim(row[2]),
-      metaCodigo: String(row[3] || '').trim(),
-      origemSetor: String(row[4] || '').trim(),
-      setorDestino: String(row[5] || '').trim()
-    }))
-    .filter(item => item.ativo && item.metaCodigo && item.origemSetor && item.setorDestino);
-}
-
-function montarSetoresExcecaoMeta(setoresSelecionados, metaCodigo, excecoesAtivas) {
+function montarSetoresExcecaoMeta4(setoresSelecionados) {
   const setoresExcecao = [];
-  const regrasMeta = (excecoesAtivas || []).filter(item => String(item.metaCodigo || '') === String(metaCodigo || ''));
 
-  regrasMeta.forEach(regra => {
-    if (setoresSelecionados.some(setor => ehMesmoSetor(setor, regra.origemSetor))) {
-      setoresExcecao.push(regra.setorDestino);
-    }
-  });
+  if (setoresSelecionados.some(setor => ehMesmoSetor(setor, 'B2 - Centro Cirúrgico'))) {
+    setoresExcecao.push(
+      'A6 - Clínica Cirúrgica (Geral/Digestiva)',
+      'B5 - Clínica Cirúrgica Oncológica',
+      'B6 - Cabeça e Pescoço',
+      'B6 - Urologia',
+      'C7 - Clínica Ortopédica'
+    );
+  }
+
+  if (setoresSelecionados.some(setor => ehMesmoSetor(setor, 'B6 - Clínica Cirúrgica Vascular'))) {
+    setoresExcecao.push('Hemodinâmica');
+  }
+
+  if (setoresSelecionados.some(setor => ehMesmoSetor(setor, 'C3 - Centro Cirúrgico Obstétrico'))) {
+    setoresExcecao.push(
+      'C6 - Clínica Ginecológica',
+      'C6 - Clínica Obstétrica'
+    );
+  }
 
   const mapaSetores = {};
   setoresExcecao.forEach(setor => {
@@ -439,25 +339,22 @@ function montarSetoresExcecaoMeta(setoresSelecionados, metaCodigo, excecoesAtiva
   return mapaSetores;
 }
 
-function aplicarExcecaoPorMeta(metas, linhas, filtros, metaCodigo, excecoesAtivas) {
+function aplicarExcecaoMeta4CentroCirurgico(metas, linhas, filtros) {
   const setoresSelecionados = (filtros.unidades || []).map(item => String(item || '').trim()).filter(Boolean);
-  const setoresExcecao = montarSetoresExcecaoMeta(setoresSelecionados, metaCodigo, excecoesAtivas);
+  const setoresExcecao = montarSetoresExcecaoMeta4(setoresSelecionados);
   const chavesSetoresExcecao = Object.keys(setoresExcecao);
   if (!chavesSetoresExcecao.length) return;
 
-  const metaAlvo = metas.find(meta => String(meta.codigo) === String(metaCodigo));
-  if (!metaAlvo) return;
+  const meta4 = metas.find(meta => meta.codigo === '4');
+  if (!meta4) return;
 
   const anoFiltro = new Set((filtros.anos || []).map(normalizarAno).filter(Boolean));
   const mesFiltro = new Set((filtros.meses || []).map(normalizarMes).filter(Boolean));
 
-  const indiceMeta = METAS_CAMINHADAS.findIndex(meta => String(meta.codigo) === String(metaCodigo));
-  if (indiceMeta < 0) return;
-
-  metaAlvo.avaliados = 0;
-  metaAlvo.conformes = 0;
-  metaAlvo.naoConformes = 0;
-  metaAlvo.itens.forEach(item => {
+  meta4.avaliados = 0;
+  meta4.conformes = 0;
+  meta4.naoConformes = 0;
+  meta4.itens.forEach(item => {
     item.avaliados = 0;
     item.conformes = 0;
     item.naoConformes = 0;
@@ -468,26 +365,26 @@ function aplicarExcecaoPorMeta(metas, linhas, filtros, metaCodigo, excecoesAtiva
     .filter(row => !mesFiltro.size || mesFiltro.has(normalizarMes(row[2])))
     .filter(row => chavesSetoresExcecao.includes(normalizarTexto(getUnidade(row))))
     .forEach(row => {
-      METAS_CAMINHADAS[indiceMeta].itens.forEach((itemDef, itemIndex) => {
+      METAS_CAMINHADAS[3].itens.forEach((itemDef, itemIndex) => {
         const valor = row[itemDef.idx];
-        const item = metaAlvo.itens[itemIndex];
+        const item = meta4.itens[itemIndex];
 
         if (ehSim(valor)) {
           item.conformes++;
           item.avaliados++;
-          metaAlvo.conformes++;
-          metaAlvo.avaliados++;
+          meta4.conformes++;
+          meta4.avaliados++;
         } else if (ehNao(valor)) {
           item.naoConformes++;
           item.avaliados++;
-          metaAlvo.naoConformes++;
-          metaAlvo.avaliados++;
+          meta4.naoConformes++;
+          meta4.avaliados++;
         }
       });
     });
 
-  metaAlvo.percentual = metaAlvo.avaliados ? Number(((metaAlvo.conformes / metaAlvo.avaliados) * 100).toFixed(1)) : null;
-  metaAlvo.itens.forEach(item => {
+  meta4.percentual = meta4.avaliados ? Number(((meta4.conformes / meta4.avaliados) * 100).toFixed(1)) : null;
+  meta4.itens.forEach(item => {
     item.percentual = item.avaliados ? Number(((item.conformes / item.avaliados) * 100).toFixed(1)) : null;
   });
 }
@@ -643,11 +540,7 @@ function processarCaminhadas(ss, filtros) {
     .sort((a, b) => b[1] - a[1])
     .map(([nome, quantidade]) => ({ nome, quantidade }));
 
-  const excecoesAtivas = obterExcecoesAtivas(ss);
-  const metasComExcecao = [...new Set(excecoesAtivas.map(item => String(item.metaCodigo || '')).filter(Boolean))];
-  metasComExcecao.forEach(metaCodigo => {
-    aplicarExcecaoPorMeta(metas, linhas, filtros, metaCodigo, excecoesAtivas);
-  });
+  aplicarExcecaoMeta4CentroCirurgico(metas, linhas, filtros);
 
   const metasCriticas = metas
     .slice()
@@ -958,106 +851,4 @@ function calcularDiferencaDias(dataInicial, dataFinal) {
   const diferenca = Math.round((fim.getTime() - inicio.getTime()) / 86400000);
 
   return diferenca < 0 ? 0 : diferenca;
-}
-
-/** Gestor de Exceções - API */
-function getGestorExcecoesConfig() {
-  const ss = SpreadsheetApp.openById(ID_PLANILHA);
-  const excecoes = obterExcecoesAtivasCompletas(ss);
-  const grupos = listarGruposOperacionais(ss);
-  return { success: true, excecoes: excecoes, grupos: grupos };
-}
-
-function salvarExcecaoGestor(payload) {
-  const data = payload || {};
-  const ss = SpreadsheetApp.openById(ID_PLANILHA);
-  const sh = garantirAbaExcecoes(ss);
-  const regraId = String(data.regraId || '').trim() || ('REGRA_' + new Date().getTime());
-  const nome = String(data.nome || '').trim();
-  const metaCodigo = String(data.metaCodigo || '').trim();
-  const origemSetor = String(data.origemSetor || '').trim();
-  const setorDestino = String(data.setorDestino || '').trim();
-  const ativo = data.ativo ? 'SIM' : 'NAO';
-  if (!nome || !metaCodigo || !origemSetor || !setorDestino) throw new Error('Campos obrigatórios inválidos.');
-
-  const rows = sh.getDataRange().getValues();
-  let foundRow = -1;
-  for (let i = 1; i < rows.length; i++) {
-    if (String(rows[i][0] || '').trim() === regraId) { foundRow = i + 1; break; }
-  }
-  const linha = [regraId, nome, ativo, metaCodigo, origemSetor, setorDestino, 'gestor_ui'];
-  if (foundRow > 0) sh.getRange(foundRow, 1, 1, linha.length).setValues([linha]);
-  else sh.appendRow(linha);
-  return { success: true, regraId: regraId };
-}
-
-function excluirExcecaoGestor(regraId) {
-  const id = String(regraId || '').trim();
-  if (!id) throw new Error('regraId obrigatório.');
-  const ss = SpreadsheetApp.openById(ID_PLANILHA);
-  const sh = garantirAbaExcecoes(ss);
-  const rows = sh.getDataRange().getValues();
-  for (let i = 1; i < rows.length; i++) {
-    if (String(rows[i][0] || '').trim() === id) {
-      sh.deleteRow(i + 1);
-      return { success: true };
-    }
-  }
-  return { success: false, message: 'Regra não encontrada.' };
-}
-
-function garantirAbaGruposOperacionais(ss) {
-  const aba = 'CONFIG - GRUPOS';
-  let sh = ss.getSheetByName(aba);
-  if (!sh) sh = ss.insertSheet(aba);
-  const headers = ['grupoId', 'nomeExibicao', 'setoresCsv', 'ativo', 'origem'];
-  const first = sh.getRange(1,1,1,headers.length).getValues()[0];
-  if (first.every(v => !String(v || '').trim())) sh.getRange(1,1,1,headers.length).setValues([headers]);
-  return sh;
-}
-
-function listarGruposOperacionais(ssParam) {
-  const ss = ssParam || SpreadsheetApp.openById(ID_PLANILHA);
-  const sh = garantirAbaGruposOperacionais(ss);
-  return sh.getDataRange().getValues().slice(1).map(row => ({
-    grupoId: String(row[0] || '').trim(),
-    nomeExibicao: String(row[1] || '').trim(),
-    setoresCsv: String(row[2] || '').trim(),
-    ativo: ehSim(row[3]),
-    origem: String(row[4] || '').trim()
-  })).filter(item => item.grupoId);
-}
-
-function salvarGrupoOperacional(payload) {
-  const data = payload || {};
-  const ss = SpreadsheetApp.openById(ID_PLANILHA);
-  const sh = garantirAbaGruposOperacionais(ss);
-  const grupoId = String(data.grupoId || '').trim() || ('GRUPO_' + new Date().getTime());
-  const nomeExibicao = String(data.nomeExibicao || '').trim();
-  const setoresCsv = String(data.setoresCsv || '').trim();
-  const ativo = data.ativo ? 'SIM' : 'NAO';
-  if (!nomeExibicao || !setoresCsv) throw new Error('Nome e setores são obrigatórios.');
-  const rows = sh.getDataRange().getValues();
-  let foundRow = -1;
-  for (let i = 1; i < rows.length; i++) {
-    if (String(rows[i][0] || '').trim() === grupoId) { foundRow = i + 1; break; }
-  }
-  const linha = [grupoId, nomeExibicao, setoresCsv, ativo, 'gestor_ui'];
-  if (foundRow > 0) sh.getRange(foundRow, 1, 1, linha.length).setValues([linha]);
-  else sh.appendRow(linha);
-  return { success: true, grupoId: grupoId };
-}
-
-function obterExcecoesAtivasCompletas(ss) {
-  const shExcecoes = garantirAbaExcecoes(ss);
-  semearExcecoesPadrao(shExcecoes);
-  return shExcecoes.getDataRange().getValues().slice(1).map(row => ({
-    regraId: String(row[0] || '').trim(),
-    nome: String(row[1] || '').trim(),
-    ativo: ehSim(row[2]),
-    metaCodigo: String(row[3] || '').trim(),
-    origemSetor: String(row[4] || '').trim(),
-    setorDestino: String(row[5] || '').trim(),
-    origem: String(row[6] || '').trim()
-  })).filter(item => item.regraId);
 }
