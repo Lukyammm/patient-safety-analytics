@@ -307,13 +307,46 @@ function ehMesmoSetor(nomeSetor, referencia) {
   return normalizarTexto(nomeSetor) === normalizarTexto(referencia);
 }
 
+function montarSetoresExcecaoMeta4(setoresSelecionados) {
+  const setoresExcecao = [];
+
+  if (setoresSelecionados.some(setor => ehMesmoSetor(setor, 'B2 - Centro Cirúrgico'))) {
+    setoresExcecao.push(
+      'A6 - Clínica Cirúrgica (Geral/Digestiva)',
+      'B5 - Clínica Cirúrgica Oncológica',
+      'B6 - Cabeça e Pescoço',
+      'B6 - Urologia',
+      'C7 - Clínica Ortopédica'
+    );
+  }
+
+  if (setoresSelecionados.some(setor => ehMesmoSetor(setor, 'B6 - Clínica Cirúrgica Vascular'))) {
+    setoresExcecao.push('Hemodinâmica');
+  }
+
+  if (setoresSelecionados.some(setor => ehMesmoSetor(setor, 'C3 - Centro Cirúrgico Obstétrico'))) {
+    setoresExcecao.push(
+      'C6 - Clínica Ginecológica',
+      'C6 - Clínica Obstétrica'
+    );
+  }
+
+  const mapaSetores = {};
+  setoresExcecao.forEach(setor => {
+    if (setor) mapaSetores[normalizarTexto(setor)] = setor;
+  });
+
+  return mapaSetores;
+}
+
 function aplicarExcecaoMeta4CentroCirurgico(metas, linhas, filtros) {
   const setoresSelecionados = (filtros.unidades || []).map(item => String(item || '').trim()).filter(Boolean);
-  const selecionouB2 = setoresSelecionados.some(setor => ehMesmoSetor(setor, 'B2 - Centro Cirúrgico'));
-  if (!selecionouB2) return;
+  const setoresExcecao = montarSetoresExcecaoMeta4(setoresSelecionados);
+  const chavesSetoresExcecao = Object.keys(setoresExcecao);
+  if (!chavesSetoresExcecao.length) return;
 
   const meta4 = metas.find(meta => meta.codigo === '4');
-  if (!meta4 || meta4.avaliados > 0) return;
+  if (!meta4) return;
 
   const anoFiltro = new Set((filtros.anos || []).map(normalizarAno).filter(Boolean));
   const mesFiltro = new Set((filtros.meses || []).map(normalizarMes).filter(Boolean));
@@ -330,7 +363,7 @@ function aplicarExcecaoMeta4CentroCirurgico(metas, linhas, filtros) {
   linhas
     .filter(row => !anoFiltro.size || anoFiltro.has(normalizarAno(row[3])))
     .filter(row => !mesFiltro.size || mesFiltro.has(normalizarMes(row[2])))
-    .filter(row => !ehMesmoSetor(getUnidade(row), 'C6 - Clínica Obstétrica e Hemodinâmica'))
+    .filter(row => chavesSetoresExcecao.includes(normalizarTexto(getUnidade(row))))
     .forEach(row => {
       METAS_CAMINHADAS[3].itens.forEach((itemDef, itemIndex) => {
         const valor = row[itemDef.idx];
