@@ -173,40 +173,8 @@ function extrairListaFiltros(rawValue, normalizerFn) {
   return [...new Set(valores)];
 }
 
-
-function normalizarArrayFiltro(valor, normalizerFn) {
-  const lista = Array.isArray(valor)
-    ? valor
-    : (valor == null ? [] : String(valor).split(/[|,]/));
-
-  return [...new Set(lista
-    .map(item => String(item == null ? '' : item).trim())
-    .filter(Boolean)
-    .map(item => normalizerFn ? normalizerFn(item) : item)
-    .filter(Boolean))];
-}
-
-function normalizarEstruturaFiltros(filtros) {
-  const origem = filtros || {};
-  const caminhadas = origem.caminhadas || {};
-  const notificacoes = origem.notificacoes || {};
-
-  return {
-    caminhadas: {
-      anos: normalizarArrayFiltro(caminhadas.anos, normalizarAno),
-      meses: normalizarArrayFiltro(caminhadas.meses, normalizarMes),
-      unidades: normalizarArrayFiltro(caminhadas.unidades, value => String(value || '').trim())
-    },
-    notificacoes: {
-      anos: normalizarArrayFiltro(notificacoes.anos, normalizarAno),
-      meses: normalizarArrayFiltro(notificacoes.meses, normalizarMes),
-      unidades: normalizarArrayFiltro(notificacoes.unidades, value => String(value || '').trim())
-    }
-  };
-}
-
 function montarPayload(ss, filtros) {
-  const filtrosAplicados = normalizarEstruturaFiltros(filtros);
+  const filtrosAplicados = filtros || { caminhadas: {}, notificacoes: {} };
   return {
     success: true,
     geradoEm: Utilities.formatDate(new Date(), FUSO_HORARIO, "dd/MM/yyyy 'às' HH:mm"),
