@@ -1,6 +1,9 @@
 const ID_PLANILHA = '1XUtI9TSMJmTpbtfLjZbJ-uarRN94lu_Aqpsc46Lxmt4';
+const ID_PLANILHA_RELATORIOS = '1DjE-1Gx33RfWPkUtUW883-5SM2NVdeuDsq4wQ0XxGUw';
 const ABA_CAMINHADAS = 'BASE DE DADOS CAMINHADAS';
 const ABA_NOTIFICA = 'NOTIFICA - BASE';
+const ABA_RELATORIO_CRP = 'BASE_DADOS(NÃOEDITAR)';
+const ABA_RELATORIO_CRO = 'CRO';
 const META_INSTITUCIONAL = 80;
 const FUSO_HORARIO = 'America/Fortaleza';
 const ORDEM_MESES = {
@@ -16,7 +19,31 @@ const ORDEM_MESES = {
   'SETEMBRO': 9,
   'OUTUBRO': 10,
   'NOVEMBRO': 11,
-  'DEZEMBRO': 12
+  'DEZEMBRO': 12,
+  'JAN': 1,
+  'JAN.': 1,
+  'FEV': 2,
+  'FEV.': 2,
+  'MAR': 3,
+  'MAR.': 3,
+  'ABR': 4,
+  'ABR.': 4,
+  'MAI': 5,
+  'MAI.': 5,
+  'JUN': 6,
+  'JUN.': 6,
+  'JUL': 7,
+  'JUL.': 7,
+  'AGO': 8,
+  'AGO.': 8,
+  'SET': 9,
+  'SET.': 9,
+  'OUT': 10,
+  'OUT.': 10,
+  'NOV': 11,
+  'NOV.': 11,
+  'DEZ': 12,
+  'DEZ.': 12
 };
 const MESES_CANONICOS = {
   1: 'Janeiro',
@@ -139,9 +166,20 @@ function doGet(e) {
       .setMimeType(ContentService.MimeType.JSON);
   }
 
+  if (params.api === 'relatorios') {
+    const ss = SpreadsheetApp.openById(ID_PLANILHA_RELATORIOS);
+    return ContentService
+      .createTextOutput(JSON.stringify(montarPayloadRelatorios(ss, extrairFiltrosRelatorios(params))))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  const pagina = normalizarTexto(params.page || params.pagina || '');
+  const arquivo = pagina === 'RELATORIOS' || pagina === 'RELATÓRIOS' ? 'Relatorios' : 'Index';
+  const titulo = arquivo === 'Relatorios' ? 'Relatórios COSEP' : 'Boletim COSEP';
+
   return HtmlService
-    .createHtmlOutputFromFile('Index')
-    .setTitle('Boletim COSEP')
+    .createHtmlOutputFromFile(arquivo)
+    .setTitle(titulo)
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
@@ -851,4 +889,347 @@ function calcularDiferencaDias(dataInicial, dataFinal) {
   const diferenca = Math.round((fim.getTime() - inicio.getTime()) / 86400000);
 
   return diferenca < 0 ? 0 : diferenca;
+}
+
+const RELATORIO_CRP_COLUNAS = {
+  ano: 0,
+  mes: 1,
+  avaliacaoTerminada: 2,
+  enviadoEm: 3,
+  email: 4,
+  prontuario: 5,
+  unidade: 6,
+  eixo: 7,
+  paciente: 8,
+  categoria: 9,
+  satisfacao: 10,
+  regInter: 11,
+  idPaciente: 12,
+  inicioIndicadores: 13,
+  fimIndicadores: 39,
+  numerador: 40,
+  denominador: 41,
+  resultado: 42
+};
+
+const RELATORIO_ABAS_POR_COMISSAO = {
+  CRP: [ABA_RELATORIO_CRP, 'BASE_DADOS(NAOEDITAR)', 'BASE CRP', 'CRP - BASE', 'RELATÓRIO CRP', 'RELATORIO CRP'],
+  CRO: [ABA_RELATORIO_CRO, 'BASE CRO', 'CRO - BASE', 'RELATÓRIO CRO', 'RELATORIO CRO']
+};
+
+function extrairFiltrosRelatorios(params) {
+  const bruto = params || {};
+  return {
+    comissao: normalizarComissaoRelatorio(bruto.comissao || bruto.tipo || 'CRP'),
+    anos: extrairListaFiltros(bruto.anos || bruto.ano || '', normalizarAno),
+    meses: extrairListaFiltros(bruto.meses || bruto.mes || '', normalizarMes),
+    unidades: extrairListaFiltros(bruto.unidades || bruto.unidade || '', value => String(value || '').trim()),
+    eixos: extrairListaFiltros(bruto.eixos || bruto.eixo || '', value => String(value || '').trim()),
+    categorias: extrairListaFiltros(bruto.categorias || bruto.categoria || '', value => String(value || '').trim()),
+    satisfacoes: extrairListaFiltros(bruto.satisfacoes || bruto.satisfacao || '', value => String(value || '').trim()),
+    status: extrairListaFiltros(bruto.status || bruto.avaliacaoTerminada || '', value => String(value || '').trim())
+  };
+}
+
+function normalizarComissaoRelatorio(valor) {
+  const texto = normalizarTexto(valor);
+  if (texto === 'CRO') return 'CRO';
+  return 'CRP';
+}
+
+function obterAbaRelatorio(ss, comissao) {
+  const nomes = RELATORIO_ABAS_POR_COMISSAO[normalizarComissaoRelatorio(comissao)] || RELATORIO_ABAS_POR_COMISSAO.CRP;
+  for (let i = 0; i < nomes.length; i++) {
+    const sh = ss.getSheetByName(nomes[i]);
+    if (sh) return sh;
+  }
+  return null;
+}
+
+function obterLinhasRelatorio(ss, comissao) {
+  const sh = obterAbaRelatorio(ss, comissao);
+  if (!sh) {
+    return { abaEncontrada: '', headers: [], linhas: [] };
+  }
+  const range = sh.getDataRange();
+  const values = range.getValues();
+  const headers = values.length ? values[0].map(item => String(item || '').trim()) : [];
+  return {
+    abaEncontrada: sh.getName(),
+    headers: headers,
+    linhas: values.slice(1).filter(row => row.some(cell => String(cell == null ? '' : cell).trim() !== ''))
+  };
+}
+
+function getRelatoriosFiltros(ss) {
+  const base = obterLinhasRelatorio(ss, 'CRP');
+  return coletarFiltrosRelatorio(base.linhas, base.abaEncontrada);
+}
+
+function coletarFiltrosRelatorio(linhas, abaEncontrada) {
+  const col = RELATORIO_CRP_COLUNAS;
+  const filtros = {
+    comissoes: [{ codigo: 'CRP', nome: 'CRP', disponivel: true }, { codigo: 'CRO', nome: 'CRO', disponivel: false }],
+    abaEncontrada: abaEncontrada || '',
+    anos: {},
+    meses: {},
+    unidades: {},
+    eixos: {},
+    categorias: {},
+    satisfacoes: {},
+    status: {}
+  };
+
+  linhas.forEach(row => {
+    const ano = normalizarAno(row[col.ano]);
+    const mes = normalizarMes(row[col.mes]);
+    const unidade = String(row[col.unidade] || '').trim() || 'Não informado';
+    const eixo = String(row[col.eixo] || '').trim() || 'Não informado';
+    const categoria = String(row[col.categoria] || '').trim() || 'Não informado';
+    const satisfacao = String(row[col.satisfacao] || '').trim() || 'Não informado';
+    const status = String(row[col.avaliacaoTerminada] || '').trim() || 'Não informado';
+
+    if (ano) filtros.anos[ano] = true;
+    if (mes) filtros.meses[mes] = true;
+    if (unidade) filtros.unidades[unidade] = true;
+    if (eixo) filtros.eixos[eixo] = true;
+    if (categoria) filtros.categorias[categoria] = true;
+    if (satisfacao) filtros.satisfacoes[satisfacao] = true;
+    if (status) filtros.status[status] = true;
+  });
+
+  return {
+    comissoes: filtros.comissoes,
+    abaEncontrada: filtros.abaEncontrada,
+    anos: Object.keys(filtros.anos).sort((a, b) => Number(a) - Number(b) || a.localeCompare(b, 'pt-BR')),
+    meses: Object.keys(filtros.meses).sort(ordenarMeses),
+    unidades: Object.keys(filtros.unidades).sort((a, b) => a.localeCompare(b, 'pt-BR')),
+    eixos: Object.keys(filtros.eixos).sort((a, b) => a.localeCompare(b, 'pt-BR')),
+    categorias: Object.keys(filtros.categorias).sort((a, b) => a.localeCompare(b, 'pt-BR')),
+    satisfacoes: Object.keys(filtros.satisfacoes).sort((a, b) => a.localeCompare(b, 'pt-BR')),
+    status: Object.keys(filtros.status).sort((a, b) => a.localeCompare(b, 'pt-BR'))
+  };
+}
+
+function montarPayloadRelatorios(ss, filtros) {
+  const filtrosAplicados = extrairFiltrosRelatorios(filtros || {});
+  return {
+    success: true,
+    geradoEm: Utilities.formatDate(new Date(), FUSO_HORARIO, "dd/MM/yyyy 'às' HH:mm"),
+    filtros: getRelatoriosFiltros(ss),
+    aplicado: filtrosAplicados,
+    relatorio: processarRelatorioCRP(ss, filtrosAplicados)
+  };
+}
+
+function obterPayloadRelatorios(filtros) {
+  const ss = SpreadsheetApp.openById(ID_PLANILHA_RELATORIOS);
+  return montarPayloadRelatorios(ss, extrairFiltrosRelatorios(filtros || {}));
+}
+
+function atendeFiltroRelatorio(valor, setFiltro, normalizerFn) {
+  if (!setFiltro || !setFiltro.size) return true;
+  const valorNormalizado = normalizerFn ? normalizerFn(valor) : String(valor || '').trim();
+  return setFiltro.has(valorNormalizado);
+}
+
+function classificarValorIndicador(valor) {
+  const texto = normalizarTexto(valor);
+  if (!texto || texto === '-') return 'vazio';
+  if (texto === 'CONFORME') return 'conforme';
+  if (texto === 'NÃO CONFORME' || texto === 'NAO CONFORME') return 'naoConforme';
+  if (texto === 'NÃO SE APLICA' || texto === 'NAO SE APLICA' || texto === 'N/A' || texto === 'NA') return 'naoSeAplica';
+  return 'outro';
+}
+
+function nomeIndicadorRelatorio(header, fallback) {
+  const texto = String(header || '').replace(/\s+/g, ' ').trim();
+  if (!texto) return fallback;
+  return texto.split(/\s{2,}| - /)[0].trim() || texto.substring(0, 90);
+}
+
+function percentualRelatorio(conformes, naoConformes) {
+  const denominador = Number(conformes || 0) + Number(naoConformes || 0);
+  return denominador ? Number(((Number(conformes || 0) / denominador) * 100).toFixed(1)) : null;
+}
+
+function processarRelatorioCRP(ss, filtros) {
+  const base = obterLinhasRelatorio(ss, filtros.comissao || 'CRP');
+  const col = RELATORIO_CRP_COLUNAS;
+  const anosFiltro = new Set((filtros.anos || []).map(normalizarAno).filter(Boolean));
+  const mesesFiltro = new Set((filtros.meses || []).map(normalizarMes).filter(Boolean));
+  const unidadesFiltro = new Set((filtros.unidades || []).map(item => String(item || '').trim()).filter(Boolean));
+  const eixosFiltro = new Set((filtros.eixos || []).map(item => String(item || '').trim()).filter(Boolean));
+  const categoriasFiltro = new Set((filtros.categorias || []).map(item => String(item || '').trim()).filter(Boolean));
+  const satisfacoesFiltro = new Set((filtros.satisfacoes || []).map(item => String(item || '').trim()).filter(Boolean));
+  const statusFiltro = new Set((filtros.status || []).map(item => String(item || '').trim()).filter(Boolean));
+
+  const linhasFiltradas = base.linhas.filter(row => {
+    if (!atendeFiltroRelatorio(row[col.ano], anosFiltro, normalizarAno)) return false;
+    if (!atendeFiltroRelatorio(row[col.mes], mesesFiltro, normalizarMes)) return false;
+    if (!atendeFiltroRelatorio(String(row[col.unidade] || '').trim() || 'Não informado', unidadesFiltro)) return false;
+    if (!atendeFiltroRelatorio(String(row[col.eixo] || '').trim() || 'Não informado', eixosFiltro)) return false;
+    if (!atendeFiltroRelatorio(String(row[col.categoria] || '').trim() || 'Não informado', categoriasFiltro)) return false;
+    if (!atendeFiltroRelatorio(String(row[col.satisfacao] || '').trim() || 'Não informado', satisfacoesFiltro)) return false;
+    if (!atendeFiltroRelatorio(String(row[col.avaliacaoTerminada] || '').trim() || 'Não informado', statusFiltro)) return false;
+    return true;
+  });
+
+  const indicadores = [];
+  for (let idx = col.inicioIndicadores; idx <= col.fimIndicadores; idx++) {
+    indicadores.push({
+      idx: idx,
+      nome: nomeIndicadorRelatorio(base.headers[idx], `Indicador ${idx + 1}`),
+      conformes: 0,
+      naoConformes: 0,
+      naoSeAplica: 0,
+      vazios: 0,
+      outros: 0,
+      avaliados: 0,
+      percentual: null
+    });
+  }
+
+  const porUnidade = {};
+  const porEixo = {};
+  const porCategoria = {};
+  const porSatisfacao = {};
+  const porStatus = {};
+  const evolucaoMap = {};
+  let conformes = 0;
+  let naoConformes = 0;
+  let naoSeAplica = 0;
+  let vazios = 0;
+  let outros = 0;
+  let numeradorPlanilha = 0;
+  let denominadorPlanilha = 0;
+  let somaResultadoPlanilha = 0;
+  let totalResultadoPlanilha = 0;
+
+  linhasFiltradas.forEach(row => {
+    const unidade = String(row[col.unidade] || '').trim() || 'Não informado';
+    const eixo = String(row[col.eixo] || '').trim() || 'Não informado';
+    const categoria = String(row[col.categoria] || '').trim() || 'Não informado';
+    const satisfacao = String(row[col.satisfacao] || '').trim() || 'Não informado';
+    const status = String(row[col.avaliacaoTerminada] || '').trim() || 'Não informado';
+    const mes = normalizarMes(row[col.mes]) || 'Sem mês';
+
+    incrementarMapa(porUnidade, unidade);
+    incrementarMapa(porEixo, eixo);
+    incrementarMapa(porCategoria, categoria);
+    incrementarMapa(porSatisfacao, satisfacao);
+    incrementarMapa(porStatus, status);
+    if (!evolucaoMap[mes]) evolucaoMap[mes] = { conformes: 0, naoConformes: 0 };
+
+    const num = Number(row[col.numerador]);
+    const den = Number(row[col.denominador]);
+    const res = Number(row[col.resultado]);
+    if (!Number.isNaN(num)) numeradorPlanilha += num;
+    if (!Number.isNaN(den)) denominadorPlanilha += den;
+    if (!Number.isNaN(res)) {
+      somaResultadoPlanilha += res > 1 ? res : res * 100;
+      totalResultadoPlanilha++;
+    }
+
+    indicadores.forEach(indicador => {
+      const classe = classificarValorIndicador(row[indicador.idx]);
+      if (classe === 'conforme') {
+        indicador.conformes++;
+        indicador.avaliados++;
+        conformes++;
+        evolucaoMap[mes].conformes++;
+      } else if (classe === 'naoConforme') {
+        indicador.naoConformes++;
+        indicador.avaliados++;
+        naoConformes++;
+        evolucaoMap[mes].naoConformes++;
+      } else if (classe === 'naoSeAplica') {
+        indicador.naoSeAplica++;
+        naoSeAplica++;
+      } else if (classe === 'vazio') {
+        indicador.vazios++;
+        vazios++;
+      } else {
+        indicador.outros++;
+        outros++;
+      }
+    });
+  });
+
+  indicadores.forEach(item => {
+    item.percentual = percentualRelatorio(item.conformes, item.naoConformes);
+  });
+
+  const totalAuditavel = conformes + naoConformes;
+  const conformidadeGeral = percentualRelatorio(conformes, naoConformes) || 0;
+  const indicadoresOrdenados = indicadores.slice().sort((a, b) => {
+    const pa = a.percentual == null ? 101 : a.percentual;
+    const pb = b.percentual == null ? 101 : b.percentual;
+    return pa - pb || b.naoConformes - a.naoConformes || a.nome.localeCompare(b.nome, 'pt-BR');
+  });
+
+  const evolucaoMensal = Object.keys(evolucaoMap).sort(ordenarMeses).map(mes => ({
+    mes: mes,
+    conformes: evolucaoMap[mes].conformes,
+    naoConformes: evolucaoMap[mes].naoConformes,
+    percentual: percentualRelatorio(evolucaoMap[mes].conformes, evolucaoMap[mes].naoConformes) || 0
+  }));
+
+  const rankingSetores = Object.keys(porUnidade).sort((a, b) => a.localeCompare(b, 'pt-BR')).map(setor => {
+    const resumo = linhasFiltradas.filter(row => (String(row[col.unidade] || '').trim() || 'Não informado') === setor).reduce((acc, row) => {
+      indicadores.forEach(ind => {
+        const classe = classificarValorIndicador(row[ind.idx]);
+        if (classe === 'conforme') acc.conformes++;
+        if (classe === 'naoConforme') acc.naoConformes++;
+      });
+      return acc;
+    }, { conformes: 0, naoConformes: 0 });
+    return {
+      setor: setor,
+      avaliacoes: porUnidade[setor],
+      conformes: resumo.conformes,
+      naoConformes: resumo.naoConformes,
+      percentual: percentualRelatorio(resumo.conformes, resumo.naoConformes)
+    };
+  }).sort((a, b) => (a.percentual == null ? 101 : a.percentual) - (b.percentual == null ? 101 : b.percentual));
+
+  const amostra = linhasFiltradas.slice(0, 25).map(row => ({
+    prontuario: String(row[col.prontuario] || '').trim(),
+    unidade: String(row[col.unidade] || '').trim(),
+    eixo: String(row[col.eixo] || '').trim(),
+    categoria: String(row[col.categoria] || '').trim(),
+    satisfacao: String(row[col.satisfacao] || '').trim(),
+    status: String(row[col.avaliacaoTerminada] || '').trim(),
+    resultado: row[col.resultado]
+  }));
+
+  return {
+    comissao: normalizarComissaoRelatorio(filtros.comissao),
+    abaEncontrada: base.abaEncontrada,
+    totalRegistrosBase: base.linhas.length,
+    totalAvaliacoes: linhasFiltradas.length,
+    totalAuditavel: totalAuditavel,
+    conformes: conformes,
+    naoConformes: naoConformes,
+    naoSeAplica: naoSeAplica,
+    vazios: vazios,
+    outros: outros,
+    conformidadeGeral: conformidadeGeral,
+    metaInstitucional: META_INSTITUCIONAL,
+    diferencaMeta: Number((conformidadeGeral - META_INSTITUCIONAL).toFixed(1)),
+    numeradorPlanilha: numeradorPlanilha,
+    denominadorPlanilha: denominadorPlanilha,
+    resultadoPlanilha: denominadorPlanilha ? Number(((numeradorPlanilha / denominadorPlanilha) * 100).toFixed(1)) : (totalResultadoPlanilha ? Number((somaResultadoPlanilha / totalResultadoPlanilha).toFixed(1)) : null),
+    indicadores: indicadores,
+    indicadoresCriticos: indicadoresOrdenados.filter(item => item.avaliados > 0).slice(0, 8),
+    indicadoresExcelencia: indicadores.slice().filter(item => item.avaliados > 0).sort((a, b) => b.percentual - a.percentual || b.avaliados - a.avaliados).slice(0, 5),
+    porUnidade: ordenarMapaPorValor(porUnidade),
+    porEixo: ordenarMapaPorValor(porEixo),
+    porCategoria: ordenarMapaPorValor(porCategoria),
+    porSatisfacao: ordenarMapaPorValor(porSatisfacao),
+    porStatus: ordenarMapaPorValor(porStatus),
+    rankingSetores: rankingSetores,
+    evolucaoMensal: evolucaoMensal,
+    amostra: amostra
+  };
 }
