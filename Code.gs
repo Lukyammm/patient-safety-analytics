@@ -177,8 +177,11 @@ function doGet(e) {
   const arquivo = pagina === 'RELATORIOS' || pagina === 'RELATÓRIOS' ? 'Relatorios' : 'Index';
   const titulo = arquivo === 'Relatorios' ? 'Relatórios COSEP' : 'Boletim COSEP';
 
-  return HtmlService
-    .createHtmlOutputFromFile(arquivo)
+  const template = HtmlService.createTemplateFromFile(arquivo);
+  template.appUrl = ScriptApp.getService().getUrl();
+
+  return template
+    .evaluate()
     .setTitle(titulo)
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
