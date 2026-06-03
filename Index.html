@@ -1785,17 +1785,25 @@
     .relatorios-shell {
       position: relative;
       z-index: 1;
+      max-width: 1400px;
       width: 100%;
       min-height: 100vh;
+      margin: 0 auto;
+      padding: 24px 16px 40px;
       background: transparent;
+    }
+
+    .relatorios-shell .top-menu-wrap {
+      margin-bottom: 22px;
     }
 
     .relatorios-frame {
       display: block;
       width: 100%;
-      min-height: 100vh;
-      height: 100vh;
+      min-height: calc(100vh - 100px);
+      height: calc(100vh - 100px);
       border: 0;
+      border-radius: 28px;
       background: transparent;
     }
 
@@ -2151,6 +2159,18 @@
   </main>
 
   <section class="relatorios-shell app-view" id="relatorios-app" hidden aria-label="Relatórios COSEP">
+    <div class="top-menu-wrap">
+      <nav class="top-menu" aria-label="Menu superior">
+        <div class="top-menu-inner">
+          <span class="top-menu-toggle" aria-hidden="true"><i class="fa-solid fa-bars"></i></span>
+          <div class="top-menu-links">
+            <a class="top-menu-link" href="<?!= appUrl ?>" data-app-link="boletim" data-view-link="boletim"><i class="fa-solid fa-shield-heart"></i> COSEP</a>
+            <a class="top-menu-link" href="<?!= appUrl ?>?page=relatorios" data-app-link="relatorios" data-view-link="relatorios"><i class="fa-solid fa-chart-line"></i> Relatórios</a>
+            <a class="top-menu-link" href="https://script.google.com/macros/s/AKfycbyrFcu7qj-Ydr2nwWqaaYpzntLct0jjN2ylXnrL5hXP5vWuiYcG_c4LYVVilFvJy-tadg/exec" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-gauge-high"></i> Painel NUGESP</a>
+          </div>
+        </div>
+      </nav>
+    </div>
     <iframe class="relatorios-frame" id="relatorios-frame" title="Relatório Analítico COSEP"></iframe>
   </section>
 
@@ -2666,14 +2686,6 @@
 <body class="antialiased selection:bg-cosep-soft selection:text-cosep-teal">
   <div id="toast-root" style="position:fixed;right:16px;top:16px;z-index:9999;display:grid;gap:10px;width:min(420px,calc(100vw - 32px));pointer-events:none" aria-live="polite" aria-atomic="true"></div>
   <main class="app-shell">
-    <nav class="top-nav" aria-label="Menu superior">
-      <div class="top-nav__inner">
-        <a href="<?!= appUrl ?>" target="_top"><i class="fa-solid fa-shield-heart"></i> COSEP</a>
-        <a class="active" href="<?!= appUrl ?>?page=relatorios" target="_top"><i class="fa-solid fa-chart-line"></i> Relatórios</a>
-        <a href="https://script.google.com/macros/s/AKfycbyrFcu7qj-Ydr2nwWqaaYpzntLct0jjN2ylXnrL5hXP5vWuiYcG_c4LYVVilFvJy-tadg/exec" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-gauge-high"></i> Painel NUGESP</a>
-      </div>
-    </nav>
-
     <header class="page-header">
       <div>
         <span class="eyebrow"><i class="fa-solid fa-file-pen"></i> Produção executiva</span>
