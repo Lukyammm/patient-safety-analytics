@@ -3194,6 +3194,8 @@
     let listenersFiltrosConfigurados = false;
 
     const CHART_DEVICE_PIXEL_RATIO_PDF = 3;
+    const FILTROS_CACHE_KEY = 'boletim_filtros_cache_v2';
+    const FILTROS_CACHE_MAX_AGE_MS = 6 * 60 * 60 * 1000;
     const IDS_FILTROS = ['ano-cosep', 'mes-cosep', 'unidade-cosep', 'ano-notifica', 'mes-notifica', 'unidade-notifica'];
     const MULTI_CONFIG = {
       'ano-cosep': { label: 'Ano', tipo: 'ano' },
@@ -3259,6 +3261,65 @@
       } catch (_) {
         return null;
       }
+    }
+
+    function filtrosPossuemOpcoes(filtros) {
+      const c = (filtros && filtros.caminhadas) || {};
+      const n = (filtros && filtros.notificacoes) || {};
+      return Boolean(
+        ((c.anos || []).length || (c.meses || []).length || (c.unidades || []).length) &&
+        ((n.anos || []).length || (n.meses || []).length || (n.unidades || []).length)
+      );
+    }
+
+    function obterFiltrosCache() {
+      const storage = getStorage();
+      if (!storage) return null;
+      try {
+        const registro = JSON.parse(storage.getItem(FILTROS_CACHE_KEY) || 'null');
+        if (!registro || !registro.filtros || !registro.salvoEm) return null;
+        if (Date.now() - Number(registro.salvoEm) > FILTROS_CACHE_MAX_AGE_MS) return null;
+        return filtrosPossuemOpcoes(registro.filtros) ? registro.filtros : null;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function salvarFiltrosCache(filtros) {
+      if (!filtrosPossuemOpcoes(filtros)) return;
+      const storage = getStorage();
+      if (!storage) return;
+      try {
+        storage.setItem(FILTROS_CACHE_KEY, JSON.stringify({ filtros, salvoEm: Date.now() }));
+      } catch (_) {}
+    }
+
+    function configurarListenersFiltros() {
+      if (listenersFiltrosConfigurados) return;
+      IDS_FILTROS.forEach(id => {
+        const campo = document.getElementById(id);
+        if (campo) {
+          campo.addEventListener('change', () => {
+            atualizarResumoParcial();
+            atualizarContadoresFiltros();
+            atualizarEstadoAcoes();
+            salvarUltimosFiltros();
+          });
+        }
+      });
+      listenersFiltrosConfigurados = true;
+    }
+
+    function aplicarFiltrosNaInterface(filtros, options = {}) {
+      preencherFiltros(filtros || {});
+      if (options.persistirCache !== false) salvarFiltrosCache(filtros || {});
+      configurarBuscaFiltros();
+      configurarTabs();
+      configurarListenersFiltros();
+      atualizarResumoParcial();
+      atualizarContadoresFiltros();
+      renderFila();
+      atualizarEstadoAcoes();
     }
 
     function loadScript(src) {
@@ -4562,49 +4623,58 @@
     }
 
     async function init() {
+      const loading = document.getElementById('loading');
+      let iniciouComCache = false;
+      let avisoDemora = null;
+
       try {
-        const loading = document.getElementById('loading');
         if (loading) {
           loading.classList.remove('hidden');
           loading.textContent = 'Preparando filtros do boletim...';
+          avisoDemora = window.setTimeout(() => {
+            if (!iniciouComCache && loading && !loading.classList.contains('hidden')) {
+              loading.textContent = 'Sincronizando filtros com a planilha. Só mais um instante...';
+            }
+          }, 3500);
+        }
+
+        const filtrosCache = obterFiltrosCache();
+        if (filtrosCache) {
+          aplicarFiltrosNaInterface(filtrosCache, { persistirCache: false });
+          iniciouComCache = true;
+          if (loading) {
+            loading.classList.add('hidden');
+            loading.textContent = 'Selecione os filtros e clique em “Gerar boletim”.';
+          }
+          mostrarToast('Filtros abertos instantaneamente. Atualizando a lista em segundo plano.', 'success', 'Sistema pronto');
         }
 
         const payload = await fetchFiltrosComRetry();
-        preencherFiltros(payload.filtros || {});
-        configurarBuscaFiltros();
-        configurarTabs();
-        if (!listenersFiltrosConfigurados) {
-          IDS_FILTROS.forEach(id => {
-            const campo = document.getElementById(id);
-            if (campo) {
-              campo.addEventListener('change', () => {
-                atualizarResumoParcial();
-                atualizarContadoresFiltros();
-                atualizarEstadoAcoes();
-                salvarUltimosFiltros();
-              });
-            }
-          });
-          listenersFiltrosConfigurados = true;
-        }
-        atualizarResumoParcial();
-        atualizarContadoresFiltros();
-        renderFila();
-        atualizarEstadoAcoes();
+        aplicarFiltrosNaInterface(payload.filtros || {});
 
         if (loading) {
           loading.classList.add('hidden');
           loading.textContent = 'Selecione os filtros e clique em “Gerar boletim”.';
         }
-        mostrarToast('Filtros prontos. Escolha o período e gere o boletim quando quiser.', 'success', 'Sistema pronto');
+
+        if (!iniciouComCache) {
+          mostrarToast('Filtros prontos. Escolha o período e gere o boletim quando quiser.', 'success', 'Sistema pronto');
+        }
       } catch (erro) {
-        const loading = document.getElementById('loading');
+        if (iniciouComCache) {
+          console.warn(erro);
+          mostrarToast('Usando os últimos filtros salvos porque a atualização da planilha demorou demais.', 'warning', 'Modo rápido ativo');
+          return;
+        }
+
         if (loading) {
           loading.classList.remove('hidden');
           loading.textContent = 'Não foi possível iniciar o sistema.';
         }
         console.error(erro);
         mostrarToast(erro.message || 'Falha ao iniciar o sistema.', 'error', 'Inicialização indisponível');
+      } finally {
+        if (avisoDemora) window.clearTimeout(avisoDemora);
       }
     }
 
