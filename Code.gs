@@ -1,5 +1,7 @@
-const ID_PLANILHA = '1XUtI9TSMJmTpbtfLjZbJ-uarRN94lu_Aqpsc46Lxmt4';
-const ID_PLANILHA_RELATORIOS = '1DjE-1Gx33RfWPkUtUW883-5SM2NVdeuDsq4wQ0XxGUw';
+const PLANILHAS = {
+  principal: '1XUtI9TSMJmTpbtfLjZbJ-uarRN94lu_Aqpsc46Lxmt4',
+  relatorios: '1DjE-1Gx33RfWPkUtUW883-5SM2NVdeuDsq4wQ0XxGUw'
+};
 const ABA_CAMINHADAS = 'BASE DE DADOS CAMINHADAS';
 const ABA_NOTIFICA = 'NOTIFICA - BASE';
 const ABA_RELATORIO_CRP = 'BASE_DADOS(NÃOEDITAR)';
@@ -160,30 +162,83 @@ function doGet(e) {
   const params = (e && e.parameter) || {};
 
   if (params.api === '1') {
-    const ss = SpreadsheetApp.openById(ID_PLANILHA);
-    return ContentService
-      .createTextOutput(JSON.stringify(montarPayload(ss, extrairFiltros(params))))
-      .setMimeType(ContentService.MimeType.JSON);
+    return responderJson(executarRota('api-boletim', () => {
+      return executarComPlanilha('principal', ss => montarPayload(ss, extrairFiltros(params)));
+    }));
   }
 
   if (params.api === 'relatorios') {
-    const ss = SpreadsheetApp.openById(ID_PLANILHA_RELATORIOS);
-    return ContentService
-      .createTextOutput(JSON.stringify(montarPayloadRelatorios(ss, extrairFiltrosRelatorios(params))))
-      .setMimeType(ContentService.MimeType.JSON);
+    return responderJson(executarRota('api-relatorios', () => {
+      return executarComPlanilha('relatorios', ss => montarPayloadRelatorios(ss, extrairFiltrosRelatorios(params)));
+    }));
   }
 
-  const pagina = normalizarTexto(params.page || params.pagina || '');
-  const arquivo = pagina === 'RELATORIOS' || pagina === 'RELATÓRIOS' ? 'Relatorios' : 'Index';
-  const titulo = arquivo === 'Relatorios' ? 'Relatórios COSEP' : 'Boletim COSEP';
+  try {
+    const pagina = normalizarTexto(params.page || params.pagina || '');
+    const arquivo = pagina === 'RELATORIOS' || pagina === 'RELATÓRIOS' ? 'Relatorios' : 'Index';
+    const titulo = arquivo === 'Relatorios' ? 'Relatórios COSEP' : 'Boletim COSEP';
 
-  const template = HtmlService.createTemplateFromFile(arquivo);
-  template.appUrl = ScriptApp.getService().getUrl();
+    const template = HtmlService.createTemplateFromFile(arquivo);
+    template.appUrl = ScriptApp.getService().getUrl();
 
-  return template
-    .evaluate()
-    .setTitle(titulo)
-    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+    return template
+      .evaluate()
+      .setTitle(titulo)
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  } catch (erro) {
+    registrarErro('html-route', erro);
+    return HtmlService
+      .createHtmlOutput('<!doctype html><meta charset="utf-8"><title>Erro</title><body style="font-family:Inter,Arial,sans-serif;padding:32px;background:#f8fafc;color:#0f172a"><h1>Não foi possível abrir o aplicativo.</h1><p>Tente novamente em instantes ou acione o administrador.</p></body>')
+      .setTitle('Erro ao abrir aplicativo');
+  }
+}
+
+function responderJson(payload) {
+  return ContentService
+    .createTextOutput(JSON.stringify(payload))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+function executarRota(nomeRota, callback) {
+  try {
+    return callback();
+  } catch (erro) {
+    registrarErro(nomeRota, erro);
+    return montarPayloadErro('Não foi possível carregar os dados agora.', nomeRota, erro);
+  }
+}
+
+function montarPayloadErro(mensagem, origem, erro) {
+  return {
+    success: false,
+    origem: origem || 'apps-script',
+    mensagem: mensagem || 'Falha inesperada no Apps Script.',
+    detalhe: erro && erro.message ? erro.message : String(erro || ''),
+    geradoEm: Utilities.formatDate(new Date(), FUSO_HORARIO, "dd/MM/yyyy 'às' HH:mm")
+  };
+}
+
+function registrarErro(origem, erro) {
+  const detalhe = erro && erro.stack ? erro.stack : (erro && erro.message ? erro.message : String(erro || 'Erro desconhecido'));
+  console.error(`[${origem}] ${detalhe}`);
+}
+
+function abrirPlanilhaLeitura(chavePlanilha) {
+  const id = PLANILHAS[chavePlanilha];
+  if (!id) {
+    throw new Error(`Planilha não parametrizada para a chave "${chavePlanilha}".`);
+  }
+
+  try {
+    return SpreadsheetApp.openById(id);
+  } catch (erro) {
+    throw new Error(`Falha ao abrir a planilha "${chavePlanilha}" para leitura: ${erro.message || erro}`);
+  }
+}
+
+function executarComPlanilha(chavePlanilha, callback) {
+  const ss = abrirPlanilhaLeitura(chavePlanilha);
+  return callback(ss);
 }
 
 function extrairFiltros(params) {
@@ -227,8 +282,9 @@ function montarPayload(ss, filtros) {
 }
 
 function obterPayload(filtros) {
-  const ss = SpreadsheetApp.openById(ID_PLANILHA);
-  return montarPayload(ss, extrairFiltros(filtros || {}));
+  return executarRota('rpc-boletim', () => {
+    return executarComPlanilha('principal', ss => montarPayload(ss, extrairFiltros(filtros || {})));
+  });
 }
 
 function normalizarTexto(valor) {
@@ -1127,8 +1183,9 @@ function montarPayloadRelatorios(ss, filtros) {
 }
 
 function obterPayloadRelatorios(filtros) {
-  const ss = SpreadsheetApp.openById(ID_PLANILHA_RELATORIOS);
-  return montarPayloadRelatorios(ss, extrairFiltrosRelatorios(filtros || {}));
+  return executarRota('rpc-relatorios', () => {
+    return executarComPlanilha('relatorios', ss => montarPayloadRelatorios(ss, extrairFiltrosRelatorios(filtros || {})));
+  });
 }
 
 function atendeFiltroRelatorio(valor, setFiltro, normalizerFn) {

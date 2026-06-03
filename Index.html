@@ -8,6 +8,17 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ["Inter", "ui-sans-serif", "system-ui"] },
+          boxShadow: { premium: "0 24px 80px rgba(15, 23, 42, 0.12)" }
+        }
+      }
+    };
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
@@ -1760,6 +1771,7 @@
   </style>
 </head>
 <body>
+  <div id="toast-root" class="fixed right-4 top-4 z-[9999] grid w-[min(420px,calc(100vw-2rem))] gap-3 pointer-events-none" aria-live="polite" aria-atomic="true"></div>
   <main class="app-shell">
     <section class="hero-card">
       <div class="top-menu-wrap">
@@ -1781,63 +1793,63 @@
 
       <div class="section-divider"></div>
 
-      <section class="filters-grid">
-        <div class="filters-main">
-          <div class="filter-tabs" role="tablist" aria-label="Tipo de boletim">
-            <button type="button" class="tab-btn active" id="tab-caminhadas" data-tab="caminhadas" role="tab" aria-selected="true">Caminhadas</button>
-            <button type="button" class="tab-btn" id="tab-notificacoes" data-tab="notificacoes" role="tab" aria-selected="false">Notificações</button>
+      <section class="filters-grid grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_310px] gap-7 items-start">
+        <div class="filters-main rounded-[1.35rem] border border-white/70 bg-white/75 p-4 shadow-premium shadow-slate-900/10 ring-1 ring-slate-200/60 backdrop-blur-2xl">
+          <div class="filter-tabs flex w-full gap-2 rounded-2xl border border-slate-200/80 bg-slate-100/80 p-1 shadow-inner" role="tablist" aria-label="Tipo de boletim">
+            <button type="button" class="tab-btn active flex-1 rounded-xl px-4 py-3 text-sm font-bold text-white shadow-lg shadow-teal-900/20 transition-all duration-200 bg-gradient-to-br from-teal-500 to-teal-700" id="tab-caminhadas" data-tab="caminhadas" role="tab" aria-selected="true">Caminhadas</button>
+            <button type="button" class="tab-btn flex-1 rounded-xl px-4 py-3 text-sm font-bold text-slate-600 transition-all duration-200 hover:bg-white hover:text-teal-700 hover:shadow-md" id="tab-notificacoes" data-tab="notificacoes" role="tab" aria-selected="false">Notificações</button>
           </div>
 
-          <div class="filter-panel active" data-panel="caminhadas">
+          <div class="filter-panel active mt-5" data-panel="caminhadas">
             <div class="filter-group">
-              <div class="filter-group-head">
+              <div class="filter-group-head mb-5 flex items-center gap-3">
                 <span class="filter-icon blue" aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.25c.3 0 .6.08.87.23l6.75 3.75c.54.3.88.87.88 1.49v4.6c0 4.86-2.95 9.24-7.45 11.04a2.2 2.2 0 0 1-1.64 0c-4.5-1.8-7.46-6.18-7.46-11.03v-4.61c0-.62.34-1.19.88-1.49l6.75-3.75c.27-.15.57-.23.87-.23Zm3.2 7.95a.75.75 0 0 0-1.08-.03l-2.86 2.71-1.08-1.08a.75.75 0 1 0-1.06 1.06l1.6 1.6c.56.56 1.46.58 2.05.03l3.46-3.22a.75.75 0 0 0 .03-1.07Z"></path></svg>
                 </span>
                 <h2>Caminhadas</h2>
               </div>
-              <div class="fields">
-                <div class="field field-ano searchable-field">
+              <div class="fields grid grid-cols-1 gap-4 lg:grid-cols-3">
+                <div class="field field-ano searchable-field grid min-w-0 gap-2">
                   <label for="ano-cosep">Ano</label>
-                  <input id="busca-ano-cosep" class="filter-search" type="search" placeholder="Buscar ano..." data-target="ano-cosep">
+                  <input id="busca-ano-cosep" class="filter-search min-h-11 rounded-2xl border border-slate-200 bg-white/95 px-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10" type="search" placeholder="Buscar ano..." data-target="ano-cosep">
                   <select id="ano-cosep" multiple></select>
                 </div>
-                <div class="field field-mes searchable-field">
+                <div class="field field-mes searchable-field grid min-w-0 gap-2">
                   <label for="mes-cosep">Mês</label>
-                  <input id="busca-mes-cosep" class="filter-search" type="search" placeholder="Buscar mês..." data-target="mes-cosep">
+                  <input id="busca-mes-cosep" class="filter-search min-h-11 rounded-2xl border border-slate-200 bg-white/95 px-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10" type="search" placeholder="Buscar mês..." data-target="mes-cosep">
                   <select id="mes-cosep" multiple></select>
                 </div>
-                <div class="field field-setor searchable-field">
+                <div class="field field-setor searchable-field grid min-w-0 gap-2 lg:col-auto">
                   <label for="unidade-cosep">Setor <small id="contador-unidade-cosep">0 selecionados</small></label>
-                  <input id="busca-unidade-cosep" class="filter-search" type="search" placeholder="Buscar setor..." data-target="unidade-cosep">
+                  <input id="busca-unidade-cosep" class="filter-search min-h-11 rounded-2xl border border-slate-200 bg-white/95 px-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10" type="search" placeholder="Buscar setor..." data-target="unidade-cosep">
                   <select id="unidade-cosep" multiple></select>
                 </div>
               </div>
             </div>
           </div>
 
-          <div class="filter-panel" data-panel="notificacoes">
+          <div class="filter-panel mt-5" data-panel="notificacoes">
             <div class="filter-group">
-              <div class="filter-group-head">
+              <div class="filter-group-head mb-5 flex items-center gap-3">
                 <span class="filter-icon orange" aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.25a4.75 4.75 0 0 0-4.75 4.75v1.06c0 .62-.2 1.22-.58 1.72l-1.17 1.56a3.25 3.25 0 0 0 2.6 5.2h7.8a3.25 3.25 0 0 0 2.6-5.2l-1.17-1.56c-.38-.5-.58-1.1-.58-1.72V8A4.75 4.75 0 0 0 12 3.25Zm0 18a2.74 2.74 0 0 0 2.58-1.85H9.42A2.74 2.74 0 0 0 12 21.25Z"></path></svg>
                 </span>
                 <h2>Notificações</h2>
               </div>
-              <div class="fields">
-                <div class="field field-ano searchable-field">
+              <div class="fields grid grid-cols-1 gap-4 lg:grid-cols-3">
+                <div class="field field-ano searchable-field grid min-w-0 gap-2">
                   <label for="ano-notifica">Ano</label>
-                  <input id="busca-ano-notifica" class="filter-search" type="search" placeholder="Buscar ano..." data-target="ano-notifica">
+                  <input id="busca-ano-notifica" class="filter-search min-h-11 rounded-2xl border border-slate-200 bg-white/95 px-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10" type="search" placeholder="Buscar ano..." data-target="ano-notifica">
                   <select id="ano-notifica" multiple></select>
                 </div>
-                <div class="field field-mes searchable-field">
+                <div class="field field-mes searchable-field grid min-w-0 gap-2">
                   <label for="mes-notifica">Mês</label>
-                  <input id="busca-mes-notifica" class="filter-search" type="search" placeholder="Buscar mês..." data-target="mes-notifica">
+                  <input id="busca-mes-notifica" class="filter-search min-h-11 rounded-2xl border border-slate-200 bg-white/95 px-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10" type="search" placeholder="Buscar mês..." data-target="mes-notifica">
                   <select id="mes-notifica" multiple></select>
                 </div>
-                <div class="field field-setor searchable-field">
+                <div class="field field-setor searchable-field grid min-w-0 gap-2 lg:col-auto">
                   <label for="unidade-notifica">Setor <small id="contador-unidade-notifica">0 selecionados</small></label>
-                  <input id="busca-unidade-notifica" class="filter-search" type="search" placeholder="Buscar setor..." data-target="unidade-notifica">
+                  <input id="busca-unidade-notifica" class="filter-search min-h-11 rounded-2xl border border-slate-200 bg-white/95 px-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10" type="search" placeholder="Buscar setor..." data-target="unidade-notifica">
                   <select id="unidade-notifica" multiple></select>
                 </div>
               </div>
@@ -1845,47 +1857,47 @@
           </div>
         </div>
 
-        <div class="actions">
-          <section class="action-group">
+        <div class="actions grid gap-3 rounded-[1.35rem] border border-white/70 bg-white/75 p-3 shadow-premium shadow-slate-900/10 ring-1 ring-slate-200/60 backdrop-blur-2xl">
+          <section class="action-group grid gap-2 rounded-2xl border border-slate-200/80 bg-white/90 p-3 shadow-sm">
             <h4>Ação principal</h4>
-            <button type="button" class="btn btn-primary" id="btn-gerar" onclick="carregarDados()">
+            <button type="button" class="btn btn-primary min-h-[60px] rounded-2xl bg-gradient-to-br from-teal-500 via-teal-600 to-cyan-700 px-4 text-sm font-bold text-white shadow-xl shadow-teal-900/25 transition duration-200 hover:-translate-y-0.5 hover:shadow-2xl disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0" id="btn-gerar" onclick="carregarDados()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5"></path><path d="M9 13h6"></path><path d="M9 17h6"></path><path d="M9 9h1"></path></svg>
               <span>Gerar boletim</span>
             </button>
-            <button type="button" class="btn" id="btn-baixar" onclick="baixarPDF()" disabled>
+            <button type="button" class="btn min-h-[54px] rounded-2xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-teal-200 hover:text-teal-700 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0" id="btn-baixar" onclick="baixarPDF()" disabled>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>
               <span>Baixar PDF</span>
             </button>
           </section>
 
-          <section class="action-group">
+          <section class="action-group grid gap-2 rounded-2xl border border-slate-200/80 bg-white/90 p-3 shadow-sm">
             <h4>Manipulação da fila</h4>
-            <button type="button" class="btn" id="btn-adicionar-fila" onclick="adicionarAFila()">
+            <button type="button" class="btn min-h-[54px] rounded-2xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-teal-200 hover:text-teal-700 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0" id="btn-adicionar-fila" onclick="adicionarAFila()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
               <span>Adicionar à fila</span>
             </button>
-            <button type="button" class="btn" id="btn-imprimir-fila" onclick="imprimirFilaPDF()" disabled>
+            <button type="button" class="btn min-h-[54px] rounded-2xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-teal-200 hover:text-teal-700 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0" id="btn-imprimir-fila" onclick="imprimirFilaPDF()" disabled>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"></path><path d="M6 18h12v3H6z"></path><rect x="3" y="9" width="18" height="9" rx="2"></rect></svg>
               <span>Imprimir fila</span>
             </button>
           </section>
 
-          <section class="action-group">
+          <section class="action-group grid gap-2 rounded-2xl border border-slate-200/80 bg-white/90 p-3 shadow-sm">
             <h4>Limpeza</h4>
-            <button type="button" class="btn" id="btn-limpar-fila" onclick="limparFila()" disabled>
+            <button type="button" class="btn min-h-[54px] rounded-2xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-teal-200 hover:text-teal-700 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0" id="btn-limpar-fila" onclick="limparFila()" disabled>
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="m19 6-1 14H6L5 6"></path></svg>
               <span>Limpar fila</span>
             </button>
-            <button type="button" class="btn" id="btn-limpar" onclick="limparFiltros()">
+            <button type="button" class="btn min-h-[54px] rounded-2xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-teal-200 hover:text-teal-700 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0" id="btn-limpar" onclick="limparFiltros()">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="m19 6-1 14H6L5 6"></path></svg>
               <span>Limpar filtros</span>
             </button>
           </section>
 
-          <section class="queue-box" id="queue-box">
+          <section class="queue-box grid gap-2 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3 text-slate-700" id="queue-box">
             <strong>Fila de boletins (0)</strong>
-            <ul class="queue-list" id="queue-list">
-              <li class="queue-item">Nenhum boletim adicionado.</li>
+            <ul class="queue-list grid max-h-56 list-none gap-2 overflow-y-auto p-0 m-0" id="queue-list">
+              <li class="queue-item rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm leading-relaxed shadow-sm">Nenhum boletim adicionado.</li>
             </ul>
           </section>
         </div>
@@ -2109,6 +2121,54 @@
       'unidade-notifica': { label: 'Setor', tipo: 'setor' }
     };
     const multiSelectRefs = {};
+    const toastRoot = () => document.getElementById('toast-root');
+
+    function mostrarToast(mensagem, tipo = 'info', titulo = '') {
+      const root = toastRoot();
+      if (!root) return;
+      const estilos = {
+        success: { icon: 'fa-circle-check', tone: 'border-emerald-200 bg-emerald-50/95 text-emerald-900', dot: 'bg-emerald-500' },
+        error: { icon: 'fa-circle-xmark', tone: 'border-rose-200 bg-rose-50/95 text-rose-900', dot: 'bg-rose-500' },
+        warning: { icon: 'fa-triangle-exclamation', tone: 'border-amber-200 bg-amber-50/95 text-amber-950', dot: 'bg-amber-500' },
+        info: { icon: 'fa-sparkles', tone: 'border-sky-200 bg-sky-50/95 text-sky-950', dot: 'bg-sky-500' }
+      };
+      const cfg = estilos[tipo] || estilos.info;
+      const toast = document.createElement('section');
+      toast.className = `pointer-events-auto relative overflow-hidden rounded-2xl border ${cfg.tone} p-4 shadow-2xl shadow-slate-900/15 backdrop-blur-xl transition duration-300 ease-out translate-x-4 opacity-0`;
+      toast.setAttribute('role', tipo === 'error' ? 'alert' : 'status');
+      toast.innerHTML = `
+        <div class="flex items-start gap-3">
+          <span class="mt-1 h-2.5 w-2.5 flex-none rounded-full ${cfg.dot} shadow-lg"></span>
+          <div class="min-w-0 flex-1">
+            ${titulo ? `<strong class="block text-sm font-extrabold">${escapeHtml(titulo)}</strong>` : ''}
+            <p class="m-0 text-sm font-semibold leading-6">${escapeHtml(mensagem)}</p>
+          </div>
+          <button type="button" class="rounded-full p-1 text-current/60 transition hover:bg-white/70 hover:text-current" aria-label="Fechar notificação">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      `;
+      const fechar = () => {
+        toast.classList.add('translate-x-4', 'opacity-0');
+        toast.classList.remove('translate-x-0', 'opacity-100');
+        window.setTimeout(() => toast.remove(), 260);
+      };
+      toast.querySelector('button').addEventListener('click', fechar);
+      root.appendChild(toast);
+      window.requestAnimationFrame(() => {
+        toast.classList.remove('translate-x-4', 'opacity-0');
+        toast.classList.add('translate-x-0', 'opacity-100');
+      });
+      window.setTimeout(fechar, tipo === 'error' ? 7200 : 4200);
+    }
+
+    function validarPayload(payload) {
+      if (!payload || payload.success === false) {
+        throw new Error((payload && (payload.mensagem || payload.detalhe)) || 'Resposta inválida do Apps Script.');
+      }
+      return payload;
+    }
+
 
     function getStorage() {
       try {
@@ -2189,7 +2249,7 @@
       let ultimoErro = null;
       for (let i = 0; i < tentativas; i += 1) {
         try {
-          return await fetchAPI(params);
+          return validarPayload(await fetchAPI(params));
         } catch (erro) {
           ultimoErro = erro;
           if (i < tentativas - 1) {
@@ -2377,11 +2437,11 @@
       const titulo = box.querySelector('strong');
       if (titulo) titulo.textContent = `Fila de boletins (${filaBoletins.length})`;
       if (!filaBoletins.length) {
-        lista.innerHTML = '<li class="queue-item">Nenhum boletim adicionado.</li>';
+        lista.innerHTML = '<li class="queue-item rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm leading-relaxed shadow-sm">Nenhum boletim adicionado.</li>';
         return;
       }
       lista.innerHTML = filaBoletins.map((item, index) => `
-        <li class="queue-item">
+        <li class="queue-item rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm leading-relaxed shadow-sm">
           <strong>#${index + 1}</strong> · ${escapeHtml(formatResumoFila(item.filtros))}
         </li>
       `).join('');
@@ -2398,6 +2458,7 @@
     function adicionarAFila() {
       if (!existeFiltroMinimo()) {
         mostrarAvisoFila('Selecione ano e mês de Caminhadas e Notificações antes de adicionar à fila.');
+        mostrarToast('Selecione ao menos ano e mês antes de adicionar à fila.', 'warning', 'Filtros incompletos');
         return;
       }
       const filtrosAtuais = obterFiltrosTela();
@@ -2414,12 +2475,14 @@
       fecharTodosMultiSelect();
       renderFila();
       atualizarEstadoAcoes();
+      mostrarToast('Boletim adicionado à fila de impressão.', 'success', 'Fila atualizada');
     }
 
     function limparFila() {
       filaBoletins = [];
       renderFila();
       atualizarEstadoAcoes();
+      mostrarToast('Fila de boletins limpa.', 'info', 'Fila atualizada');
     }
 
     function salvarUltimosFiltros() {
@@ -2459,6 +2522,7 @@
       atualizarContadoresFiltros();
       atualizarEstadoAcoes();
       atualizarResumoParcial();
+      mostrarToast('Filtros restaurados para o estado padrão.', 'info', 'Filtros limpos');
     }
 
     function atualizarResumoParcial() {
@@ -3114,6 +3178,7 @@
         atualizarEstadoAcoes();
         loading.classList.add('hidden');
         boletim.classList.remove('hidden');
+        mostrarToast('Boletim gerado com sucesso e pronto para exportação.', 'success', 'PDF preparado');
       } catch (erro) {
         boletimGerado = false;
         atualizarEstadoAcoes();
@@ -3124,6 +3189,7 @@
           preview.innerHTML = '<strong>Preview rápido</strong><p>Não foi possível atualizar o preview nesta tentativa.</p>';
         }
         console.error(erro);
+        mostrarToast(erro.message || 'Não foi possível gerar o boletim.', 'error', 'Erro na geração');
       }
     }
 
@@ -3398,11 +3464,13 @@
         const loading = document.getElementById('loading');
         loading.classList.add('hidden');
         loading.textContent = 'Selecione os filtros e clique em “Gerar boletim”.';
+        mostrarToast('Filtros carregados com segurança.', 'success', 'Sistema pronto');
       } catch (erro) {
         const loading = document.getElementById('loading');
         loading.classList.remove('hidden');
         loading.textContent = 'Não foi possível iniciar o sistema.';
         console.error(erro);
+        mostrarToast(erro.message || 'Falha ao iniciar o sistema.', 'error', 'Inicialização indisponível');
       }
     }
 
@@ -3475,6 +3543,7 @@
     async function imprimirFilaPDF() {
       if (!filaBoletins.length) {
         mostrarAvisoFila('A fila está vazia. Adicione pelo menos um boletim antes de imprimir.');
+        mostrarToast('Adicione pelo menos um boletim antes de imprimir a fila.', 'warning', 'Fila vazia');
         return;
       }
       const loading = document.getElementById('loading');
@@ -3519,10 +3588,12 @@
         if (preview) {
           preview.innerHTML = `<strong>Preview rápido</strong><p>Fila exportada com ${escapeHtml(String(filaBoletins.length))} boletins.</p>`;
         }
+        mostrarToast('Fila exportada em PDF com sucesso.', 'success', 'Exportação concluída');
       } catch (erro) {
         loading.classList.remove('hidden');
         loading.textContent = 'Não foi possível imprimir a fila agora.';
         console.error(erro);
+        mostrarToast(erro.message || 'Não foi possível imprimir a fila.', 'error', 'Erro na fila');
       } finally {
         document.body.classList.remove('pdf-export');
         container.remove();
@@ -3543,10 +3614,9 @@
       const nomeArquivo = `boletim-seguranca-paciente-${mesCosepArquivo}-${anoCosepArquivo}-notifica-${mesNotificaArquivo}-${anoNotificaArquivo}.pdf`;
 
       document.body.classList.add('pdf-export');
-      const html2pdf = await getHtml2Pdf();
-      await aguardarRender();
-
       try {
+        const html2pdf = await getHtml2Pdf();
+        await aguardarRender();
         await html2pdf().set({
           margin: [0, 0, 0, 0],
           filename: nomeArquivo,
@@ -3555,6 +3625,10 @@
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
           pagebreak: { mode: ['css', 'legacy'] }
         }).from(elemento).save();
+        mostrarToast('PDF baixado com sucesso.', 'success', 'Download iniciado');
+      } catch (erro) {
+        console.error(erro);
+        mostrarToast(erro.message || 'Não foi possível baixar o PDF.', 'error', 'Erro no download');
       } finally {
         document.body.classList.remove('pdf-export');
       }
