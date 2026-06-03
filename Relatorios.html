@@ -8,15 +8,33 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+          colors: {
+            cosep: {
+              ink: '#17252c', teal: '#0f766e', mint: '#14b8a6', line: '#d7e1e5', soft: '#e5f4f2'
+            }
+          },
+          boxShadow: {
+            premium: '0 24px 70px rgba(15, 23, 42, 0.13)',
+            glass: '0 18px 45px rgba(16, 40, 52, 0.10)'
+          }
+        }
+      }
+    };
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
-      --bg: #f3f7f8;
       --page: #ffffff;
       --line: #d7e1e5;
-      --line-strong: #b9c9cf;
+      --line-strong: #a9bdc4;
       --text: #1f2a30;
-      --muted: #5f6d75;
+      --muted: #64767e;
       --brand: #0f766e;
       --brand-2: #14b8a6;
       --brand-soft: #e5f4f2;
@@ -27,205 +45,77 @@
       --red: #c05621;
       --red-soft: #fff0eb;
       --ink: #17252c;
-      --shadow: 0 18px 45px rgba(16, 40, 52, 0.10);
-      --shadow-soft: 0 10px 26px rgba(16, 40, 52, 0.07);
+      --shadow: 0 24px 70px rgba(15, 23, 42, 0.13);
+      --shadow-soft: 0 12px 28px rgba(16, 40, 52, 0.08);
     }
 
     * { box-sizing: border-box; }
-
     html { scroll-behavior: smooth; }
-
     body {
       margin: 0;
       min-height: 100vh;
-      background:
-        radial-gradient(circle at top left, rgba(20, 184, 166, 0.16), transparent 34rem),
-        radial-gradient(circle at bottom right, rgba(15, 118, 110, 0.14), transparent 30rem),
-        linear-gradient(180deg, #f7fafb 0%, #eef4f6 58%, #e8eff2 100%);
       color: var(--text);
       font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 8% -12%, rgba(20, 184, 166, 0.18), transparent 32rem),
+        radial-gradient(circle at 92% 18%, rgba(15, 118, 110, 0.14), transparent 30rem),
+        linear-gradient(180deg, #f8fbfc 0%, #eef5f6 58%, #e7eff2 100%);
     }
-
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image: linear-gradient(rgba(15, 118, 110, .045) 1px, transparent 1px), linear-gradient(90deg, rgba(15, 118, 110, .045) 1px, transparent 1px);
+      background-size: 32px 32px;
+      mask-image: linear-gradient(180deg, rgba(0,0,0,.82), transparent 72%);
+    }
     button, input, select, textarea { font: inherit; }
 
-    .app-shell {
-      position: relative;
-      z-index: 1;
-      max-width: 1440px;
-      margin: 0 auto;
-      padding: 24px 16px 56px;
-    }
-
-    .hero-card, .panel, .document-page, .loading-box {
-      background: rgba(255, 255, 255, 0.94);
-      border: 1px solid rgba(196, 211, 218, 0.72);
-      border-radius: 28px;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-    }
-
-    .hero-card {
-      padding: 28px;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .hero-card::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      background: linear-gradient(135deg, rgba(255,255,255,.42), rgba(255,255,255,0));
-      pointer-events: none;
-    }
-
+    .app-shell { position: relative; z-index: 1; max-width: 1480px; margin: 0 auto; padding: 24px 16px 56px; }
+    .glass-card { background: rgba(255, 255, 255, 0.88); border: 1px solid rgba(255,255,255,.92); box-shadow: var(--shadow); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+    .hero-card, .panel, .loading-box { border-radius: 28px; }
+    .hero-card, .panel, .loading-box { background: rgba(255, 255, 255, 0.90); border: 1px solid rgba(196, 211, 218, 0.72); box-shadow: var(--shadow); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
+    .hero-card { padding: clamp(22px, 3vw, 34px); overflow: hidden; position: relative; }
+    .hero-card::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,.48), rgba(255,255,255,0)); pointer-events: none; }
     .hero-card > * { position: relative; z-index: 1; }
 
-    .top-menu-wrap { display: flex; justify-content: flex-end; margin-bottom: 14px; }
-    .top-menu { width: 460px; max-width: 100%; }
-    .top-menu-inner {
-      border: 1px solid rgba(191, 206, 213, 0.88);
-      border-radius: 999px;
-      background: rgba(255,255,255,.95);
-      box-shadow: 0 8px 22px rgba(22,52,63,.10);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 5px;
-      overflow: auto;
-    }
-    .top-menu-toggle {
-      width: 40px;
-      height: 32px;
-      border-radius: 999px;
-      border: 1px solid rgba(176, 194, 203, 0.9);
-      background: #f5fafb;
-      color: #4b6770;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      flex: 0 0 40px;
-    }
+    .top-menu-wrap { display: flex; justify-content: flex-end; margin-bottom: 18px; }
+    .top-menu { width: min(520px, 100%); }
+    .top-menu-inner { border: 1px solid rgba(191, 206, 213, 0.88); border-radius: 999px; background: rgba(255,255,255,.86); box-shadow: 0 10px 28px rgba(22,52,63,.10); display: flex; align-items: center; gap: 8px; padding: 6px; overflow: auto; }
+    .top-menu-toggle { width: 40px; height: 34px; border-radius: 999px; border: 1px solid rgba(176, 194, 203, 0.9); background: linear-gradient(180deg, #fff, #f4fafb); color: #4b6770; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 40px; }
     .top-menu-links { display: inline-flex; gap: 8px; align-items: center; }
-    .top-menu-link {
-      min-height: 32px;
-      border-radius: 999px;
-      border: 1px solid rgba(187,204,212,.92);
-      color: #36515b;
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: 800;
-      padding: 7px 12px;
-      white-space: nowrap;
-      background: #fff;
-      transition: .18s ease;
-    }
-    .top-menu-link:hover, .top-menu-link.active { background: var(--brand-soft); border-color: var(--brand); color: var(--brand); }
+    .top-menu-link { min-height: 34px; border-radius: 999px; border: 1px solid rgba(187,204,212,.92); color: #36515b; text-decoration: none; font-size: 13px; font-weight: 800; padding: 8px 13px; white-space: nowrap; background: rgba(255,255,255,.88); transition: .18s ease; }
+    .top-menu-link:hover, .top-menu-link.active { background: var(--brand-soft); border-color: var(--brand); color: var(--brand); transform: translateY(-1px); }
 
-    .hero-grid {
-      display: grid;
-      grid-template-columns: minmax(0, 1.15fr) minmax(340px, .85fr);
-      gap: 24px;
-      align-items: end;
-    }
+    .hero-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(340px, .85fr); gap: 24px; align-items: end; }
+    .eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 7px 11px; border-radius: 999px; background: var(--brand-soft); color: var(--brand); font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: .12em; margin-bottom: 16px; }
+    h1 { margin: 0 0 12px; color: #1e2f36; font-size: clamp(34px, 5vw, 62px); line-height: .96; letter-spacing: -.06em; font-weight: 800; }
+    .hero-copy { margin: 0; color: #5a6a72; font-size: 17px; line-height: 1.65; max-width: 900px; }
+    .hero-stat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .hero-stat { border: 1px solid rgba(195,211,218,.78); border-radius: 22px; padding: 16px; background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(247,251,252,.88)); box-shadow: var(--shadow-soft); transition: transform .18s ease, box-shadow .18s ease; }
+    .hero-stat:hover { transform: translateY(-2px); box-shadow: 0 18px 36px rgba(16, 40, 52, .11); }
+    .hero-stat span { display: block; color: var(--muted); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+    .hero-stat strong { display: block; margin-top: 8px; color: var(--ink); font-size: 30px; letter-spacing: -.04em; }
 
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 7px 11px;
-      border-radius: 999px;
-      background: var(--brand-soft);
-      color: var(--brand);
-      font-size: 12px;
-      font-weight: 800;
-      text-transform: uppercase;
-      letter-spacing: .12em;
-      margin-bottom: 16px;
-    }
-
-    h1 {
-      margin: 0 0 12px;
-      color: #1e2f36;
-      font-size: clamp(32px, 5vw, 58px);
-      line-height: .98;
-      letter-spacing: -.055em;
-      font-weight: 800;
-    }
-
-    .hero-copy {
-      margin: 0;
-      color: #5a6a72;
-      font-size: 17px;
-      line-height: 1.65;
-      max-width: 900px;
-    }
-
-    .hero-stat-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 12px;
-    }
-
-    .hero-stat {
-      border: 1px solid rgba(195,211,218,.78);
-      border-radius: 20px;
-      padding: 16px;
-      background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(247,251,252,.90));
-      box-shadow: var(--shadow-soft);
-    }
-    .hero-stat span { display: block; color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
-    .hero-stat strong { display: block; margin-top: 8px; color: var(--ink); font-size: 28px; letter-spacing: -.035em; }
-
-    .workspace {
-      display: grid;
-      grid-template-columns: 390px minmax(0, 1fr);
-      gap: 20px;
-      margin-top: 20px;
-      align-items: start;
-    }
-
+    .workspace { display: grid; grid-template-columns: 400px minmax(0, 1fr); gap: 22px; margin-top: 22px; align-items: start; }
     .panel { padding: 20px; }
     .sticky { position: sticky; top: 16px; }
     .panel-title { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 16px; }
-    .panel-title h2 { margin: 0; font-size: 20px; letter-spacing: -.02em; }
-    .pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      border-radius: 999px;
-      padding: 7px 10px;
-      background: var(--brand-soft);
-      color: var(--brand);
-      font-size: 12px;
-      font-weight: 800;
-    }
+    .panel-title h2 { margin: 0; font-size: 20px; letter-spacing: -.03em; color: var(--ink); }
+    .pill { display: inline-flex; align-items: center; gap: 7px; border-radius: 999px; padding: 7px 10px; background: var(--brand-soft); color: var(--brand); font-size: 12px; font-weight: 900; }
 
     .field { margin-bottom: 14px; }
     label { display: flex; justify-content: space-between; margin: 0 0 7px; color: #334951; font-size: 13px; font-weight: 800; }
-    select, textarea, input[type="text"] {
-      width: 100%;
-      border: 1px solid rgba(183,200,208,.96);
-      border-radius: 14px;
-      background: #fbfdfd;
-      color: var(--text);
-      outline: none;
-      transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
-    }
+    label small { color: var(--muted); font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
+    select, textarea, input[type="text"] { width: 100%; border: 1px solid rgba(183,200,208,.96); border-radius: 15px; background: rgba(251,253,253,.92); color: var(--text); outline: none; transition: border-color .18s ease, box-shadow .18s ease, background .18s ease; }
     select { min-height: 46px; padding: 10px; }
     select[multiple] { min-height: 118px; }
     textarea { min-height: 112px; padding: 12px 13px; resize: vertical; line-height: 1.55; }
     select:focus, textarea:focus, input[type="text"]:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rgba(15,118,110,.12); background: #fff; }
 
     .commission-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
-    .commission-option {
-      border: 1px solid rgba(183,200,208,.96);
-      border-radius: 18px;
-      padding: 14px;
-      background: #fbfdfd;
-      cursor: pointer;
-      transition: .18s ease;
-    }
+    .commission-option { border: 1px solid rgba(183,200,208,.96); border-radius: 18px; padding: 14px; background: rgba(251,253,253,.9); cursor: pointer; transition: .18s ease; }
     .commission-option input { display: none; }
     .commission-option strong { display: block; font-size: 18px; }
     .commission-option span { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; line-height: 1.4; }
@@ -233,74 +123,47 @@
     .commission-option.disabled { opacity: .58; cursor: not-allowed; }
 
     .actions { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 16px; }
-    .btn {
-      border: 0;
-      border-radius: 16px;
-      min-height: 48px;
-      padding: 12px 16px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 9px;
-      font-weight: 800;
-      letter-spacing: -.01em;
-      transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
-    }
+    .btn { border: 0; border-radius: 16px; min-height: 48px; padding: 12px 16px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 9px; font-weight: 900; letter-spacing: -.01em; transition: transform .18s ease, box-shadow .18s ease, background .18s ease; }
     .btn:hover { transform: translateY(-1px); }
-    .btn-primary { background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; box-shadow: 0 16px 28px rgba(15,118,110,.22); }
-    .btn-secondary { background: #fff; color: #36515b; border: 1px solid rgba(187,204,212,.92); }
+    .btn-primary { background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; box-shadow: 0 18px 30px rgba(15,118,110,.24); }
+    .btn-secondary { background: rgba(255,255,255,.92); color: #36515b; border: 1px solid rgba(187,204,212,.92); }
 
-    .loading-box {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-height: 92px;
-      padding: 20px;
-      color: var(--muted);
-      font-weight: 700;
-    }
+    .loading-box { display: flex; align-items: center; gap: 12px; min-height: 92px; padding: 20px; color: var(--muted); font-weight: 800; }
     .spinner { width: 22px; height: 22px; border: 3px solid #dce8ec; border-top-color: var(--brand); border-radius: 50%; animation: spin .75s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
     .hidden { display: none !important; }
-
     .report-tools { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; justify-content: flex-end; }
 
-    .document-page {
-      width: 210mm;
-      min-height: 297mm;
-      margin: 0 auto 18px;
-      border-radius: 0;
-      padding: 14mm 14mm 12mm;
-      background: #fff;
-      box-shadow: 0 18px 50px rgba(16,40,52,.14);
-      overflow: hidden;
-      page-break-after: always;
-    }
-
-    .doc-header { display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: start; border-bottom: 2px solid #a9bdc4; padding-bottom: 12px; }
+    .document-page { width: 210mm; min-height: 297mm; margin: 0 auto 18px; padding: 10mm; background: rgba(255,255,255,.98); border: 1px solid rgba(255,255,255,.96); box-shadow: 0 24px 60px rgba(15, 23, 42, 0.13); display: flex; flex-direction: column; gap: 10px; overflow: hidden; page-break-after: always; }
+    .page-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(31, 41, 55, 0.12); }
+    .page-header-main { display: flex; align-items: flex-start; gap: 10px; min-width: 0; }
+    .page-logo { width: 52px; height: 52px; flex: 0 0 52px; object-fit: contain; object-position: center; }
+    .page-header h2 { margin: 0 0 4px; color: var(--ink); font-size: 20px; line-height: 1.16; letter-spacing: -.035em; }
+    .page-header p, .page-meta { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .page-meta { min-width: 205px; text-align: right; }
+    .doc-content { flex: 1 1 auto; display: flex; flex-direction: column; }
+    .doc-header { display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: start; padding: 12px 0 4px; }
     .doc-kicker { color: var(--brand); font-size: 11px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
     .doc-title { margin: 6px 0 0; color: #1e2f36; font-size: 27px; line-height: 1.08; letter-spacing: -.035em; }
     .doc-subtitle { margin: 8px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
-    .doc-badge { border: 1px solid #bfd0d6; border-radius: 16px; padding: 12px; text-align: right; min-width: 150px; background: #f8fbfc; }
+    .doc-badge { border: 1px solid #bfd0d6; border-radius: 16px; padding: 12px; text-align: right; min-width: 150px; background: linear-gradient(180deg, #fff, #f8fbfc); }
     .doc-badge strong { display: block; font-size: 30px; line-height: 1; color: var(--brand); letter-spacing: -.04em; }
-    .doc-badge span { display: block; margin-top: 5px; font-size: 11px; color: var(--muted); font-weight: 800; text-transform: uppercase; }
+    .doc-badge span { display: block; margin-top: 5px; font-size: 11px; color: var(--muted); font-weight: 900; text-transform: uppercase; }
+    .footer-note { display: flex; justify-content: center; align-items: center; padding-top: 4px; margin-top: auto; border-top: 1px solid var(--line); overflow: hidden; }
+    .footer-brand { height: 40px; width: auto; max-width: 156mm; object-fit: contain; object-position: center; flex: 0 1 auto; }
 
-    .doc-section { margin-top: 18px; break-inside: avoid; }
+    .doc-section { margin-top: 16px; break-inside: avoid; }
     .doc-section h3 { display: flex; align-items: center; gap: 9px; margin: 0 0 10px; color: #1f343c; font-size: 16px; letter-spacing: -.02em; }
     .doc-section h3::before { content: ''; width: 8px; height: 22px; border-radius: 999px; background: linear-gradient(180deg, var(--brand), var(--brand-2)); }
     .doc-text { color: #31454d; font-size: 12.4px; line-height: 1.72; text-align: justify; white-space: pre-line; }
-
-    .metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 16px; }
-    .metric-card { border: 1px solid #d4e0e4; border-radius: 16px; padding: 12px; background: linear-gradient(180deg, #fff, #f8fbfc); }
+    .metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
+    .metric-card { border: 1px solid #d4e0e4; border-radius: 16px; padding: 12px; background: linear-gradient(180deg, #fff, #f8fbfc); break-inside: avoid; }
     .metric-card span { display: block; color: var(--muted); font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
     .metric-card strong { display: block; margin-top: 7px; color: var(--ink); font-size: 24px; letter-spacing: -.04em; }
     .metric-card small { display: block; margin-top: 4px; color: var(--muted); line-height: 1.35; }
-
     .chart-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 12px; margin-top: 12px; }
     .chart-box { border: 1px solid #d4e0e4; border-radius: 18px; padding: 12px; min-height: 230px; background: #fbfdfd; }
     .chart-box canvas { width: 100% !important; height: 205px !important; }
-
     .table-wrap { border: 1px solid #d4e0e4; border-radius: 18px; overflow: hidden; margin-top: 12px; }
     table { width: 100%; border-collapse: collapse; font-size: 11px; }
     th, td { padding: 8px 9px; border-bottom: 1px solid #e4ecef; text-align: left; vertical-align: top; }
@@ -312,28 +175,14 @@
     .tag.green { background: var(--green-soft); color: var(--green); }
 
     .editor-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
-    .toast {
-      position: fixed;
-      right: 18px;
-      bottom: 18px;
-      z-index: 30;
-      background: #18323a;
-      color: #fff;
-      border-radius: 16px;
-      padding: 13px 15px;
-      box-shadow: 0 16px 35px rgba(0,0,0,.18);
-      font-weight: 800;
-      transform: translateY(120%);
-      transition: transform .22s ease;
-    }
+    .toast { position: fixed; right: 18px; bottom: 18px; z-index: 30; background: #18323a; color: #fff; border-radius: 16px; padding: 13px 15px; box-shadow: 0 16px 35px rgba(0,0,0,.18); font-weight: 900; transform: translateY(120%); transition: transform .22s ease; }
     .toast.show { transform: translateY(0); }
 
     @media (max-width: 1200px) { .workspace { grid-template-columns: 1fr; } .sticky { position: static; } .document-page { width: 100%; min-height: auto; } }
-    @media (max-width: 780px) { .hero-grid, .chart-grid, .metric-grid { grid-template-columns: 1fr; } .document-page { padding: 22px; } .doc-header { grid-template-columns: 1fr; } .doc-badge { text-align: left; } }
-
+    @media (max-width: 780px) { .hero-grid, .chart-grid, .metric-grid { grid-template-columns: 1fr; } .document-page { padding: 22px; } .doc-header, .page-header { grid-template-columns: 1fr; flex-direction: column; } .doc-badge, .page-meta { text-align: left; min-width: 0; } .commission-switch { grid-template-columns: 1fr; } }
     @media print {
       body { background: #fff; }
-      .hero-card, .filters-panel, .report-tools, .loading-box, .toast { display: none !important; }
+      body::before, .hero-card, .filters-panel, .report-tools, .loading-box, .toast { display: none !important; }
       .app-shell { max-width: none; padding: 0; }
       .workspace { display: block; margin: 0; }
       .preview-panel { padding: 0; border: 0; box-shadow: none; }
@@ -342,8 +191,8 @@
   </style>
 </head>
 <body>
-  <main class="app-shell">
-    <section class="hero-card">
+  <main class="app-shell selection:bg-cosep-soft selection:text-cosep-teal">
+    <section class="hero-card isolate">
       <div class="top-menu-wrap">
         <nav class="top-menu" aria-label="Menu superior">
           <div class="top-menu-inner">
@@ -373,7 +222,7 @@
     </section>
 
     <section class="workspace">
-      <aside class="panel sticky filters-panel">
+      <aside class="panel sticky filters-panel space-y-1">
         <div class="panel-title"><h2>Configuração</h2><span class="pill"><i class="fa-solid fa-wand-magic-sparkles"></i> Premium</span></div>
 
         <div class="commission-switch" role="radiogroup" aria-label="Comissão do relatório">
@@ -405,7 +254,7 @@
         </div>
       </aside>
 
-      <section class="preview-panel">
+      <section class="preview-panel min-w-0">
         <div id="loading" class="loading-box"><span class="spinner" aria-hidden="true"></span><span>Carregando filtros e preparando relatório...</span></div>
         <div class="report-tools hidden" id="report-tools">
           <button class="btn btn-secondary" type="button" id="btn-topo"><i class="fa-solid fa-arrow-up"></i> Topo</button>
@@ -420,6 +269,8 @@
 
   <script>
     const APP_URL = '<?!= appUrl ?>';
+    const LOGO_INSTITUCIONAL = 'https://i.ibb.co/ccny4xx5/NGQS-Caminhada-Pela-Seguran-a-Mascote-Toten-Mandala-24-x-25cm-final-1.png';
+    const RODAPE_INSTITUCIONAL = 'https://i.ibb.co/VYv0RyF3/Rodape-1.png';
     const state = { payload: null, charts: [] };
     const idsFiltros = ['anos', 'meses', 'unidades', 'eixos', 'categorias', 'satisfacoes', 'status'];
     const textos = {
@@ -586,49 +437,83 @@
       const aplicado = payload.aplicado || {};
       const html = `
         <section class="document-page">
-          <header class="doc-header">
-            <div>
-              <div class="doc-kicker">Comissão ${escapeHtml(rel.comissao || 'CRP')} · ${escapeHtml(periodoTexto(aplicado))}</div>
-              <h2 class="doc-title">Relatório de Análise de Prontuários</h2>
-              <p class="doc-subtitle">Documento gerado em ${escapeHtml(payload.geradoEm || '')}. Base: ${escapeHtml(rel.abaEncontrada || 'aba não encontrada')}. Recorte com ${fmtNum(rel.totalAvaliacoes)} avaliações de ${fmtNum(rel.totalRegistrosBase)} registros disponíveis.</p>
+          <header class="page-header">
+            <div class="page-header-main">
+              <img class="page-logo" src="${LOGO_INSTITUCIONAL}" alt="Logo institucional COSEP">
+              <div>
+                <h2>Boletim da Segurança do Paciente · Relatório Analítico</h2>
+                <p>Comissão ${escapeHtml(rel.comissao || 'CRP')} · ${escapeHtml(periodoTexto(aplicado))}</p>
+              </div>
             </div>
-            <aside class="doc-badge"><strong>${fmtPct(rel.conformidadeGeral)}</strong><span>Conformidade geral</span></aside>
+            <div class="page-meta">Gerado em ${escapeHtml(payload.geradoEm || '')}<br>Base: ${escapeHtml(rel.abaEncontrada || 'aba não encontrada')}</div>
           </header>
 
-          <div class="metric-grid">
-            <article class="metric-card"><span>Avaliações</span><strong>${fmtNum(rel.totalAvaliacoes)}</strong><small>Registros filtrados</small></article>
-            <article class="metric-card"><span>Itens auditáveis</span><strong>${fmtNum(rel.totalAuditavel)}</strong><small>Conforme + Não conforme</small></article>
-            <article class="metric-card"><span>Não conformes</span><strong>${fmtNum(rel.naoConformes)}</strong><small>Pontos de melhoria</small></article>
-            <article class="metric-card"><span>Meta institucional</span><strong>${fmtPct(rel.metaInstitucional)}</strong><small>${rel.diferencaMeta >= 0 ? 'Acima da meta' : 'Abaixo da meta'} em ${fmtPct(Math.abs(rel.diferencaMeta || 0))}</small></article>
-          </div>
+          <main class="doc-content">
+            <header class="doc-header">
+              <div>
+                <div class="doc-kicker">Síntese executiva e análise crítica</div>
+                <h2 class="doc-title">Relatório de Análise de Prontuários</h2>
+                <p class="doc-subtitle">Documento consolidado no padrão visual do boletim. Recorte com ${fmtNum(rel.totalAvaliacoes)} avaliações de ${fmtNum(rel.totalRegistrosBase)} registros disponíveis.</p>
+              </div>
+              <aside class="doc-badge"><strong>${fmtPct(rel.conformidadeGeral)}</strong><span>Conformidade geral</span></aside>
+            </header>
 
-          ${renderTexto('1. Introdução', textos.intro.value)}
-          ${renderTexto('2. Metodologia', textos.metodo.value)}
-          ${renderTexto('3. Análise crítica', textos.analise.value)}
-          ${renderTabelaIndicadores(rel)}
+            <div class="metric-grid">
+              <article class="metric-card"><span>Avaliações</span><strong>${fmtNum(rel.totalAvaliacoes)}</strong><small>Registros filtrados</small></article>
+              <article class="metric-card"><span>Itens auditáveis</span><strong>${fmtNum(rel.totalAuditavel)}</strong><small>Conforme + Não conforme</small></article>
+              <article class="metric-card"><span>Não conformes</span><strong>${fmtNum(rel.naoConformes)}</strong><small>Pontos de melhoria</small></article>
+              <article class="metric-card"><span>Meta institucional</span><strong>${fmtPct(rel.metaInstitucional)}</strong><small>${rel.diferencaMeta >= 0 ? 'Acima da meta' : 'Abaixo da meta'} em ${fmtPct(Math.abs(rel.diferencaMeta || 0))}</small></article>
+            </div>
+
+            ${renderTexto('1. Introdução', textos.intro.value)}
+            ${renderTexto('2. Metodologia', textos.metodo.value)}
+            ${renderTexto('3. Análise crítica', textos.analise.value)}
+            ${renderTabelaIndicadores(rel)}
+          </main>
+
+          <footer class="footer-note">
+            <img class="footer-brand" src="${RODAPE_INSTITUCIONAL}" alt="Rodapé institucional">
+          </footer>
         </section>
 
         <section class="document-page">
-          <header class="doc-header">
-            <div>
-              <div class="doc-kicker">Detalhamento e plano de ação</div>
-              <h2 class="doc-title">Desempenho por indicador e setor</h2>
-              <p class="doc-subtitle">Distribuição sintética dos resultados para apoiar priorização de intervenções e acompanhamento executivo.</p>
+          <header class="page-header">
+            <div class="page-header-main">
+              <img class="page-logo" src="${LOGO_INSTITUCIONAL}" alt="Logo institucional COSEP">
+              <div>
+                <h2>Boletim da Segurança do Paciente · Detalhamento</h2>
+                <p>Comissão ${escapeHtml(rel.comissao || 'CRP')} · ${escapeHtml(periodoTexto(aplicado))}</p>
+              </div>
             </div>
-            <aside class="doc-badge"><strong>${fmtNum(rel.naoSeAplica)}</strong><span>Não se aplica</span></aside>
+            <div class="page-meta">Indicadores, setores e plano de ação<br>${fmtNum(rel.totalAuditavel)} itens auditáveis</div>
           </header>
 
-          <section class="doc-section">
-            <h3>4. Visualização dos resultados</h3>
-            <div class="chart-grid">
-              <div class="chart-box"><canvas id="chart-evolucao"></canvas></div>
-              <div class="chart-box"><canvas id="chart-distribuicao"></canvas></div>
-            </div>
-          </section>
+          <main class="doc-content">
+            <header class="doc-header">
+              <div>
+                <div class="doc-kicker">Detalhamento e plano de ação</div>
+                <h2 class="doc-title">Desempenho por indicador e setor</h2>
+                <p class="doc-subtitle">Distribuição sintética dos resultados para apoiar priorização de intervenções e acompanhamento executivo.</p>
+              </div>
+              <aside class="doc-badge"><strong>${fmtNum(rel.naoSeAplica)}</strong><span>Não se aplica</span></aside>
+            </header>
 
-          <section class="doc-section"><h3>5. Setores com maior oportunidade</h3>${renderTabelaSetores(rel)}</section>
-          ${renderTexto('6. Plano de ação recomendado', textos.plano.value)}
-          ${renderTexto('7. Conclusão', textos.conclusao.value)}
+            <section class="doc-section">
+              <h3>4. Visualização dos resultados</h3>
+              <div class="chart-grid">
+                <div class="chart-box"><canvas id="chart-evolucao"></canvas></div>
+                <div class="chart-box"><canvas id="chart-distribuicao"></canvas></div>
+              </div>
+            </section>
+
+            <section class="doc-section"><h3>5. Setores com maior oportunidade</h3>${renderTabelaSetores(rel)}</section>
+            ${renderTexto('6. Plano de ação recomendado', textos.plano.value)}
+            ${renderTexto('7. Conclusão', textos.conclusao.value)}
+          </main>
+
+          <footer class="footer-note">
+            <img class="footer-brand" src="${RODAPE_INSTITUCIONAL}" alt="Rodapé institucional">
+          </footer>
         </section>`;
 
       document.getElementById('relatorio').innerHTML = html;
