@@ -1750,6 +1750,25 @@
       }
     }
 
+    .pdf-capture-stage {
+      position: fixed;
+      inset: 0;
+      z-index: 2147483647;
+      overflow: auto;
+      background: #ffffff;
+      pointer-events: none;
+      opacity: 1;
+    }
+
+    .pdf-capture-stage > .report-stack,
+    .pdf-capture-stage > article,
+    .pdf-capture-stage > section {
+      width: 210mm;
+      max-width: 210mm;
+      margin: 0 auto;
+      background: #ffffff;
+    }
+
     body.pdf-export .document-page,
     body.pdf-export .panel,
     body.pdf-export .metric-card {
@@ -2672,6 +2691,31 @@
       .doc-badge, .page-meta { text-align: left; min-width: 0; }
       .document-page { padding: 22px; }
     }
+    .pdf-capture-stage {
+      position: fixed;
+      inset: 0;
+      z-index: 2147483647;
+      overflow: auto;
+      background: #ffffff;
+      pointer-events: none;
+      opacity: 1;
+    }
+    .pdf-capture-stage > article,
+    .pdf-capture-stage > section {
+      width: 210mm;
+      max-width: 210mm;
+      margin: 0 auto;
+      background: #ffffff;
+    }
+    body.pdf-export .document-page,
+    body.pdf-export .metric-card,
+    body.pdf-export .chart-box {
+      background: #ffffff !important;
+      box-shadow: none !important;
+      backdrop-filter: none !important;
+      -webkit-backdrop-filter: none !important;
+    }
+
     @media print {
       body { background: #fff; }
       body::before, .top-nav, .page-header, .editor-card, .report-tools, .loading-box, #toast-root { display: none !important; }
@@ -3250,6 +3294,15 @@
       return clone;
     }
 
+    function criarPalcoCapturaPdfRelatorio(conteudo) {
+      const palco = document.createElement('div');
+      palco.className = 'pdf-capture-stage';
+      palco.setAttribute('aria-hidden', 'true');
+      palco.appendChild(conteudo);
+      document.body.appendChild(palco);
+      return palco;
+    }
+
     async function baixarRelatorioPdf() {
       if (!state.payload?.relatorio) return;
       const rel = state.payload.relatorio;
@@ -3257,25 +3310,30 @@
       const html2pdf = await getHtml2PdfRelatorio();
       await aguardarEstabilidadeRelatorio();
       const clone = cloneRelatorioParaPdf();
-      clone.style.width = '210mm';
-      clone.style.position = 'fixed';
-      clone.style.left = '-99999px';
-      clone.style.top = '0';
-      document.body.appendChild(clone);
+      const palco = criarPalcoCapturaPdfRelatorio(clone);
       document.body.classList.add('pdf-export');
       try {
+        await aguardarEstabilidadeRelatorio();
         await html2pdf().set({
           margin: [0, 0, 0, 0],
           filename: nomeArquivo,
           image: { type: 'png', quality: 1 },
-          html2canvas: { scale: 2.4, useCORS: true, scrollY: 0, backgroundColor: '#ffffff' },
+          html2canvas: {
+            scale: 2.4,
+            useCORS: true,
+            scrollX: 0,
+            scrollY: 0,
+            windowWidth: Math.max(clone.scrollWidth, palco.clientWidth, 794),
+            windowHeight: Math.max(clone.scrollHeight, palco.clientHeight, 1123),
+            backgroundColor: '#ffffff'
+          },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
           pagebreak: { mode: ['css', 'legacy'], avoid: ['.chart-box', '.metric-card', '.doc-section'] }
         }).from(clone).save();
         toast('PDF gerado sem cabeçalho/rodapé do navegador.', 'success', 'PDF baixado');
       } finally {
         document.body.classList.remove('pdf-export');
-        clone.remove();
+        palco.remove();
       }
     }
 
@@ -4808,6 +4866,28 @@
       await aguardarRender(80);
     }
 
+    function criarPalcoCapturaPdf(conteudo) {
+      const palco = document.createElement('div');
+      palco.className = 'pdf-capture-stage';
+      palco.setAttribute('aria-hidden', 'true');
+      palco.appendChild(conteudo);
+      document.body.appendChild(palco);
+      return palco;
+    }
+
+    function opcoesHtml2CanvasPdf(elemento, escala = 2.6) {
+      return {
+        scale: escala,
+        useCORS: true,
+        allowTaint: true,
+        scrollX: 0,
+        scrollY: 0,
+        windowWidth: Math.max(elemento.scrollWidth, document.documentElement.clientWidth, 794),
+        windowHeight: Math.max(elemento.scrollHeight, document.documentElement.clientHeight, 1123),
+        backgroundColor: '#ffffff'
+      };
+    }
+
     async function exportarFilaComoPdf(container, nomeArquivo) {
       const html2pdf = await getHtml2Pdf();
       await aguardarEstabilidadeVisual();
@@ -4816,12 +4896,7 @@
         margin: [0, 0, 0, 0],
         filename: nomeArquivo,
         image: { type: 'png', quality: 1 },
-        html2canvas: {
-          scale: 2,
-          useCORS: true,
-          scrollY: 0,
-          backgroundColor: '#ffffff'
-        },
+        html2canvas: opcoesHtml2CanvasPdf(container, 2),
         jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
         pagebreak: { mode: ['css', 'legacy'] }
       }).from(container).save();
@@ -4869,14 +4944,9 @@
       const nomeArquivo = `boletins-fila-${filaBoletins.length}-itens.pdf`;
       const container = document.createElement('section');
       container.className = 'report-stack';
-      container.style.position = 'fixed';
-      container.style.top = '0';
-      container.style.left = '-99999px';
       container.style.width = '210mm';
-      container.style.opacity = '1';
-      container.style.pointerEvents = 'none';
-      container.style.zIndex = '-1';
-      document.body.appendChild(container);
+      container.style.maxWidth = '210mm';
+      const palco = criarPalcoCapturaPdf(container);
 
       try {
         loading.classList.remove('hidden');
@@ -4912,7 +4982,7 @@
         mostrarToast(erro.message || 'Não foi possível imprimir a fila.', 'error', 'Erro na fila');
       } finally {
         document.body.classList.remove('pdf-export');
-        container.remove();
+        palco.remove();
         if (boletimEstavaOculto) boletim.classList.add('hidden');
         loading.classList.remove('hidden');
         loading.textContent = 'Selecione os filtros e clique em “Gerar boletim”.';
@@ -4929,12 +4999,10 @@
       const nomeArquivo = `boletim-seguranca-paciente-${mesCosepArquivo}-${anoCosepArquivo}-notifica-${mesNotificaArquivo}-${anoNotificaArquivo}.pdf`;
 
       const clone = criarCloneBoletimComCanvas();
-      clone.style.position = 'fixed';
-      clone.style.left = '-99999px';
-      clone.style.top = '0';
       clone.style.width = '210mm';
+      clone.style.maxWidth = '210mm';
       clone.style.pointerEvents = 'none';
-      document.body.appendChild(clone);
+      const palco = criarPalcoCapturaPdf(clone);
 
       document.body.classList.add('pdf-export');
       try {
@@ -4944,7 +5012,7 @@
           margin: [0, 0, 0, 0],
           filename: nomeArquivo,
           image: { type: 'png', quality: 1 },
-          html2canvas: { scale: 2.6, useCORS: true, scrollY: 0, backgroundColor: '#ffffff' },
+          html2canvas: opcoesHtml2CanvasPdf(clone, 2.6),
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
           pagebreak: { mode: ['css', 'legacy'], avoid: ['.chart-box', '.metric-card', '.panel'] }
         }).from(clone).save();
@@ -4954,7 +5022,7 @@
         mostrarToast(erro.message || 'Não foi possível baixar o PDF.', 'error', 'Erro no download');
       } finally {
         document.body.classList.remove('pdf-export');
-        clone.remove();
+        palco.remove();
       }
     }
 
