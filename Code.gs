@@ -175,11 +175,12 @@ function doGet(e) {
 
   try {
     const pagina = normalizarTexto(params.page || params.pagina || '');
-    const arquivo = pagina === 'RELATORIOS' || pagina === 'RELATÓRIOS' ? 'Relatorios' : 'Index';
-    const titulo = arquivo === 'Relatorios' ? 'Relatórios COSEP' : 'Boletim COSEP';
+    const telaInicial = pagina === 'RELATORIOS' || pagina === 'RELATÓRIOS' ? 'relatorios' : 'boletim';
+    const titulo = telaInicial === 'relatorios' ? 'Relatórios COSEP' : 'Boletim COSEP';
 
-    const template = HtmlService.createTemplateFromFile(arquivo);
+    const template = HtmlService.createTemplateFromFile('Index');
     template.appUrl = ScriptApp.getService().getUrl();
+    template.currentPage = telaInicial;
 
     return template
       .evaluate()
