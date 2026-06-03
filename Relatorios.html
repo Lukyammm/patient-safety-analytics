@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>Relatórios COSEP</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #f3f7f8;
+      --page: #ffffff;
+      --line: #d7e1e5;
+      --line-strong: #b9c9cf;
+      --text: #1f2a30;
+      --muted: #5f6d75;
+      --brand: #0f766e;
+      --brand-2: #14b8a6;
+      --brand-soft: #e5f4f2;
+      --green: #1f8f5f;
+      --green-soft: #eaf7f0;
+      --amber: #b7791f;
+      --amber-soft: #fff5e5;
+      --red: #c05621;
+      --red-soft: #fff0eb;
+      --ink: #17252c;
+      --shadow: 0 18px 45px rgba(16, 40, 52, 0.10);
+      --shadow-soft: 0 10px 26px rgba(16, 40, 52, 0.07);
+    }
+
+    * { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at top left, rgba(20, 184, 166, 0.16), transparent 34rem),
+        radial-gradient(circle at bottom right, rgba(15, 118, 110, 0.14), transparent 30rem),
+        linear-gradient(180deg, #f7fafb 0%, #eef4f6 58%, #e8eff2 100%);
+      color: var(--text);
+      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    button, input, select, textarea { font: inherit; }
+
+    .app-shell {
+      position: relative;
+      z-index: 1;
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 24px 16px 56px;
+    }
+
+    .hero-card, .panel, .document-page, .loading-box {
+      background: rgba(255, 255, 255, 0.94);
+      border: 1px solid rgba(196, 211, 218, 0.72);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .hero-card {
+      padding: 28px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .hero-card::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, rgba(255,255,255,.42), rgba(255,255,255,0));
+      pointer-events: none;
+    }
+
+    .hero-card > * { position: relative; z-index: 1; }
+
+    .top-menu-wrap { display: flex; justify-content: flex-end; margin-bottom: 14px; }
+    .top-menu { width: 460px; max-width: 100%; }
+    .top-menu-inner {
+      border: 1px solid rgba(191, 206, 213, 0.88);
+      border-radius: 999px;
+      background: rgba(255,255,255,.95);
+      box-shadow: 0 8px 22px rgba(22,52,63,.10);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 5px;
+      overflow: auto;
+    }
+    .top-menu-toggle {
+      width: 40px;
+      height: 32px;
+      border-radius: 999px;
+      border: 1px solid rgba(176, 194, 203, 0.9);
+      background: #f5fafb;
+      color: #4b6770;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 40px;
+    }
+    .top-menu-links { display: inline-flex; gap: 8px; align-items: center; }
+    .top-menu-link {
+      min-height: 32px;
+      border-radius: 999px;
+      border: 1px solid rgba(187,204,212,.92);
+      color: #36515b;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 7px 12px;
+      white-space: nowrap;
+      background: #fff;
+      transition: .18s ease;
+    }
+    .top-menu-link:hover, .top-menu-link.active { background: var(--brand-soft); border-color: var(--brand); color: var(--brand); }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.15fr) minmax(340px, .85fr);
+      gap: 24px;
+      align-items: end;
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: var(--brand-soft);
+      color: var(--brand);
+      font-size: 12px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .12em;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      color: #1e2f36;
+      font-size: clamp(32px, 5vw, 58px);
+      line-height: .98;
+      letter-spacing: -.055em;
+      font-weight: 800;
+    }
+
+    .hero-copy {
+      margin: 0;
+      color: #5a6a72;
+      font-size: 17px;
+      line-height: 1.65;
+      max-width: 900px;
+    }
+
+    .hero-stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .hero-stat {
+      border: 1px solid rgba(195,211,218,.78);
+      border-radius: 20px;
+      padding: 16px;
+      background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(247,251,252,.90));
+      box-shadow: var(--shadow-soft);
+    }
+    .hero-stat span { display: block; color: var(--muted); font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; }
+    .hero-stat strong { display: block; margin-top: 8px; color: var(--ink); font-size: 28px; letter-spacing: -.035em; }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: 390px minmax(0, 1fr);
+      gap: 20px;
+      margin-top: 20px;
+      align-items: start;
+    }
+
+    .panel { padding: 20px; }
+    .sticky { position: sticky; top: 16px; }
+    .panel-title { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 16px; }
+    .panel-title h2 { margin: 0; font-size: 20px; letter-spacing: -.02em; }
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      border-radius: 999px;
+      padding: 7px 10px;
+      background: var(--brand-soft);
+      color: var(--brand);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .field { margin-bottom: 14px; }
+    label { display: flex; justify-content: space-between; margin: 0 0 7px; color: #334951; font-size: 13px; font-weight: 800; }
+    select, textarea, input[type="text"] {
+      width: 100%;
+      border: 1px solid rgba(183,200,208,.96);
+      border-radius: 14px;
+      background: #fbfdfd;
+      color: var(--text);
+      outline: none;
+      transition: border-color .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+    select { min-height: 46px; padding: 10px; }
+    select[multiple] { min-height: 118px; }
+    textarea { min-height: 112px; padding: 12px 13px; resize: vertical; line-height: 1.55; }
+    select:focus, textarea:focus, input[type="text"]:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rgba(15,118,110,.12); background: #fff; }
+
+    .commission-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .commission-option {
+      border: 1px solid rgba(183,200,208,.96);
+      border-radius: 18px;
+      padding: 14px;
+      background: #fbfdfd;
+      cursor: pointer;
+      transition: .18s ease;
+    }
+    .commission-option input { display: none; }
+    .commission-option strong { display: block; font-size: 18px; }
+    .commission-option span { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; line-height: 1.4; }
+    .commission-option:has(input:checked) { border-color: var(--brand); background: var(--brand-soft); box-shadow: 0 0 0 4px rgba(15,118,110,.08); color: var(--brand); }
+    .commission-option.disabled { opacity: .58; cursor: not-allowed; }
+
+    .actions { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 16px; }
+    .btn {
+      border: 0;
+      border-radius: 16px;
+      min-height: 48px;
+      padding: 12px 16px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      font-weight: 800;
+      letter-spacing: -.01em;
+      transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+    }
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary { background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; box-shadow: 0 16px 28px rgba(15,118,110,.22); }
+    .btn-secondary { background: #fff; color: #36515b; border: 1px solid rgba(187,204,212,.92); }
+
+    .loading-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 92px;
+      padding: 20px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+    .spinner { width: 22px; height: 22px; border: 3px solid #dce8ec; border-top-color: var(--brand); border-radius: 50%; animation: spin .75s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .hidden { display: none !important; }
+
+    .report-tools { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; justify-content: flex-end; }
+
+    .document-page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto 18px;
+      border-radius: 0;
+      padding: 14mm 14mm 12mm;
+      background: #fff;
+      box-shadow: 0 18px 50px rgba(16,40,52,.14);
+      overflow: hidden;
+      page-break-after: always;
+    }
+
+    .doc-header { display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: start; border-bottom: 2px solid #a9bdc4; padding-bottom: 12px; }
+    .doc-kicker { color: var(--brand); font-size: 11px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
+    .doc-title { margin: 6px 0 0; color: #1e2f36; font-size: 27px; line-height: 1.08; letter-spacing: -.035em; }
+    .doc-subtitle { margin: 8px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
+    .doc-badge { border: 1px solid #bfd0d6; border-radius: 16px; padding: 12px; text-align: right; min-width: 150px; background: #f8fbfc; }
+    .doc-badge strong { display: block; font-size: 30px; line-height: 1; color: var(--brand); letter-spacing: -.04em; }
+    .doc-badge span { display: block; margin-top: 5px; font-size: 11px; color: var(--muted); font-weight: 800; text-transform: uppercase; }
+
+    .doc-section { margin-top: 18px; break-inside: avoid; }
+    .doc-section h3 { display: flex; align-items: center; gap: 9px; margin: 0 0 10px; color: #1f343c; font-size: 16px; letter-spacing: -.02em; }
+    .doc-section h3::before { content: ''; width: 8px; height: 22px; border-radius: 999px; background: linear-gradient(180deg, var(--brand), var(--brand-2)); }
+    .doc-text { color: #31454d; font-size: 12.4px; line-height: 1.72; text-align: justify; white-space: pre-line; }
+
+    .metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 16px; }
+    .metric-card { border: 1px solid #d4e0e4; border-radius: 16px; padding: 12px; background: linear-gradient(180deg, #fff, #f8fbfc); }
+    .metric-card span { display: block; color: var(--muted); font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
+    .metric-card strong { display: block; margin-top: 7px; color: var(--ink); font-size: 24px; letter-spacing: -.04em; }
+    .metric-card small { display: block; margin-top: 4px; color: var(--muted); line-height: 1.35; }
+
+    .chart-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 12px; margin-top: 12px; }
+    .chart-box { border: 1px solid #d4e0e4; border-radius: 18px; padding: 12px; min-height: 230px; background: #fbfdfd; }
+    .chart-box canvas { width: 100% !important; height: 205px !important; }
+
+    .table-wrap { border: 1px solid #d4e0e4; border-radius: 18px; overflow: hidden; margin-top: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 11px; }
+    th, td { padding: 8px 9px; border-bottom: 1px solid #e4ecef; text-align: left; vertical-align: top; }
+    th { background: #eef6f5; color: #31525b; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; }
+    tr:last-child td { border-bottom: 0; }
+    .tag { display: inline-flex; border-radius: 999px; padding: 3px 7px; font-size: 10px; font-weight: 900; background: var(--brand-soft); color: var(--brand); }
+    .tag.red { background: var(--red-soft); color: var(--red); }
+    .tag.amber { background: var(--amber-soft); color: var(--amber); }
+    .tag.green { background: var(--green-soft); color: var(--green); }
+
+    .editor-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 30;
+      background: #18323a;
+      color: #fff;
+      border-radius: 16px;
+      padding: 13px 15px;
+      box-shadow: 0 16px 35px rgba(0,0,0,.18);
+      font-weight: 800;
+      transform: translateY(120%);
+      transition: transform .22s ease;
+    }
+    .toast.show { transform: translateY(0); }
+
+    @media (max-width: 1200px) { .workspace { grid-template-columns: 1fr; } .sticky { position: static; } .document-page { width: 100%; min-height: auto; } }
+    @media (max-width: 780px) { .hero-grid, .chart-grid, .metric-grid { grid-template-columns: 1fr; } .document-page { padding: 22px; } .doc-header { grid-template-columns: 1fr; } .doc-badge { text-align: left; } }
+
+    @media print {
+      body { background: #fff; }
+      .hero-card, .filters-panel, .report-tools, .loading-box, .toast { display: none !important; }
+      .app-shell { max-width: none; padding: 0; }
+      .workspace { display: block; margin: 0; }
+      .preview-panel { padding: 0; border: 0; box-shadow: none; }
+      .document-page { width: 210mm; min-height: 297mm; margin: 0; box-shadow: none; border: 0; page-break-after: always; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app-shell">
+    <section class="hero-card">
+      <div class="top-menu-wrap">
+        <nav class="top-menu" aria-label="Menu superior">
+          <div class="top-menu-inner">
+            <span class="top-menu-toggle" aria-hidden="true"><i class="fa-solid fa-bars"></i></span>
+            <div class="top-menu-links">
+              <a class="top-menu-link" href="?">Boletim</a>
+              <a class="top-menu-link active" href="?page=relatorios">Relatórios</a>
+              <a class="top-menu-link" href="https://script.google.com/macros/s/AKfycbyrFcu7qj-Ydr2nwWqaaYpzntLct0jjN2ylXnrL5hXP5vWuiYcG_c4LYVVilFvJy-tadg/exec" target="_blank" rel="noopener noreferrer">Painel NUGESP</a>
+            </div>
+          </div>
+        </nav>
+      </div>
+
+      <div class="hero-grid">
+        <div>
+          <span class="eyebrow"><i class="fa-solid fa-file-lines"></i> Relatório analítico editável</span>
+          <h1>Relatórios de auditoria em formato executivo.</h1>
+          <p class="hero-copy">Escolha comissão, período, setores e recortes assistenciais para montar um relatório escrito com indicadores, análise crítica, gráficos e plano de ação no mesmo padrão visual do boletim.</p>
+        </div>
+        <div class="hero-stat-grid">
+          <article class="hero-stat"><span>Comissão atual</span><strong id="hero-comissao">CRP</strong></article>
+          <article class="hero-stat"><span>Conformidade</span><strong id="hero-conformidade">--</strong></article>
+          <article class="hero-stat"><span>Avaliações</span><strong id="hero-avaliacoes">--</strong></article>
+          <article class="hero-stat"><span>Indicadores</span><strong id="hero-indicadores">--</strong></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="workspace">
+      <aside class="panel sticky filters-panel">
+        <div class="panel-title"><h2>Configuração</h2><span class="pill"><i class="fa-solid fa-wand-magic-sparkles"></i> Premium</span></div>
+
+        <div class="commission-switch" role="radiogroup" aria-label="Comissão do relatório">
+          <label class="commission-option"><input type="radio" name="comissao" value="CRP" checked><strong>CRP</strong><span>Prontuário / registros assistenciais</span></label>
+          <label class="commission-option disabled"><input type="radio" name="comissao" value="CRO" disabled><strong>CRO</strong><span>Em breve no mesmo modelo</span></label>
+        </div>
+
+        <div class="field"><label for="anos">Ano <small>multi</small></label><select id="anos" multiple></select></div>
+        <div class="field"><label for="meses">Mês <small>multi</small></label><select id="meses" multiple></select></div>
+        <div class="field"><label for="unidades">Setores <small>multi</small></label><select id="unidades" multiple></select></div>
+        <div class="field"><label for="eixos">Eixos <small>multi</small></label><select id="eixos" multiple></select></div>
+        <div class="field"><label for="categorias">Categoria de avaliação <small>multi</small></label><select id="categorias" multiple></select></div>
+        <div class="field"><label for="satisfacoes">Nível de satisfação <small>multi</small></label><select id="satisfacoes" multiple></select></div>
+        <div class="field"><label for="status">Avaliação terminada? <small>multi</small></label><select id="status" multiple></select></div>
+
+        <div class="panel-title" style="margin-top: 18px;"><h2>Texto do relatório</h2><span class="pill">Editável</span></div>
+        <div class="editor-grid">
+          <div class="field"><label for="texto-intro">Introdução</label><textarea id="texto-intro"></textarea></div>
+          <div class="field"><label for="texto-metodo">Metodologia</label><textarea id="texto-metodo"></textarea></div>
+          <div class="field"><label for="texto-analise">Análise crítica</label><textarea id="texto-analise"></textarea></div>
+          <div class="field"><label for="texto-plano">Plano de ação</label><textarea id="texto-plano"></textarea></div>
+          <div class="field"><label for="texto-conclusao">Conclusão</label><textarea id="texto-conclusao"></textarea></div>
+        </div>
+
+        <div class="actions">
+          <button class="btn btn-primary" type="button" id="btn-gerar"><i class="fa-solid fa-chart-line"></i> Gerar relatório</button>
+          <button class="btn btn-secondary" type="button" id="btn-texto"><i class="fa-solid fa-pen-nib"></i> Recriar texto padrão</button>
+          <button class="btn btn-secondary" type="button" id="btn-imprimir"><i class="fa-solid fa-print"></i> Imprimir / salvar PDF</button>
+        </div>
+      </aside>
+
+      <section class="preview-panel">
+        <div id="loading" class="loading-box"><span class="spinner" aria-hidden="true"></span><span>Carregando filtros e preparando relatório...</span></div>
+        <div class="report-tools hidden" id="report-tools">
+          <button class="btn btn-secondary" type="button" id="btn-topo"><i class="fa-solid fa-arrow-up"></i> Topo</button>
+          <button class="btn btn-secondary" type="button" id="btn-copiar"><i class="fa-solid fa-copy"></i> Copiar resumo</button>
+        </div>
+        <article id="relatorio" class="hidden"></article>
+      </section>
+    </section>
+  </main>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    const state = { payload: null, charts: [] };
+    const idsFiltros = ['anos', 'meses', 'unidades', 'eixos', 'categorias', 'satisfacoes', 'status'];
+    const textos = {
+      intro: document.getElementById('texto-intro'),
+      metodo: document.getElementById('texto-metodo'),
+      analise: document.getElementById('texto-analise'),
+      plano: document.getElementById('texto-plano'),
+      conclusao: document.getElementById('texto-conclusao')
+    };
+
+    function escapeHtml(value) {
+      return String(value == null ? '' : value)
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+    }
+
+    function fmtPct(value) {
+      if (value == null || Number.isNaN(Number(value))) return 'N/A';
+      return `${Number(value).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`;
+    }
+
+    function fmtNum(value) {
+      return Number(value || 0).toLocaleString('pt-BR');
+    }
+
+    function selecionados(id) {
+      return Array.from(document.getElementById(id).selectedOptions).map(option => option.value);
+    }
+
+    function setLoading(message, active = true) {
+      const loading = document.getElementById('loading');
+      loading.classList.toggle('hidden', !active);
+      loading.innerHTML = active ? `<span class="spinner" aria-hidden="true"></span><span>${escapeHtml(message)}</span>` : '';
+    }
+
+    function toast(message) {
+      const el = document.getElementById('toast');
+      el.textContent = message;
+      el.classList.add('show');
+      setTimeout(() => el.classList.remove('show'), 2600);
+    }
+
+    function fetchViaGoogleScript(params = {}) {
+      return new Promise((resolve, reject) => {
+        if (!(window.google && google.script && google.script.run)) return reject(new Error('google.script.run indisponível.'));
+        google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).obterPayloadRelatorios(params);
+      });
+    }
+
+    async function fetchViaHttp(params = {}) {
+      const query = new URLSearchParams({ api: 'relatorios' });
+      Object.entries(params).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          if (value.length) query.set(key, value.join('|'));
+        } else if (value != null && String(value).trim()) query.set(key, String(value));
+      });
+      const response = await fetch(`${location.pathname}?${query.toString()}`, { cache: 'no-store' });
+      if (!response.ok) throw new Error('Falha ao carregar relatório.');
+      return response.json();
+    }
+
+    function fetchPayload(params = {}) {
+      if (window.google && google.script && google.script.run) return fetchViaGoogleScript(params);
+      return fetchViaHttp(params);
+    }
+
+    function obterFiltros() {
+      return {
+        comissao: document.querySelector('input[name="comissao"]:checked')?.value || 'CRP',
+        anos: selecionados('anos'),
+        meses: selecionados('meses'),
+        unidades: selecionados('unidades'),
+        eixos: selecionados('eixos'),
+        categorias: selecionados('categorias'),
+        satisfacoes: selecionados('satisfacoes'),
+        status: selecionados('status')
+      };
+    }
+
+    function preencherSelect(id, values) {
+      const select = document.getElementById(id);
+      select.innerHTML = (values || []).map(value => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join('');
+    }
+
+    function preencherFiltros(filtros) {
+      idsFiltros.forEach(id => preencherSelect(id, filtros[id] || []));
+    }
+
+    function periodoTexto(aplicado) {
+      const anos = aplicado?.anos?.length ? aplicado.anos.join(', ') : 'todos os anos';
+      const meses = aplicado?.meses?.length ? aplicado.meses.join(', ') : 'todos os meses';
+      return `${meses} / ${anos}`;
+    }
+
+    function listaTop(map, limite = 5) {
+      return Object.entries(map || {}).slice(0, limite).map(([nome, total]) => `${nome} (${total})`).join(', ') || 'não informado';
+    }
+
+    function gerarTextosPadrao() {
+      const payload = state.payload || {};
+      const rel = payload.relatorio || {};
+      const aplicado = payload.aplicado || {};
+      const setores = aplicado.unidades?.length ? aplicado.unidades.join(', ') : 'todos os setores elegíveis';
+      const criticos = (rel.indicadoresCriticos || []).slice(0, 4).map(item => `${item.nome} (${fmtPct(item.percentual)})`).join('; ') || 'sem indicadores críticos no recorte selecionado';
+      const fortalezas = (rel.indicadoresExcelencia || []).slice(0, 3).map(item => `${item.nome} (${fmtPct(item.percentual)})`).join('; ') || 'sem destaques disponíveis';
+      const status = listaTop(rel.porStatus, 3);
+
+      textos.intro.value = `Este relatório apresenta a análise consolidada da comissão ${rel.comissao || 'CRP'} para o período ${periodoTexto(aplicado)}, considerando ${setores}. O objetivo é sintetizar o desempenho dos registros avaliados, evidenciar conformidades e não conformidades e apoiar decisões de melhoria contínua.`;
+      textos.metodo.value = `A base foi lida diretamente da aba ${rel.abaEncontrada || 'CRP'} da planilha institucional. Foram considerados os campos de ano, mês, unidade, eixo, categoria de avaliação, nível de satisfação e status da avaliação. Para cálculo de conformidade, entram no denominador apenas os itens classificados como Conforme ou Não Conforme; itens Não se Aplica, vazios ou marcados com hífen são apresentados separadamente para transparência da amostra.`;
+      textos.analise.value = `No recorte selecionado, foram identificadas ${fmtNum(rel.totalAvaliacoes)} avaliações e ${fmtNum(rel.totalAuditavel)} itens auditáveis. A conformidade geral foi de ${fmtPct(rel.conformidadeGeral)}, com ${fmtNum(rel.conformes)} conformidades e ${fmtNum(rel.naoConformes)} não conformidades. Os principais pontos de atenção foram: ${criticos}. Como fortalezas, destacam-se: ${fortalezas}. O status predominante das avaliações foi: ${status}.`;
+      textos.plano.value = `Recomenda-se priorizar os indicadores com menor conformidade, revisar rotinas de preenchimento junto às equipes assistenciais, reforçar orientação sobre assinatura/carimbo e completude documental, e acompanhar mensalmente os setores com maior volume de não conformidades. A gestão deve pactuar responsáveis, prazos e evidências de conclusão para cada ação corretiva.`;
+      textos.conclusao.value = `A análise demonstra o panorama atual da qualidade dos registros da comissão ${rel.comissao || 'CRP'} e direciona intervenções objetivas para elevar a aderência documental. A continuidade do monitoramento por período, setor e categoria permitirá verificar tendência, sustentabilidade das melhorias e alinhamento à meta institucional de ${fmtPct(rel.metaInstitucional)}.`;
+    }
+
+    function atualizarHero() {
+      const rel = state.payload?.relatorio || {};
+      document.getElementById('hero-comissao').textContent = rel.comissao || 'CRP';
+      document.getElementById('hero-conformidade').textContent = fmtPct(rel.conformidadeGeral);
+      document.getElementById('hero-avaliacoes').textContent = fmtNum(rel.totalAvaliacoes);
+      document.getElementById('hero-indicadores').textContent = fmtNum((rel.indicadores || []).length);
+    }
+
+    function tagPct(value) {
+      const n = Number(value);
+      const klass = n >= 80 ? 'green' : n >= 60 ? 'amber' : 'red';
+      return `<span class="tag ${klass}">${fmtPct(value)}</span>`;
+    }
+
+    function renderTabelaIndicadores(rel) {
+      const rows = (rel.indicadoresCriticos || []).map(item => `
+        <tr>
+          <td>${escapeHtml(item.nome)}</td>
+          <td>${fmtNum(item.avaliados)}</td>
+          <td>${fmtNum(item.conformes)}</td>
+          <td>${fmtNum(item.naoConformes)}</td>
+          <td>${tagPct(item.percentual)}</td>
+        </tr>`).join('');
+      return `<div class="table-wrap"><table><thead><tr><th>Indicador crítico</th><th>Avaliados</th><th>Conformes</th><th>Não conformes</th><th>Resultado</th></tr></thead><tbody>${rows || '<tr><td colspan="5">Sem indicadores no recorte selecionado.</td></tr>'}</tbody></table></div>`;
+    }
+
+    function renderTabelaSetores(rel) {
+      const rows = (rel.rankingSetores || []).slice(0, 10).map(item => `
+        <tr>
+          <td>${escapeHtml(item.setor)}</td>
+          <td>${fmtNum(item.avaliacoes)}</td>
+          <td>${fmtNum(item.conformes)}</td>
+          <td>${fmtNum(item.naoConformes)}</td>
+          <td>${tagPct(item.percentual)}</td>
+        </tr>`).join('');
+      return `<div class="table-wrap"><table><thead><tr><th>Setor</th><th>Avaliações</th><th>Conformes</th><th>Não conformes</th><th>Resultado</th></tr></thead><tbody>${rows || '<tr><td colspan="5">Sem setores no recorte selecionado.</td></tr>'}</tbody></table></div>`;
+    }
+
+    function renderTexto(titulo, conteudo) {
+      return `<section class="doc-section"><h3>${escapeHtml(titulo)}</h3><div class="doc-text">${escapeHtml(conteudo)}</div></section>`;
+    }
+
+    function renderRelatorio() {
+      const payload = state.payload || {};
+      const rel = payload.relatorio || {};
+      const aplicado = payload.aplicado || {};
+      const html = `
+        <section class="document-page">
+          <header class="doc-header">
+            <div>
+              <div class="doc-kicker">Comissão ${escapeHtml(rel.comissao || 'CRP')} · ${escapeHtml(periodoTexto(aplicado))}</div>
+              <h2 class="doc-title">Relatório de Análise de Prontuários</h2>
+              <p class="doc-subtitle">Documento gerado em ${escapeHtml(payload.geradoEm || '')}. Base: ${escapeHtml(rel.abaEncontrada || 'aba não encontrada')}. Recorte com ${fmtNum(rel.totalAvaliacoes)} avaliações de ${fmtNum(rel.totalRegistrosBase)} registros disponíveis.</p>
+            </div>
+            <aside class="doc-badge"><strong>${fmtPct(rel.conformidadeGeral)}</strong><span>Conformidade geral</span></aside>
+          </header>
+
+          <div class="metric-grid">
+            <article class="metric-card"><span>Avaliações</span><strong>${fmtNum(rel.totalAvaliacoes)}</strong><small>Registros filtrados</small></article>
+            <article class="metric-card"><span>Itens auditáveis</span><strong>${fmtNum(rel.totalAuditavel)}</strong><small>Conforme + Não conforme</small></article>
+            <article class="metric-card"><span>Não conformes</span><strong>${fmtNum(rel.naoConformes)}</strong><small>Pontos de melhoria</small></article>
+            <article class="metric-card"><span>Meta institucional</span><strong>${fmtPct(rel.metaInstitucional)}</strong><small>${rel.diferencaMeta >= 0 ? 'Acima da meta' : 'Abaixo da meta'} em ${fmtPct(Math.abs(rel.diferencaMeta || 0))}</small></article>
+          </div>
+
+          ${renderTexto('1. Introdução', textos.intro.value)}
+          ${renderTexto('2. Metodologia', textos.metodo.value)}
+          ${renderTexto('3. Análise crítica', textos.analise.value)}
+          ${renderTabelaIndicadores(rel)}
+        </section>
+
+        <section class="document-page">
+          <header class="doc-header">
+            <div>
+              <div class="doc-kicker">Detalhamento e plano de ação</div>
+              <h2 class="doc-title">Desempenho por indicador e setor</h2>
+              <p class="doc-subtitle">Distribuição sintética dos resultados para apoiar priorização de intervenções e acompanhamento executivo.</p>
+            </div>
+            <aside class="doc-badge"><strong>${fmtNum(rel.naoSeAplica)}</strong><span>Não se aplica</span></aside>
+          </header>
+
+          <section class="doc-section">
+            <h3>4. Visualização dos resultados</h3>
+            <div class="chart-grid">
+              <div class="chart-box"><canvas id="chart-evolucao"></canvas></div>
+              <div class="chart-box"><canvas id="chart-distribuicao"></canvas></div>
+            </div>
+          </section>
+
+          <section class="doc-section"><h3>5. Setores com maior oportunidade</h3>${renderTabelaSetores(rel)}</section>
+          ${renderTexto('6. Plano de ação recomendado', textos.plano.value)}
+          ${renderTexto('7. Conclusão', textos.conclusao.value)}
+        </section>`;
+
+      document.getElementById('relatorio').innerHTML = html;
+      document.getElementById('relatorio').classList.remove('hidden');
+      document.getElementById('report-tools').classList.remove('hidden');
+      renderCharts(rel);
+    }
+
+    function destroyCharts() {
+      state.charts.forEach(chart => chart.destroy());
+      state.charts = [];
+    }
+
+    function renderCharts(rel) {
+      destroyCharts();
+      if (!window.Chart) return;
+      const evolucao = rel.evolucaoMensal || [];
+      const chartEvolucao = document.getElementById('chart-evolucao');
+      const chartDistribuicao = document.getElementById('chart-distribuicao');
+      if (chartEvolucao) {
+        state.charts.push(new Chart(chartEvolucao, {
+          type: 'line',
+          data: { labels: evolucao.map(item => item.mes), datasets: [{ label: 'Conformidade', data: evolucao.map(item => item.percentual), borderColor: '#0f766e', backgroundColor: 'rgba(15,118,110,.12)', tension: .35, fill: true }] },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: true, text: 'Evolução mensal (%)' } }, scales: { y: { min: 0, max: 100 } } }
+        }));
+      }
+      if (chartDistribuicao) {
+        state.charts.push(new Chart(chartDistribuicao, {
+          type: 'doughnut',
+          data: { labels: ['Conforme', 'Não conforme', 'Não se aplica', 'Vazio / hífen'], datasets: [{ data: [rel.conformes || 0, rel.naoConformes || 0, rel.naoSeAplica || 0, rel.vazios || 0], backgroundColor: ['#1f8f5f', '#c05621', '#b7791f', '#d7e1e5'], borderWidth: 0 }] },
+          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Distribuição dos itens' } }, cutout: '62%' }
+        }));
+      }
+    }
+
+    async function gerarRelatorio(recriarTexto = false) {
+      setLoading('Lendo planilha e consolidando indicadores...');
+      try {
+        state.payload = await fetchPayload(obterFiltros());
+        if (recriarTexto || !textos.intro.value.trim()) gerarTextosPadrao();
+        atualizarHero();
+        renderRelatorio();
+        setLoading('', false);
+        toast('Relatório gerado com sucesso.');
+      } catch (error) {
+        console.error(error);
+        setLoading('Não foi possível gerar o relatório. Confira o nome da aba CRP na planilha e tente novamente.');
+        toast('Falha ao gerar relatório.');
+      }
+    }
+
+    function copiarResumo() {
+      const rel = state.payload?.relatorio || {};
+      const resumo = `Relatório ${rel.comissao || 'CRP'} — conformidade ${fmtPct(rel.conformidadeGeral)}, ${fmtNum(rel.totalAvaliacoes)} avaliações, ${fmtNum(rel.naoConformes)} não conformidades.`;
+      navigator.clipboard?.writeText(resumo).then(() => toast('Resumo copiado.'), () => toast(resumo));
+    }
+
+    async function init() {
+      try {
+        const payload = await fetchPayload({ comissao: 'CRP' });
+        state.payload = payload;
+        preencherFiltros(payload.filtros || {});
+        gerarTextosPadrao();
+        atualizarHero();
+        renderRelatorio();
+        setLoading('', false);
+      } catch (error) {
+        console.error(error);
+        setLoading('Não foi possível carregar os filtros. A aba CRP precisa existir na planilha.');
+      }
+    }
+
+    document.getElementById('btn-gerar').addEventListener('click', () => gerarRelatorio(false));
+    document.getElementById('btn-texto').addEventListener('click', () => { gerarTextosPadrao(); renderRelatorio(); toast('Texto padrão recriado.'); });
+    document.getElementById('btn-imprimir').addEventListener('click', () => window.print());
+    document.getElementById('btn-topo').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+    document.getElementById('btn-copiar').addEventListener('click', copiarResumo);
+    Object.values(textos).forEach(textarea => textarea.addEventListener('input', () => state.payload && renderRelatorio()));
+
+    init();
+  </script>
+</body>
+</html>
