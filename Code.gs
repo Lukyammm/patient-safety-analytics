@@ -8,6 +8,8 @@ const ABA_RELATORIO_CRP = 'BASE_DADOS(NÃOEDITAR)';
 const ABA_RELATORIO_CRO = 'CRO';
 const META_INSTITUCIONAL = 80;
 const FUSO_HORARIO = 'America/Fortaleza';
+const CACHE_FILTROS_BOLETIM_KEY = 'boletim:filtros:v2';
+const CACHE_FILTROS_BOLETIM_TTL = 900;
 const ORDEM_MESES = {
   'JANEIRO': 1,
   'FEVEREIRO': 2,
@@ -421,24 +423,107 @@ function coletarFiltros(dados, config) {
 }
 
 function getFiltros(ss) {
+  const cache = CacheService.getScriptCache();
+  const cached = cache.get(CACHE_FILTROS_BOLETIM_KEY);
+
+  if (cached) {
+    try {
+      const filtrosCache = JSON.parse(cached);
+      if (filtrosCache && filtrosCache.caminhadas && filtrosCache.notificacoes) {
+        return filtrosCache;
+      }
+    } catch (erro) {
+      registrarErro('cache-filtros-boletim-parse', erro);
+    }
+  }
+
+  const filtros = montarFiltrosOtimizados(ss);
+
+  try {
+    cache.put(CACHE_FILTROS_BOLETIM_KEY, JSON.stringify(filtros), CACHE_FILTROS_BOLETIM_TTL);
+  } catch (erro) {
+    registrarErro('cache-filtros-boletim-put', erro);
+  }
+
+  return filtros;
+}
+
+function montarFiltrosOtimizados(ss) {
   const shCaminhadas = ss.getSheetByName(ABA_CAMINHADAS);
   const shNotifica = ss.getSheetByName(ABA_NOTIFICA);
 
-  const dadosCaminhadas = shCaminhadas.getDataRange().getValues().slice(1);
-  const dadosNotifica = shNotifica.getDataRange().getValues().slice(2);
+  if (!shCaminhadas) {
+    throw new Error(`Aba obrigatória não encontrada: ${ABA_CAMINHADAS}`);
+  }
+  if (!shNotifica) {
+    throw new Error(`Aba obrigatória não encontrada: ${ABA_NOTIFICA}`);
+  }
 
   return {
-    caminhadas: coletarFiltros(dadosCaminhadas, {
-      anoIdx: 3,
-      mesIdx: 2,
-      unidadeFn: getUnidade
-    }),
-    notificacoes: coletarFiltros(dadosNotifica, {
-      anoIdx: 3,
-      mesIdx: 2,
-      unidadeFn: row => String(row[6] || '').trim() || 'Não informado'
-    })
+    caminhadas: coletarFiltrosCaminhadasRapido(shCaminhadas),
+    notificacoes: coletarFiltrosNotificacoesRapido(shNotifica)
   };
+}
+
+function montarResultadoFiltros(anos, meses, unidades) {
+  return {
+    anos: Object.keys(anos).sort((a, b) => Number(a) - Number(b) || a.localeCompare(b, 'pt-BR')),
+    meses: Object.keys(meses).sort(ordenarMeses),
+    unidades: Object.keys(unidades).sort((a, b) => a.localeCompare(b, 'pt-BR'))
+  };
+}
+
+function marcarFiltro(mapa, valor) {
+  const texto = String(valor == null ? '' : valor).trim();
+  if (texto) mapa[texto] = true;
+}
+
+function getUnidadeCaminhadasPorBlocos(base, setoresExtras) {
+  const candidatos = [base && base[2]].concat(setoresExtras || []);
+  for (let i = 0; i < candidatos.length; i++) {
+    const valor = String(candidatos[i] == null ? '' : candidatos[i]).trim();
+    if (valor) return valor;
+  }
+  return 'Não informado';
+}
+
+function coletarFiltrosCaminhadasRapido(sh) {
+  const numRows = Math.max(sh.getLastRow() - 1, 0);
+  const anos = {};
+  const meses = {};
+  const unidades = {};
+
+  if (!numRows) return montarResultadoFiltros(anos, meses, unidades);
+
+  const periodoEUnidade = sh.getRange(2, 3, numRows, 3).getValues();
+  const unidadesExtras = sh.getRange(2, 69, numRows, 9).getValues();
+
+  periodoEUnidade.forEach((row, index) => {
+    marcarFiltro(anos, normalizarAno(row[1]));
+    marcarFiltro(meses, normalizarMes(row[0]));
+    marcarFiltro(unidades, getUnidadeCaminhadasPorBlocos(row, unidadesExtras[index]));
+  });
+
+  return montarResultadoFiltros(anos, meses, unidades);
+}
+
+function coletarFiltrosNotificacoesRapido(sh) {
+  const numRows = Math.max(sh.getLastRow() - 2, 0);
+  const anos = {};
+  const meses = {};
+  const unidades = {};
+
+  if (!numRows) return montarResultadoFiltros(anos, meses, unidades);
+
+  const dados = sh.getRange(3, 3, numRows, 5).getValues();
+
+  dados.forEach(row => {
+    marcarFiltro(anos, normalizarAno(row[1]));
+    marcarFiltro(meses, normalizarMes(row[0]));
+    marcarFiltro(unidades, String(row[4] || '').trim() || 'Não informado');
+  });
+
+  return montarResultadoFiltros(anos, meses, unidades);
 }
 
 
