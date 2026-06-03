@@ -238,6 +238,27 @@ function normalizarTexto(valor) {
     .toUpperCase();
 }
 
+function normalizarCabecalho(valor) {
+  return normalizarTexto(valor)
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^A-Z0-9]+/g, ' ')
+    .trim();
+}
+
+function colunaParaLetra(indiceZeroBased) {
+  let numero = Number(indiceZeroBased) + 1;
+  let letra = '';
+
+  while (numero > 0) {
+    const resto = (numero - 1) % 26;
+    letra = String.fromCharCode(65 + resto) + letra;
+    numero = Math.floor((numero - 1) / 26);
+  }
+
+  return letra;
+}
+
 function normalizarMes(valor) {
   const texto = normalizarTexto(valor);
   if (!texto) return '';
@@ -894,26 +915,75 @@ function calcularDiferencaDias(dataInicial, dataFinal) {
   return diferenca < 0 ? 0 : diferenca;
 }
 
-const RELATORIO_CRP_COLUNAS = {
-  ano: 0,
-  mes: 1,
-  avaliacaoTerminada: 2,
-  enviadoEm: 3,
-  email: 4,
-  prontuario: 5,
-  unidade: 6,
-  eixo: 7,
-  paciente: 8,
-  categoria: 9,
-  satisfacao: 10,
-  regInter: 11,
-  idPaciente: 12,
-  inicioIndicadores: 13,
-  fimIndicadores: 39,
-  numerador: 40,
-  denominador: 41,
-  resultado: 42
-};
+const RELATORIO_CRP_CAMPOS_FIXOS = [
+  { chave: 'ano', letra: 'A', idx: 0, nome: 'Ano' },
+  { chave: 'mes', letra: 'B', idx: 1, nome: 'Mês' },
+  { chave: 'avaliacaoTerminada', letra: 'C', idx: 2, nome: 'Avaliação Terminada? Se não, falta avaliação de:' },
+  { chave: 'enviadoEm', letra: 'D', idx: 3, nome: 'DATA E HORA DE ENVIO DO FORMS' },
+  { chave: 'email', letra: 'E', idx: 4, nome: 'Endereço de e-mail' },
+  { chave: 'prontuario', letra: 'F', idx: 5, nome: 'Inserir nº do prontuário:' },
+  { chave: 'unidade', letra: 'G', idx: 6, nome: 'Unidade:' },
+  { chave: 'eixo', letra: 'H', idx: 7, nome: 'Eixo' },
+  { chave: 'paciente', letra: 'I', idx: 8, nome: 'Nome do paciente (completo e sem abreviaturas)' },
+  { chave: 'categoria', letra: 'J', idx: 9, nome: 'Categoria de avaliação' },
+  { chave: 'satisfacao', letra: 'K', idx: 10, nome: 'NÍVEL DE SATISFAÇÃO' }
+];
+
+const RELATORIO_CRP_INDICADORES = [
+  'REG. INTER',
+  'ID.PACIENTE',
+  'LEGIBILIDADE',
+  'Admissão Médica',
+  'Admissão de Enfermagem',
+  'Controle Hemodinâmico',
+  'Evolução Médica',
+  'Evolução de Enfermagem',
+  'Plano Terapêutico',
+  'Transferência Interna',
+  'Termo de Consentimento para exames de Imagem e laudo',
+  'Registro de Transporte',
+  'Relatório de Alta ou Óbito ou SVO ou IML',
+  'Termo de Consentimento Cirúrgico',
+  'Formulário da SAEP',
+  'Evolução pós-cirúrgica',
+  'Descrição Cirúrgica',
+  'Termo de Consentimento Anestésico',
+  'Formulário de avaliação pré anestésica',
+  'Ficha de Anestesia',
+  'Ficha de Avaliação Social',
+  'Avaliação Nutricional ou Diagnóstico de Risco nutricional',
+  'Admissão de Fisioterapia',
+  'Evolução de Fisioterapia',
+  'Avaliação Admissional Fonoaudiológica',
+  'Evolução Fonoaudiológica',
+  'Conciliação Medicamentosa',
+  'Admissão Psicologia',
+  'Evolução Psicologia'
+];
+
+const RELATORIO_CRP_CAMPOS_RESULTADO = [
+  { chave: 'numerador', letra: 'AO', idx: 40, nome: 'NUMERADOR' },
+  { chave: 'denominador', letra: 'AP', idx: 41, nome: 'DENOMINADOR' },
+  { chave: 'resultado', letra: 'AQ', idx: 42, nome: 'RESULTADO' }
+];
+
+const RELATORIO_CRP_ESTRUTURA = RELATORIO_CRP_CAMPOS_FIXOS
+  .concat(RELATORIO_CRP_INDICADORES.map((nome, offset) => ({
+    chave: `indicador${offset + 1}`,
+    letra: colunaParaLetra(11 + offset),
+    idx: 11 + offset,
+    nome: nome,
+    indicador: true
+  })))
+  .concat(RELATORIO_CRP_CAMPOS_RESULTADO);
+
+const RELATORIO_CRP_COLUNAS = RELATORIO_CRP_ESTRUTURA.reduce((acc, campo) => {
+  acc[campo.chave] = campo.idx;
+  return acc;
+}, {
+  inicioIndicadores: 11,
+  fimIndicadores: 39
+});
 
 const RELATORIO_ABAS_POR_COMISSAO = {
   CRP: [ABA_RELATORIO_CRP, 'BASE_DADOS(NAOEDITAR)', 'BASE CRP', 'CRP - BASE', 'RELATÓRIO CRP', 'RELATORIO CRP'],
@@ -952,16 +1022,47 @@ function obterAbaRelatorio(ss, comissao) {
 function obterLinhasRelatorio(ss, comissao) {
   const sh = obterAbaRelatorio(ss, comissao);
   if (!sh) {
-    return { abaEncontrada: '', headers: [], linhas: [] };
+    return { abaEncontrada: '', headers: [], linhas: [], estrutura: RELATORIO_CRP_ESTRUTURA, alertasEstrutura: ['Aba da CRP não encontrada.'] };
   }
   const range = sh.getDataRange();
   const values = range.getValues();
   const headers = values.length ? values[0].map(item => String(item || '').trim()) : [];
+  const comissaoNormalizada = normalizarComissaoRelatorio(comissao);
+
   return {
     abaEncontrada: sh.getName(),
     headers: headers,
-    linhas: values.slice(1).filter(row => row.some(cell => String(cell == null ? '' : cell).trim() !== ''))
+    linhas: values.slice(1).filter(row => row.some(cell => String(cell == null ? '' : cell).trim() !== '')),
+    estrutura: comissaoNormalizada === 'CRP' ? RELATORIO_CRP_ESTRUTURA : [],
+    alertasEstrutura: comissaoNormalizada === 'CRP' ? validarEstruturaCRP(headers) : []
   };
+}
+
+function obterCampoCRPPorIndice(idx) {
+  return RELATORIO_CRP_ESTRUTURA.find(campo => campo.idx === idx) || null;
+}
+
+function validarEstruturaCRP(headers) {
+  const alertas = [];
+  const totalColunasEsperado = RELATORIO_CRP_COLUNAS.resultado + 1;
+
+  if ((headers || []).length < totalColunasEsperado) {
+    alertas.push(`A base CRP deve ir de A até AQ (${totalColunasEsperado} colunas), mas o cabeçalho possui ${(headers || []).length} colunas preenchidas.`);
+  }
+
+  RELATORIO_CRP_ESTRUTURA.forEach(campo => {
+    const encontrado = String((headers || [])[campo.idx] || '').trim();
+    if (!encontrado) {
+      alertas.push(`Coluna ${campo.letra} sem cabeçalho. Esperado: ${campo.nome}.`);
+      return;
+    }
+
+    if (normalizarCabecalho(encontrado) !== normalizarCabecalho(campo.nome)) {
+      alertas.push(`Coluna ${campo.letra}: encontrado "${encontrado}"; esperado "${campo.nome}".`);
+    }
+  });
+
+  return alertas;
 }
 
 function getRelatoriosFiltros(ss) {
@@ -1080,9 +1181,12 @@ function processarRelatorioCRP(ss, filtros) {
 
   const indicadores = [];
   for (let idx = col.inicioIndicadores; idx <= col.fimIndicadores; idx++) {
+    const campo = obterCampoCRPPorIndice(idx);
     indicadores.push({
       idx: idx,
-      nome: nomeIndicadorRelatorio(base.headers[idx], `Indicador ${idx + 1}`),
+      coluna: campo ? campo.letra : colunaParaLetra(idx),
+      nome: campo ? campo.nome : nomeIndicadorRelatorio(base.headers[idx], `Indicador ${idx + 1}`),
+      cabecalhoPlanilha: nomeIndicadorRelatorio(base.headers[idx], campo ? campo.nome : `Indicador ${idx + 1}`),
       conformes: 0,
       naoConformes: 0,
       naoSeAplica: 0,
@@ -1223,6 +1327,8 @@ function processarRelatorioCRP(ss, filtros) {
     numeradorPlanilha: numeradorPlanilha,
     denominadorPlanilha: denominadorPlanilha,
     resultadoPlanilha: denominadorPlanilha ? Number(((numeradorPlanilha / denominadorPlanilha) * 100).toFixed(1)) : (totalResultadoPlanilha ? Number((somaResultadoPlanilha / totalResultadoPlanilha).toFixed(1)) : null),
+    estruturaColunas: base.estrutura || RELATORIO_CRP_ESTRUTURA,
+    alertasEstrutura: base.alertasEstrutura || [],
     indicadores: indicadores,
     indicadoresCriticos: indicadoresOrdenados.filter(item => item.avaliados > 0).slice(0, 8),
     indicadoresExcelencia: indicadores.slice().filter(item => item.avaliados > 0).sort((a, b) => b.percentual - a.percentual || b.avaliados - a.avaliados).slice(0, 5),

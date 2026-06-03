@@ -192,6 +192,9 @@
     .tag.red { background: var(--red-soft); color: var(--red); }
     .tag.amber { background: var(--amber-soft); color: var(--amber); }
     .tag.green { background: var(--green-soft); color: var(--green); }
+    .structure-alert { border: 1px solid #f2c078; background: linear-gradient(180deg, #fff9ed, #fff4dc); color: #7c4a03; border-radius: 16px; padding: 12px 14px; margin-top: 14px; font-size: 11px; line-height: 1.55; break-inside: avoid; }
+    .structure-alert strong { display: block; margin-bottom: 6px; color: #8a5200; font-size: 12px; }
+    .structure-alert ul { margin: 0; padding-left: 18px; }
 
     .editor-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
     .toast { position: fixed; right: 18px; bottom: 18px; z-index: 30; background: #18323a; color: #fff; border-radius: 16px; padding: 13px 15px; box-shadow: 0 16px 35px rgba(0,0,0,.18); font-weight: 900; transform: translateY(120%); transition: transform .22s ease; }
@@ -480,7 +483,7 @@
       const status = listaTop(rel.porStatus, 3);
 
       textos.intro.value = `Este relatório apresenta a análise consolidada da comissão ${rel.comissao || 'CRP'} para o período ${periodoTexto(aplicado)}, considerando ${setores}. O objetivo é sintetizar o desempenho dos registros avaliados, evidenciar conformidades e não conformidades e apoiar decisões de melhoria contínua.`;
-      textos.metodo.value = `A base foi lida diretamente da aba ${rel.abaEncontrada || 'CRP'} da planilha institucional. Foram considerados os campos de ano, mês, unidade, eixo, categoria de avaliação, nível de satisfação e status da avaliação. Para cálculo de conformidade, entram no denominador apenas os itens classificados como Conforme ou Não Conforme; itens Não se Aplica, vazios ou marcados com hífen são apresentados separadamente para transparência da amostra.`;
+      textos.metodo.value = `A base foi lida diretamente da aba ${rel.abaEncontrada || 'CRP'} da planilha institucional, usando a estrutura oficial da CRP de A até AQ: campos cadastrais de A a K, 29 indicadores assistenciais de L a AN e campos NUMERADOR, DENOMINADOR e RESULTADO em AO, AP e AQ. Para cálculo de conformidade, entram no denominador apenas os itens classificados como Conforme ou Não Conforme; itens Não se Aplica, vazios ou marcados com hífen são apresentados separadamente para transparência da amostra.`;
       textos.analise.value = `No recorte selecionado, foram identificadas ${fmtNum(rel.totalAvaliacoes)} avaliações e ${fmtNum(rel.totalAuditavel)} itens auditáveis. A conformidade geral foi de ${fmtPct(rel.conformidadeGeral)}, com ${fmtNum(rel.conformes)} conformidades e ${fmtNum(rel.naoConformes)} não conformidades. Os principais pontos de atenção foram: ${criticos}. Como fortalezas, destacam-se: ${fortalezas}. O status predominante das avaliações foi: ${status}.`;
       textos.plano.value = `Recomenda-se priorizar os indicadores com menor conformidade, revisar rotinas de preenchimento junto às equipes assistenciais, reforçar orientação sobre assinatura/carimbo e completude documental, e acompanhar mensalmente os setores com maior volume de não conformidades. A gestão deve pactuar responsáveis, prazos e evidências de conclusão para cada ação corretiva.`;
       textos.conclusao.value = `A análise demonstra o panorama atual da qualidade dos registros da comissão ${rel.comissao || 'CRP'} e direciona intervenções objetivas para elevar a aderência documental. A continuidade do monitoramento por período, setor e categoria permitirá verificar tendência, sustentabilidade das melhorias e alinhamento à meta institucional de ${fmtPct(rel.metaInstitucional)}.`;
@@ -503,13 +506,14 @@
     function renderTabelaIndicadores(rel) {
       const rows = (rel.indicadoresCriticos || []).map(item => `
         <tr>
+          <td>${escapeHtml(item.coluna || '')}</td>
           <td>${escapeHtml(item.nome)}</td>
           <td>${fmtNum(item.avaliados)}</td>
           <td>${fmtNum(item.conformes)}</td>
           <td>${fmtNum(item.naoConformes)}</td>
           <td>${tagPct(item.percentual)}</td>
         </tr>`).join('');
-      return `<div class="table-wrap"><table><thead><tr><th>Indicador crítico</th><th>Avaliados</th><th>Conformes</th><th>Não conformes</th><th>Resultado</th></tr></thead><tbody>${rows || '<tr><td colspan="5">Sem indicadores no recorte selecionado.</td></tr>'}</tbody></table></div>`;
+      return `<div class="table-wrap"><table><thead><tr><th>Coluna</th><th>Indicador crítico</th><th>Avaliados</th><th>Conformes</th><th>Não conformes</th><th>Resultado</th></tr></thead><tbody>${rows || '<tr><td colspan="6">Sem indicadores no recorte selecionado.</td></tr>'}</tbody></table></div>`;
     }
 
     function renderTabelaSetores(rel) {
@@ -526,6 +530,14 @@
 
     function renderTexto(titulo, conteudo) {
       return `<section class="doc-section"><h3>${escapeHtml(titulo)}</h3><div class="doc-text">${escapeHtml(conteudo)}</div></section>`;
+    }
+
+    function renderAlertasEstrutura(rel) {
+      const alertas = (rel.alertasEstrutura || []).slice(0, 8);
+      if (!alertas.length) return '';
+      const itens = alertas.map(alerta => `<li>${escapeHtml(alerta)}</li>`).join('');
+      const total = rel.alertasEstrutura.length > alertas.length ? `<li>Mais ${fmtNum(rel.alertasEstrutura.length - alertas.length)} divergências ocultas para manter o relatório enxuto.</li>` : '';
+      return `<aside class="structure-alert"><strong>Atenção: estrutura da base CRP diferente do padrão oficial A:AQ</strong><ul>${itens}${total}</ul></aside>`;
     }
 
     function renderRelatorio() {
@@ -561,6 +573,7 @@
               <article class="metric-card"><span>Não conformes</span><strong>${fmtNum(rel.naoConformes)}</strong><small>Pontos de melhoria</small></article>
               <article class="metric-card"><span>Meta institucional</span><strong>${fmtPct(rel.metaInstitucional)}</strong><small>${rel.diferencaMeta >= 0 ? 'Acima da meta' : 'Abaixo da meta'} em ${fmtPct(Math.abs(rel.diferencaMeta || 0))}</small></article>
             </div>
+            ${renderAlertasEstrutura(rel)}
 
             ${renderTexto('1. Introdução', textos.intro.value)}
             ${renderTexto('2. Metodologia', textos.metodo.value)}
