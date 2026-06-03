@@ -8,6 +8,34 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif']
+          },
+          colors: {
+            cosep: {
+              ink: '#173037',
+              teal: '#0f766e',
+              petroleum: '#0e7490',
+              soft: '#e4f5f2',
+              line: '#d9e6e4'
+            }
+          },
+          boxShadow: {
+            executive: '0 18px 48px rgba(23, 48, 55, 0.08)',
+            subtle: '0 8px 22px rgba(23, 48, 55, 0.06)'
+          },
+          borderRadius: {
+            executive: '28px'
+          }
+        }
+      }
+    };
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
@@ -471,7 +499,7 @@
     }
   </style>
 </head>
-<body>
+<body class="antialiased selection:bg-cosep-soft selection:text-cosep-teal">
   <div id="toast-root" style="position:fixed;right:16px;top:16px;z-index:9999;display:grid;gap:10px;width:min(420px,calc(100vw - 32px));pointer-events:none" aria-live="polite" aria-atomic="true"></div>
   <main class="app-shell">
     <nav class="top-nav" aria-label="Menu superior">
