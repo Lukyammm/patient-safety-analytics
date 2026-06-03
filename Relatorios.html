@@ -191,12 +191,48 @@
 
 
     /* Premium refinements: responsive filter grid and editorial cards */
-    .workspace { grid-template-columns: minmax(360px, 470px) minmax(0, 1fr); }
+    .workspace { grid-template-columns: minmax(380px, 500px) minmax(0, 1fr); }
     .filters-panel { max-height: calc(100vh - 32px); overflow: auto; scrollbar-width: thin; }
+    .filters-panel::-webkit-scrollbar { width: 10px; }
+    .filters-panel::-webkit-scrollbar-thumb { background: rgba(15,118,110,.22); border: 3px solid transparent; border-radius: 999px; background-clip: padding-box; }
+    .filter-stage { position: relative; margin-top: 12px; padding: 14px; border: 1px solid rgba(255,255,255,.84); border-radius: 26px; background: linear-gradient(145deg, rgba(255,255,255,.76), rgba(236,248,247,.54)); box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 18px 42px rgba(15,23,42,.07); }
+    .filter-stage::before { content: ''; position: absolute; inset: 8px 10px auto auto; width: 120px; height: 120px; border-radius: 999px; background: radial-gradient(circle, rgba(20,184,166,.18), transparent 68%); pointer-events: none; }
     .field { margin-bottom: 12px; border: 1px solid rgba(203,213,225,.72); border-radius: 20px; padding: 13px; background: linear-gradient(180deg, rgba(255,255,255,.93), rgba(248,252,252,.82)); box-shadow: 0 10px 24px rgba(15,23,42,.045); }
+    .filter-field { position: relative; z-index: 1; min-height: 0; padding: 12px; overflow: visible; transition: transform .18s ease, border-color .18s ease, box-shadow .18s ease; }
+    .filter-field:hover { transform: translateY(-1px); border-color: rgba(15,118,110,.30); box-shadow: 0 16px 34px rgba(15,23,42,.07); }
+    .filter-field label { align-items: center; margin-bottom: 9px; }
+    .filter-icon { width: 28px; height: 28px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px; color: var(--brand); background: linear-gradient(135deg, rgba(229,244,242,.96), rgba(255,255,255,.92)); box-shadow: inset 0 0 0 1px rgba(15,118,110,.10); }
+    .filter-field label > span:first-child { display: inline-flex; align-items: center; }
     .filters-grid-modern { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
     .filters-grid-modern .field { margin-bottom: 0; }
     .filters-grid-modern .field-wide { grid-column: 1 / -1; }
+    .native-multi { position: absolute !important; width: 1px !important; height: 1px !important; min-height: 1px !important; padding: 0 !important; opacity: 0 !important; pointer-events: none !important; }
+    .multi-select { position: relative; }
+    .multi-trigger { width: 100%; min-height: 48px; border: 1px solid rgba(183,200,208,.86); border-radius: 16px; padding: 9px 10px 9px 12px; display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(246,251,252,.93)); color: #243941; box-shadow: inset 0 1px 0 rgba(255,255,255,.95), 0 10px 22px rgba(15,23,42,.04); cursor: pointer; transition: border-color .18s ease, box-shadow .18s ease, transform .18s ease; text-align: left; }
+    .multi-trigger:hover, .multi-select.open .multi-trigger { border-color: var(--brand); box-shadow: 0 0 0 4px rgba(15,118,110,.10), 0 14px 28px rgba(15,23,42,.07); transform: translateY(-1px); }
+    .multi-summary { min-width: 0; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .multi-placeholder { color: #6a7c84; font-size: 13px; font-weight: 800; }
+    .multi-chip { max-width: 100%; display: inline-flex; align-items: center; min-height: 25px; border-radius: 999px; padding: 4px 8px; background: rgba(229,244,242,.98); color: var(--brand); font-size: 11px; font-weight: 900; line-height: 1.15; border: 1px solid rgba(15,118,110,.10); }
+    .multi-chip.muted { background: #eef4f6; color: #5b6d75; border-color: rgba(91,109,117,.10); }
+    .multi-chevron { color: #6b7f87; transition: transform .18s ease; }
+    .multi-select.open .multi-chevron { transform: rotate(180deg); }
+    .multi-menu { position: absolute; z-index: 20; left: 0; right: 0; top: calc(100% + 8px); border: 1px solid rgba(179,199,207,.84); border-radius: 20px; background: rgba(255,255,255,.96); box-shadow: 0 24px 60px rgba(15,23,42,.16); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); padding: 10px; opacity: 0; transform: translateY(-6px) scale(.98); pointer-events: none; transform-origin: top center; transition: opacity .16s ease, transform .16s ease; }
+    .multi-select.open .multi-menu { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+    .multi-search-wrap { position: relative; margin-bottom: 8px; }
+    .multi-search-wrap i { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: #8aa0a8; font-size: 12px; }
+    .multi-search { width: 100%; height: 40px; border: 1px solid rgba(203,213,225,.92); border-radius: 14px; padding: 0 12px 0 33px; background: #f8fbfc; color: var(--text); outline: none; font-size: 13px; font-weight: 700; }
+    .multi-search:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rgba(15,118,110,.10); background: #fff; }
+    .multi-list { max-height: 230px; overflow: auto; padding-right: 2px; scrollbar-width: thin; }
+    .multi-option { width: 100%; border: 0; border-radius: 13px; padding: 9px 10px; display: grid; grid-template-columns: 22px 1fr; gap: 8px; align-items: center; background: transparent; color: #30464e; cursor: pointer; font-size: 13px; font-weight: 800; text-align: left; transition: background .14s ease, color .14s ease; }
+    .multi-option:hover { background: #f0f7f7; color: var(--brand); }
+    .multi-check { width: 20px; height: 20px; border-radius: 7px; display: inline-flex; align-items: center; justify-content: center; border: 1px solid rgba(160,181,190,.9); color: transparent; background: #fff; transition: .14s ease; }
+    .multi-option.selected .multi-check { background: linear-gradient(135deg, var(--brand), var(--brand-2)); border-color: transparent; color: #fff; box-shadow: 0 8px 18px rgba(15,118,110,.22); }
+    .multi-empty { padding: 12px; color: var(--muted); font-size: 12px; font-weight: 800; text-align: center; }
+    .multi-actions { display: flex; gap: 8px; padding-top: 9px; margin-top: 8px; border-top: 1px solid rgba(213,224,228,.86); }
+    .mini-action { flex: 1; border: 1px solid rgba(187,204,212,.92); border-radius: 12px; min-height: 34px; background: #fff; color: #42606a; font-size: 12px; font-weight: 900; cursor: pointer; transition: .15s ease; }
+    .mini-action:hover { border-color: var(--brand); color: var(--brand); background: var(--brand-soft); }
+    .filter-hint { position: relative; z-index: 1; display: flex; align-items: center; gap: 9px; margin: 12px 2px 0; color: #607680; font-size: 12px; font-weight: 800; }
+    .filter-hint i { color: var(--brand); }
     .editor-intro { margin: -4px 0 14px; color: #64748b; font-size: 13px; line-height: 1.55; }
     .editor-grid { grid-template-columns: 1fr; gap: 12px; }
     .editor-card { position: relative; overflow: hidden; }
@@ -208,7 +244,7 @@
     .btn { min-height: 52px; }
     .actions { position: sticky; bottom: 0; padding-top: 14px; background: linear-gradient(180deg, rgba(255,255,255,0), rgba(255,255,255,.96) 28%); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
     @media (max-width: 1200px) { .filters-panel { max-height: none; } .filters-grid-modern { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 680px) { .filters-grid-modern { grid-template-columns: 1fr; } .filters-grid-modern .field-wide { grid-column: auto; } .panel { padding: 16px; border-radius: 24px; } }
+    @media (max-width: 680px) { .filters-grid-modern { grid-template-columns: 1fr; } .filters-grid-modern .field-wide { grid-column: auto; } .panel { padding: 16px; border-radius: 24px; } .filter-stage { padding: 10px; border-radius: 22px; } }
 
   </style>
 </head>
@@ -252,14 +288,17 @@
           <label class="commission-option disabled"><input type="radio" name="comissao" value="CRO" disabled><strong>CRO</strong><span>Em breve no mesmo modelo</span></label>
         </div>
 
-        <div class="filters-grid-modern" aria-label="Filtros do relatório">
-          <div class="field"><label for="anos">Ano <small>multi</small></label><select id="anos" multiple></select></div>
-          <div class="field"><label for="meses">Mês <small>multi</small></label><select id="meses" multiple></select></div>
-          <div class="field field-wide"><label for="unidades">Setores <small>multi</small></label><select id="unidades" multiple></select></div>
-          <div class="field"><label for="eixos">Eixos <small>multi</small></label><select id="eixos" multiple></select></div>
-          <div class="field"><label for="categorias">Categoria de avaliação <small>multi</small></label><select id="categorias" multiple></select></div>
-          <div class="field"><label for="satisfacoes">Nível de satisfação <small>multi</small></label><select id="satisfacoes" multiple></select></div>
-          <div class="field"><label for="status">Avaliação terminada? <small>multi</small></label><select id="status" multiple></select></div>
+        <div class="filter-stage">
+          <div class="filters-grid-modern" aria-label="Filtros do relatório">
+            <div class="field filter-field"><label for="anos"><span><i class="fa-solid fa-calendar-days filter-icon"></i>Ano</span><small>multi</small></label><select id="anos" multiple></select></div>
+            <div class="field filter-field"><label for="meses"><span><i class="fa-solid fa-calendar-week filter-icon"></i>Mês</span><small>multi</small></label><select id="meses" multiple></select></div>
+            <div class="field filter-field field-wide"><label for="unidades"><span><i class="fa-solid fa-hospital filter-icon"></i>Setores</span><small>multi</small></label><select id="unidades" multiple></select></div>
+            <div class="field filter-field"><label for="eixos"><span><i class="fa-solid fa-layer-group filter-icon"></i>Eixos</span><small>multi</small></label><select id="eixos" multiple></select></div>
+            <div class="field filter-field"><label for="categorias"><span><i class="fa-solid fa-clipboard-check filter-icon"></i>Categoria</span><small>multi</small></label><select id="categorias" multiple></select></div>
+            <div class="field filter-field"><label for="satisfacoes"><span><i class="fa-solid fa-heart-pulse filter-icon"></i>Satisfação</span><small>multi</small></label><select id="satisfacoes" multiple></select></div>
+            <div class="field filter-field"><label for="status"><span><i class="fa-solid fa-circle-check filter-icon"></i>Status</span><small>multi</small></label><select id="status" multiple></select></div>
+          </div>
+          <p class="filter-hint"><i class="fa-solid fa-sparkles"></i> Clique nos campos para combinar filtros. Sem seleção significa incluir todos os registros disponíveis.</p>
         </div>
 
         <div class="panel-title editor-title"><h2>Texto do relatório</h2><span class="pill">Editável</span></div>
@@ -298,6 +337,15 @@
     const RODAPE_INSTITUCIONAL = 'https://i.ibb.co/VYv0RyF3/Rodape-1.png';
     const state = { payload: null, charts: [] };
     const idsFiltros = ['anos', 'meses', 'unidades', 'eixos', 'categorias', 'satisfacoes', 'status'];
+    const filtrosMeta = {
+      anos: { placeholder: 'Todos os anos' },
+      meses: { placeholder: 'Todos os meses' },
+      unidades: { placeholder: 'Todos os setores' },
+      eixos: { placeholder: 'Todos os eixos' },
+      categorias: { placeholder: 'Todas as categorias' },
+      satisfacoes: { placeholder: 'Todos os níveis' },
+      status: { placeholder: 'Todos os status' }
+    };
     const textos = {
       intro: document.getElementById('texto-intro'),
       metodo: document.getElementById('texto-metodo'),
@@ -327,6 +375,114 @@
     function selecionados(id) {
       return Array.from(document.getElementById(id).selectedOptions).map(option => option.value);
     }
+
+    function fecharMultiselects(exceto = null) {
+      document.querySelectorAll('.multi-select.open').forEach(el => {
+        if (el !== exceto) {
+          el.classList.remove('open');
+          el.querySelector('.multi-trigger')?.setAttribute('aria-expanded', 'false');
+        }
+      });
+    }
+
+    function resumoMultiselect(select) {
+      const selecionadas = Array.from(select.selectedOptions).map(option => option.textContent);
+      if (!selecionadas.length) return `<span class="multi-placeholder">${escapeHtml(filtrosMeta[select.id]?.placeholder || 'Todos')}</span>`;
+      const primeiras = selecionadas.slice(0, 2).map(value => `<span class="multi-chip">${escapeHtml(value)}</span>`).join('');
+      const restante = selecionadas.length > 2 ? `<span class="multi-chip muted">+${selecionadas.length - 2}</span>` : '';
+      return primeiras + restante;
+    }
+
+    function atualizarMultiselect(select) {
+      const wrapper = select.nextElementSibling;
+      if (!wrapper || !wrapper.classList.contains('multi-select')) return;
+      wrapper.querySelector('.multi-summary').innerHTML = resumoMultiselect(select);
+      wrapper.querySelectorAll('.multi-option').forEach(button => {
+        const option = Array.from(select.options).find(item => item.value === button.dataset.value);
+        button.classList.toggle('selected', Boolean(option?.selected));
+        button.setAttribute('aria-pressed', option?.selected ? 'true' : 'false');
+      });
+    }
+
+    function filtrarOpcoesMultiselect(wrapper, termo) {
+      const query = termo.trim().toLocaleLowerCase('pt-BR');
+      let visiveis = 0;
+      wrapper.querySelectorAll('.multi-option').forEach(button => {
+        const match = button.textContent.toLocaleLowerCase('pt-BR').includes(query);
+        button.hidden = !match;
+        if (match) visiveis += 1;
+      });
+      wrapper.querySelector('.multi-empty').hidden = visiveis !== 0;
+    }
+
+    function criarMultiselect(id) {
+      const select = document.getElementById(id);
+      const existente = select.nextElementSibling;
+      if (existente?.classList.contains('multi-select')) existente.remove();
+
+      select.classList.add('native-multi');
+      const wrapper = document.createElement('div');
+      wrapper.className = 'multi-select';
+      wrapper.dataset.target = id;
+      wrapper.innerHTML = `
+        <button class="multi-trigger" type="button" aria-haspopup="listbox" aria-expanded="false">
+          <span class="multi-summary"></span>
+          <i class="fa-solid fa-chevron-down multi-chevron" aria-hidden="true"></i>
+        </button>
+        <div class="multi-menu" role="listbox" aria-multiselectable="true">
+          <div class="multi-search-wrap"><i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i><input class="multi-search" type="search" placeholder="Buscar..." aria-label="Buscar opções"></div>
+          <div class="multi-list"></div>
+          <div class="multi-empty" hidden>Nenhuma opção encontrada.</div>
+          <div class="multi-actions">
+            <button class="mini-action" type="button" data-action="all">Selecionar tudo</button>
+            <button class="mini-action" type="button" data-action="clear">Limpar</button>
+          </div>
+        </div>`;
+
+      const lista = wrapper.querySelector('.multi-list');
+      lista.innerHTML = Array.from(select.options).map(option => `
+        <button class="multi-option" type="button" role="option" data-value="${escapeHtml(option.value)}" aria-pressed="false">
+          <span class="multi-check"><i class="fa-solid fa-check" aria-hidden="true"></i></span>
+          <span>${escapeHtml(option.textContent)}</span>
+        </button>`).join('');
+
+      wrapper.querySelector('.multi-trigger').addEventListener('click', () => {
+        const abrir = !wrapper.classList.contains('open');
+        fecharMultiselects(wrapper);
+        wrapper.classList.toggle('open', abrir);
+        wrapper.querySelector('.multi-trigger').setAttribute('aria-expanded', abrir ? 'true' : 'false');
+        if (abrir) setTimeout(() => wrapper.querySelector('.multi-search').focus(), 40);
+      });
+
+      wrapper.querySelector('.multi-search').addEventListener('input', event => filtrarOpcoesMultiselect(wrapper, event.target.value));
+      wrapper.querySelector('.multi-list').addEventListener('click', event => {
+        const button = event.target.closest('.multi-option');
+        if (!button) return;
+        const option = Array.from(select.options).find(item => item.value === button.dataset.value);
+        if (!option) return;
+        option.selected = !option.selected;
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+        atualizarMultiselect(select);
+      });
+      wrapper.querySelector('.multi-actions').addEventListener('click', event => {
+        const action = event.target.closest('[data-action]')?.dataset.action;
+        if (!action) return;
+        Array.from(select.options).forEach(option => { option.selected = action === 'all'; });
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+        atualizarMultiselect(select);
+      });
+
+      select.insertAdjacentElement('afterend', wrapper);
+      atualizarMultiselect(select);
+    }
+
+    document.addEventListener('click', event => {
+      if (!event.target.closest('.multi-select')) fecharMultiselects();
+    });
+
+    document.addEventListener('keydown', event => {
+      if (event.key === 'Escape') fecharMultiselects();
+    });
 
     function setLoading(message, active = true) {
       const loading = document.getElementById('loading');
@@ -382,6 +538,7 @@
     function preencherSelect(id, values) {
       const select = document.getElementById(id);
       select.innerHTML = (values || []).map(value => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join('');
+      criarMultiselect(id);
     }
 
     function preencherFiltros(filtros) {
