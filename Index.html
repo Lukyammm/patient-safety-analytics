@@ -1990,7 +1990,7 @@
       </section>
     </section>
 
-    <section id="loading" class="loading-box">Carregando dados do boletim...</section>
+    <section id="loading" class="loading-box">Preparando filtros do boletim...</section>
 
     <section id="boletim" class="report-stack hidden">
       <article class="document-page page-break" id="pagina-cosep">
@@ -3328,6 +3328,33 @@
       return fetchViaHttp(params);
     }
 
+    function fetchFiltrosViaGoogleScript() {
+      return new Promise((resolve, reject) => {
+        if (!(window.google && google.script && google.script.run)) {
+          reject(new Error('google.script.run indisponível.'));
+          return;
+        }
+
+        google.script.run
+          .withSuccessHandler(resolve)
+          .withFailureHandler(reject)
+          .obterFiltrosBoletim();
+      });
+    }
+
+    async function fetchFiltrosViaHttp() {
+      const resposta = await fetch(`${location.pathname}?api=filtros`, { cache: 'no-store' });
+      if (!resposta.ok) throw new Error('Falha ao buscar filtros do Apps Script.');
+      return resposta.json();
+    }
+
+    async function fetchFiltrosAPI() {
+      if (window.google && google.script && google.script.run) {
+        return fetchFiltrosViaGoogleScript();
+      }
+      return fetchFiltrosViaHttp();
+    }
+
     async function fetchAPIComRetry(params = {}, tentativas = 2) {
       let ultimoErro = null;
       for (let i = 0; i < tentativas; i += 1) {
@@ -3341,6 +3368,21 @@
         }
       }
       throw ultimoErro || new Error('Falha inesperada ao carregar dados.');
+    }
+
+    async function fetchFiltrosComRetry(tentativas = 2) {
+      let ultimoErro = null;
+      for (let i = 0; i < tentativas; i += 1) {
+        try {
+          return validarPayload(await fetchFiltrosAPI());
+        } catch (erro) {
+          ultimoErro = erro;
+          if (i < tentativas - 1) {
+            await new Promise(resolve => setTimeout(resolve, 180 * (i + 1)));
+          }
+        }
+      }
+      throw ultimoErro || new Error('Falha inesperada ao carregar filtros.');
     }
 
     function escapeHtml(value) {
@@ -4521,7 +4563,13 @@
 
     async function init() {
       try {
-        const payload = await fetchAPIComRetry();
+        const loading = document.getElementById('loading');
+        if (loading) {
+          loading.classList.remove('hidden');
+          loading.textContent = 'Preparando filtros do boletim...';
+        }
+
+        const payload = await fetchFiltrosComRetry();
         preencherFiltros(payload.filtros || {});
         configurarBuscaFiltros();
         configurarTabs();
@@ -4544,14 +4592,17 @@
         renderFila();
         atualizarEstadoAcoes();
 
-        const loading = document.getElementById('loading');
-        loading.classList.add('hidden');
-        loading.textContent = 'Selecione os filtros e clique em “Gerar boletim”.';
-        mostrarToast('Filtros carregados com segurança.', 'success', 'Sistema pronto');
+        if (loading) {
+          loading.classList.add('hidden');
+          loading.textContent = 'Selecione os filtros e clique em “Gerar boletim”.';
+        }
+        mostrarToast('Filtros prontos. Escolha o período e gere o boletim quando quiser.', 'success', 'Sistema pronto');
       } catch (erro) {
         const loading = document.getElementById('loading');
-        loading.classList.remove('hidden');
-        loading.textContent = 'Não foi possível iniciar o sistema.';
+        if (loading) {
+          loading.classList.remove('hidden');
+          loading.textContent = 'Não foi possível iniciar o sistema.';
+        }
         console.error(erro);
         mostrarToast(erro.message || 'Falha ao iniciar o sistema.', 'error', 'Inicialização indisponível');
       }
