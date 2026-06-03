@@ -208,7 +208,7 @@
     @media (max-width: 780px) { .hero-grid, .chart-grid, .metric-grid { grid-template-columns: 1fr; } .document-page { padding: 22px; } .doc-header, .page-header { grid-template-columns: 1fr; flex-direction: column; } .doc-badge, .page-meta { text-align: left; min-width: 0; } .commission-switch { grid-template-columns: 1fr; } .filter-matrix select[multiple] { min-height: 108px; } }
     @media print {
       body { background: #fff; }
-      body::before, .hero-card, .filters-panel, .report-tools, .loading-box, .toast { display: none !important; }
+      body::before, .hero-card, .filters-panel, .report-tools, .loading-box, #toast-root { display: none !important; }
       .app-shell { max-width: none; padding: 0; }
       .workspace { display: block; margin: 0; }
       .preview-panel { padding: 0; border: 0; box-shadow: none; }
@@ -217,6 +217,7 @@
   </style>
 </head>
 <body>
+  <div id="toast-root" class="fixed right-4 top-4 z-[9999] grid w-[min(420px,calc(100vw-2rem))] gap-3 pointer-events-none" aria-live="polite" aria-atomic="true"></div>
   <main class="app-shell selection:bg-cosep-soft selection:text-cosep-teal">
     <section class="hero-card isolate">
       <div class="top-menu-wrap">
@@ -248,9 +249,9 @@
     </section>
 
     <section class="workspace">
-      <section class="panel filters-panel space-y-6">
-        <div class="control-surface">
-          <div class="filters-command">
+      <section class="panel filters-panel space-y-6 rounded-[1.75rem] border border-white/80 bg-white/80 p-5 shadow-premium ring-1 ring-slate-200/60 backdrop-blur-2xl">
+        <div class="control-surface grid grid-cols-1 gap-5 xl:grid-cols-[minmax(280px,.56fr)_minmax(0,1fr)]">
+          <div class="filters-command rounded-3xl border border-slate-200/70 bg-white/80 p-4 shadow-glass">
             <div class="panel-title">
               <div>
                 <h2>Central CRP</h2>
@@ -263,14 +264,14 @@
               <span class="filter-chip empty"><i class="fa-solid fa-layer-group"></i> Todos os dados selecionados</span>
             </div>
 
-            <div class="filter-quick-actions">
-              <button class="btn btn-secondary" type="button" id="btn-selecionar-tudo"><i class="fa-solid fa-check-double"></i> Tudo</button>
-              <button class="btn btn-secondary" type="button" id="btn-limpar-filtros"><i class="fa-solid fa-eraser"></i> Limpar</button>
+            <div class="filter-quick-actions grid grid-cols-2 gap-2">
+              <button class="btn btn-secondary rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 font-black text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-teal-200 hover:text-teal-700 hover:shadow-lg" type="button" id="btn-selecionar-tudo"><i class="fa-solid fa-check-double"></i> Tudo</button>
+              <button class="btn btn-secondary rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 font-black text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-teal-200 hover:text-teal-700 hover:shadow-lg" type="button" id="btn-limpar-filtros"><i class="fa-solid fa-eraser"></i> Limpar</button>
             </div>
           </div>
 
-          <div class="filter-matrix">
-            <div class="filter-section">
+          <div class="filter-matrix grid grid-cols-1 gap-3 xl:grid-cols-[minmax(220px,.78fr)_repeat(3,minmax(150px,1fr))]">
+            <div class="filter-section rounded-3xl border border-slate-200/70 bg-white/75 p-4 shadow-sm">
               <p class="section-label"><i class="fa-solid fa-shield-heart"></i> Comissão</p>
               <div class="commission-switch" role="radiogroup" aria-label="Comissão do relatório">
                 <label class="commission-option"><input type="radio" name="comissao" value="CRP" checked><strong>CRP</strong><span>Prontuário / registros assistenciais</span></label>
@@ -278,17 +279,17 @@
               </div>
             </div>
 
-            <div class="filter-section">
+            <div class="filter-section rounded-3xl border border-slate-200/70 bg-white/75 p-4 shadow-sm">
               <p class="section-label"><i class="fa-solid fa-calendar-days"></i> Ano</p>
               <div class="field"><label for="anos">Ano <small>multi</small></label><div class="select-shell" data-count="0"><select id="anos" multiple></select></div></div>
             </div>
 
-            <div class="filter-section">
+            <div class="filter-section rounded-3xl border border-slate-200/70 bg-white/75 p-4 shadow-sm">
               <p class="section-label"><i class="fa-solid fa-calendar-check"></i> Mês</p>
               <div class="field"><label for="meses">Mês <small>multi</small></label><div class="select-shell" data-count="0"><select id="meses" multiple></select></div></div>
             </div>
 
-            <div class="filter-section">
+            <div class="filter-section rounded-3xl border border-slate-200/70 bg-white/75 p-4 shadow-sm">
               <p class="section-label"><i class="fa-solid fa-hospital-user"></i> Setores</p>
               <div class="field"><label for="unidades">Setores <small>multi</small></label><div class="select-shell" data-count="0"><select id="unidades" multiple></select></div></div>
             </div>
@@ -307,25 +308,23 @@
           <div class="field"><label for="texto-conclusao">Conclusão</label><textarea id="texto-conclusao"></textarea></div>
         </div>
 
-        <div class="actions">
-          <button class="btn btn-primary" type="button" id="btn-gerar"><i class="fa-solid fa-chart-line"></i> Gerar relatório</button>
-          <button class="btn btn-secondary" type="button" id="btn-texto"><i class="fa-solid fa-pen-nib"></i> Recriar texto padrão</button>
-          <button class="btn btn-secondary" type="button" id="btn-imprimir"><i class="fa-solid fa-print"></i> Imprimir / salvar PDF</button>
+        <div class="actions grid grid-cols-1 gap-3 lg:grid-cols-3">
+          <button class="btn btn-primary rounded-2xl bg-gradient-to-br from-teal-500 via-teal-600 to-cyan-700 px-4 py-3 font-black text-white shadow-xl shadow-teal-900/25 transition hover:-translate-y-0.5 hover:shadow-2xl" type="button" id="btn-gerar"><i class="fa-solid fa-chart-line"></i> Gerar relatório</button>
+          <button class="btn btn-secondary rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 font-black text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-teal-200 hover:text-teal-700 hover:shadow-lg" type="button" id="btn-texto"><i class="fa-solid fa-pen-nib"></i> Recriar texto padrão</button>
+          <button class="btn btn-secondary rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 font-black text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-teal-200 hover:text-teal-700 hover:shadow-lg" type="button" id="btn-imprimir"><i class="fa-solid fa-print"></i> Imprimir / salvar PDF</button>
         </div>
       </section>
 
       <section class="preview-panel min-w-0">
         <div id="loading" class="loading-box"><span class="spinner" aria-hidden="true"></span><span>Carregando filtros e preparando relatório...</span></div>
         <div class="report-tools hidden" id="report-tools">
-          <button class="btn btn-secondary" type="button" id="btn-topo"><i class="fa-solid fa-arrow-up"></i> Topo</button>
-          <button class="btn btn-secondary" type="button" id="btn-copiar"><i class="fa-solid fa-copy"></i> Copiar resumo</button>
+          <button class="btn btn-secondary rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 font-black text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-teal-200 hover:text-teal-700 hover:shadow-lg" type="button" id="btn-topo"><i class="fa-solid fa-arrow-up"></i> Topo</button>
+          <button class="btn btn-secondary rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 font-black text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-teal-200 hover:text-teal-700 hover:shadow-lg" type="button" id="btn-copiar"><i class="fa-solid fa-copy"></i> Copiar resumo</button>
         </div>
         <article id="relatorio" class="hidden"></article>
       </section>
     </section>
   </main>
-
-  <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script>
     const APP_URL = '<?!= appUrl ?>';
@@ -394,7 +393,7 @@
         Array.from(document.getElementById(id).options).forEach(option => { option.selected = false; });
       });
       atualizarResumoFiltros();
-      toast('Filtros limpos. O relatório usará todos os dados.');
+      toast('Filtros limpos. O relatório usará todos os dados.', 'info', 'Filtros atualizados');
     }
 
     function selecionarTodosFiltros() {
@@ -402,7 +401,7 @@
         Array.from(document.getElementById(id).options).forEach(option => { option.selected = true; });
       });
       atualizarResumoFiltros();
-      toast('Todos os filtros disponíveis foram selecionados.');
+      toast('Todos os filtros disponíveis foram selecionados.', 'success', 'Filtros atualizados');
     }
 
     function setLoading(message, active = true) {
@@ -411,11 +410,56 @@
       loading.innerHTML = active ? `<span class="spinner" aria-hidden="true"></span><span>${escapeHtml(message)}</span>` : '';
     }
 
-    function toast(message) {
-      const el = document.getElementById('toast');
-      el.textContent = message;
-      el.classList.add('show');
-      setTimeout(() => el.classList.remove('show'), 2600);
+    const toastRoot = () => document.getElementById('toast-root');
+
+    function mostrarToast(message, tipo = 'info', titulo = '') {
+      const root = toastRoot();
+      if (!root) return;
+      const estilos = {
+        success: { tone: 'border-emerald-200 bg-emerald-50/95 text-emerald-900', dot: 'bg-emerald-500' },
+        error: { tone: 'border-rose-200 bg-rose-50/95 text-rose-900', dot: 'bg-rose-500' },
+        warning: { tone: 'border-amber-200 bg-amber-50/95 text-amber-950', dot: 'bg-amber-500' },
+        info: { tone: 'border-sky-200 bg-sky-50/95 text-sky-950', dot: 'bg-sky-500' }
+      };
+      const cfg = estilos[tipo] || estilos.info;
+      const toastEl = document.createElement('section');
+      toastEl.className = `pointer-events-auto relative overflow-hidden rounded-2xl border ${cfg.tone} p-4 shadow-2xl shadow-slate-900/15 backdrop-blur-xl transition duration-300 ease-out translate-x-4 opacity-0`;
+      toastEl.setAttribute('role', tipo === 'error' ? 'alert' : 'status');
+      toastEl.innerHTML = `
+        <div class="flex items-start gap-3">
+          <span class="mt-1 h-2.5 w-2.5 flex-none rounded-full ${cfg.dot} shadow-lg"></span>
+          <div class="min-w-0 flex-1">
+            ${titulo ? `<strong class="block text-sm font-extrabold">${escapeHtml(titulo)}</strong>` : ''}
+            <p class="m-0 text-sm font-semibold leading-6">${escapeHtml(message)}</p>
+          </div>
+          <button type="button" class="rounded-full p-1 text-current/60 transition hover:bg-white/70 hover:text-current" aria-label="Fechar notificação">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      `;
+      const fechar = () => {
+        toastEl.classList.add('translate-x-4', 'opacity-0');
+        toastEl.classList.remove('translate-x-0', 'opacity-100');
+        window.setTimeout(() => toastEl.remove(), 260);
+      };
+      toastEl.querySelector('button').addEventListener('click', fechar);
+      root.appendChild(toastEl);
+      window.requestAnimationFrame(() => {
+        toastEl.classList.remove('translate-x-4', 'opacity-0');
+        toastEl.classList.add('translate-x-0', 'opacity-100');
+      });
+      window.setTimeout(fechar, tipo === 'error' ? 7200 : 4200);
+    }
+
+    function toast(message, tipo = 'info', titulo = '') {
+      mostrarToast(message, tipo, titulo);
+    }
+
+    function validarPayload(payload) {
+      if (!payload || payload.success === false) {
+        throw new Error((payload && (payload.mensagem || payload.detalhe)) || 'Resposta inválida do Apps Script.');
+      }
+      return payload;
     }
 
     function fetchViaGoogleScript(params = {}) {
@@ -438,9 +482,11 @@
       return response.json();
     }
 
-    function fetchPayload(params = {}) {
-      if (window.google && google.script && google.script.run) return fetchViaGoogleScript(params);
-      return fetchViaHttp(params);
+    async function fetchPayload(params = {}) {
+      const payload = window.google && google.script && google.script.run
+        ? await fetchViaGoogleScript(params)
+        : await fetchViaHttp(params);
+      return validarPayload(payload);
     }
 
     function obterFiltros() {
@@ -666,18 +712,18 @@
         atualizarHero();
         renderRelatorio();
         setLoading('', false);
-        toast('Relatório gerado com sucesso.');
+        toast('Relatório gerado com sucesso e pronto para impressão.', 'success', 'Relatório pronto');
       } catch (error) {
         console.error(error);
         setLoading('Não foi possível gerar o relatório. Confira o nome da aba CRP na planilha e tente novamente.');
-        toast('Falha ao gerar relatório.');
+        toast(error.message || 'Falha ao gerar relatório.', 'error', 'Erro na geração');
       }
     }
 
     function copiarResumo() {
       const rel = state.payload?.relatorio || {};
       const resumo = `Relatório ${rel.comissao || 'CRP'} — conformidade ${fmtPct(rel.conformidadeGeral)}, ${fmtNum(rel.totalAvaliacoes)} avaliações, ${fmtNum(rel.naoConformes)} não conformidades.`;
-      navigator.clipboard?.writeText(resumo).then(() => toast('Resumo copiado.'), () => toast(resumo));
+      navigator.clipboard?.writeText(resumo).then(() => toast('Resumo copiado para a área de transferência.', 'success', 'Resumo copiado'), () => toast(resumo, 'info', 'Resumo do relatório'));
     }
 
     async function init() {
@@ -689,9 +735,11 @@
         atualizarHero();
         renderRelatorio();
         setLoading('', false);
+        toast('Filtros e relatório carregados com segurança.', 'success', 'Sistema pronto');
       } catch (error) {
         console.error(error);
         setLoading('Não foi possível carregar os filtros. A aba CRP precisa existir na planilha.');
+        toast(error.message || 'Não foi possível carregar os filtros.', 'error', 'Inicialização indisponível');
       }
     }
 
@@ -699,8 +747,8 @@
     document.getElementById('btn-selecionar-tudo').addEventListener('click', selecionarTodosFiltros);
     document.getElementById('btn-limpar-filtros').addEventListener('click', limparFiltros);
     idsFiltros.forEach(id => document.getElementById(id).addEventListener('change', atualizarResumoFiltros));
-    document.getElementById('btn-texto').addEventListener('click', () => { gerarTextosPadrao(); renderRelatorio(); toast('Texto padrão recriado.'); });
-    document.getElementById('btn-imprimir').addEventListener('click', () => window.print());
+    document.getElementById('btn-texto').addEventListener('click', () => { gerarTextosPadrao(); renderRelatorio(); toast('Texto padrão recriado com base nos indicadores atuais.', 'success', 'Narrativa atualizada'); });
+    document.getElementById('btn-imprimir').addEventListener('click', () => { toast('Janela de impressão aberta com layout A4 preservado.', 'info', 'PDF A4'); window.print(); });
     document.getElementById('btn-topo').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
     document.getElementById('btn-copiar').addEventListener('click', copiarResumo);
     Object.values(textos).forEach(textarea => textarea.addEventListener('input', () => state.payload && renderRelatorio()));
