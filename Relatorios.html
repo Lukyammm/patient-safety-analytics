@@ -2,51 +2,37 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8">
-  <title>Relatórios COSEP</title>
+  <title>Relatório Analítico Editável</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
-          colors: {
-            cosep: {
-              ink: '#17252c', teal: '#0f766e', mint: '#14b8a6', line: '#d7e1e5', soft: '#e5f4f2'
-            }
-          },
-          boxShadow: {
-            premium: '0 24px 70px rgba(15, 23, 42, 0.13)',
-            glass: '0 18px 45px rgba(16, 40, 52, 0.10)'
-          }
-        }
-      }
-    };
-  </script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <style>
     :root {
-      --page: #ffffff;
-      --line: #d7e1e5;
-      --line-strong: #a9bdc4;
-      --text: #1f2a30;
-      --muted: #64767e;
+      --bg: #f5faf9;
+      --surface: #ffffff;
+      --surface-soft: #f8fcfb;
+      --line: #d9e6e4;
+      --line-strong: #bfd4d0;
+      --text: #173037;
+      --muted: #657b82;
+      --muted-strong: #425b63;
       --brand: #0f766e;
-      --brand-2: #14b8a6;
-      --brand-soft: #e5f4f2;
-      --green: #1f8f5f;
-      --green-soft: #eaf7f0;
-      --amber: #b7791f;
-      --amber-soft: #fff5e5;
-      --red: #c05621;
-      --red-soft: #fff0eb;
-      --ink: #17252c;
-      --shadow: 0 24px 70px rgba(15, 23, 42, 0.13);
-      --shadow-soft: 0 12px 28px rgba(16, 40, 52, 0.08);
+      --brand-dark: #0b4f4a;
+      --brand-2: #0e7490;
+      --brand-soft: #e4f5f2;
+      --success: #16845b;
+      --warning: #a56613;
+      --danger: #b54721;
+      --shadow: 0 18px 48px rgba(23, 48, 55, .08);
+      --shadow-subtle: 0 8px 22px rgba(23, 48, 55, .06);
+      --radius-xl: 28px;
+      --radius-lg: 20px;
+      --radius-md: 14px;
     }
 
     * { box-sizing: border-box; }
@@ -55,114 +41,374 @@
       margin: 0;
       min-height: 100vh;
       color: var(--text);
-      font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
       background:
-        radial-gradient(circle at 8% -12%, rgba(20, 184, 166, 0.18), transparent 32rem),
-        radial-gradient(circle at 92% 18%, rgba(15, 118, 110, 0.14), transparent 30rem),
-        linear-gradient(180deg, #f8fbfc 0%, #eef5f6 58%, #e7eff2 100%);
+        radial-gradient(circle at 12% -12%, rgba(15, 118, 110, .16), transparent 34rem),
+        radial-gradient(circle at 96% 10%, rgba(14, 116, 144, .12), transparent 30rem),
+        linear-gradient(180deg, #fbfefd 0%, var(--bg) 48%, #edf5f4 100%);
     }
     body::before {
       content: '';
       position: fixed;
       inset: 0;
       pointer-events: none;
-      background-image: linear-gradient(rgba(15, 118, 110, .045) 1px, transparent 1px), linear-gradient(90deg, rgba(15, 118, 110, .045) 1px, transparent 1px);
-      background-size: 32px 32px;
-      mask-image: linear-gradient(180deg, rgba(0,0,0,.82), transparent 72%);
+      background-image: linear-gradient(rgba(15, 118, 110, .035) 1px, transparent 1px), linear-gradient(90deg, rgba(15, 118, 110, .035) 1px, transparent 1px);
+      background-size: 38px 38px;
+      mask-image: linear-gradient(180deg, rgba(0,0,0,.9), transparent 70%);
     }
     button, input, select, textarea { font: inherit; }
-
-    .app-shell { position: relative; z-index: 1; max-width: 1480px; margin: 0 auto; padding: 24px 16px 56px; }
-    .glass-card { background: rgba(255, 255, 255, 0.88); border: 1px solid rgba(255,255,255,.92); box-shadow: var(--shadow); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
-    .hero-card, .panel, .loading-box { border-radius: 28px; }
-    .hero-card, .panel, .loading-box { background: rgba(255, 255, 255, 0.90); border: 1px solid rgba(196, 211, 218, 0.72); box-shadow: var(--shadow); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px); }
-    .hero-card { padding: clamp(22px, 3vw, 34px); overflow: hidden; position: relative; }
-    .hero-card::after { content: ''; position: absolute; inset: 0; background: linear-gradient(135deg, rgba(255,255,255,.48), rgba(255,255,255,0)); pointer-events: none; }
-    .hero-card > * { position: relative; z-index: 1; }
-
-    .top-menu-wrap { display: flex; justify-content: flex-end; margin-bottom: 18px; }
-    .top-menu { width: min(520px, 100%); }
-    .top-menu-inner { border: 1px solid rgba(191, 206, 213, 0.88); border-radius: 999px; background: rgba(255,255,255,.86); box-shadow: 0 10px 28px rgba(22,52,63,.10); display: flex; align-items: center; gap: 8px; padding: 6px; overflow: auto; }
-    .top-menu-toggle { width: 40px; height: 34px; border-radius: 999px; border: 1px solid rgba(176, 194, 203, 0.9); background: linear-gradient(180deg, #fff, #f4fafb); color: #4b6770; display: inline-flex; align-items: center; justify-content: center; flex: 0 0 40px; }
-    .top-menu-links { display: inline-flex; gap: 8px; align-items: center; }
-    .top-menu-link { min-height: 34px; border-radius: 999px; border: 1px solid rgba(187,204,212,.92); color: #36515b; text-decoration: none; font-size: 13px; font-weight: 800; padding: 8px 13px; white-space: nowrap; background: rgba(255,255,255,.88); transition: .18s ease; }
-    .top-menu-link:hover, .top-menu-link.active { background: var(--brand-soft); border-color: var(--brand); color: var(--brand); transform: translateY(-1px); }
-
-    .hero-grid { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(340px, .85fr); gap: 24px; align-items: end; }
-    .eyebrow { display: inline-flex; align-items: center; gap: 8px; padding: 7px 11px; border-radius: 999px; background: var(--brand-soft); color: var(--brand); font-size: 12px; font-weight: 900; text-transform: uppercase; letter-spacing: .12em; margin-bottom: 16px; }
-    h1 { margin: 0 0 12px; color: #1e2f36; font-size: clamp(34px, 5vw, 62px); line-height: .96; letter-spacing: -.06em; font-weight: 800; }
-    .hero-copy { margin: 0; color: #5a6a72; font-size: 17px; line-height: 1.65; max-width: 900px; }
-    .hero-stat-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
-    .hero-stat { border: 1px solid rgba(195,211,218,.78); border-radius: 22px; padding: 16px; background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(247,251,252,.88)); box-shadow: var(--shadow-soft); transition: transform .18s ease, box-shadow .18s ease; }
-    .hero-stat:hover { transform: translateY(-2px); box-shadow: 0 18px 36px rgba(16, 40, 52, .11); }
-    .hero-stat span { display: block; color: var(--muted); font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; }
-    .hero-stat strong { display: block; margin-top: 8px; color: var(--ink); font-size: 30px; letter-spacing: -.04em; }
-
-    .workspace { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(18px, 2vw, 28px); margin-top: 22px; align-items: start; }
-    .panel { padding: clamp(18px, 2vw, 24px); }
-    .sticky { position: static; }
-    .filters-panel { position: relative; overflow: hidden; background: linear-gradient(160deg, rgba(255,255,255,.94), rgba(246,252,252,.86)); border-color: rgba(255,255,255,.98); }
-    .filters-panel::before { content: ''; position: absolute; inset: 0 0 auto; height: 180px; background: radial-gradient(circle at 10% 0%, rgba(20,184,166,.18), transparent 30%), radial-gradient(circle at 88% 4%, rgba(15,118,110,.10), transparent 34%); pointer-events: none; }
-    .filters-panel > * { position: relative; z-index: 1; }
-    .control-surface { display: grid; grid-template-columns: minmax(280px, .56fr) minmax(0, 1fr); gap: clamp(16px, 2vw, 24px); align-items: stretch; }
-    .filter-matrix { display: grid; grid-template-columns: minmax(220px, .78fr) repeat(3, minmax(150px, 1fr)); gap: 12px; align-items: end; }
-    .filters-command { display: grid; gap: 12px; align-content: space-between; min-height: 100%; }
-    .panel-title { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-bottom: 16px; }
-    .panel-title h2 { margin: 0; font-size: 20px; letter-spacing: -.04em; color: var(--ink); }
-    .panel-title p { margin: 5px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; font-weight: 700; }
-    .pill { display: inline-flex; align-items: center; gap: 7px; border-radius: 999px; padding: 7px 10px; background: rgba(229,244,242,.88); color: var(--brand); font-size: 12px; font-weight: 900; box-shadow: inset 0 0 0 1px rgba(15,118,110,.10); white-space: nowrap; }
-
-    .filter-section { border: 1px solid rgba(205,219,225,.72); border-radius: 24px; padding: 14px; background: rgba(255,255,255,.62); box-shadow: inset 0 1px 0 rgba(255,255,255,.86); margin-bottom: 0; }
-    .section-label { display: flex; align-items: center; gap: 9px; margin: 0 0 12px; color: #28424a; font-size: 12px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
-    .section-label i { color: var(--brand); }
-    .field { margin-bottom: 12px; }
-    .field:last-child { margin-bottom: 0; }
-    label { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin: 0 0 7px; color: #334951; font-size: 13px; font-weight: 850; }
-    label small { color: var(--muted); font-size: 10px; font-weight: 900; text-transform: uppercase; letter-spacing: .10em; }
-    select, textarea, input[type="text"] { width: 100%; border: 1px solid rgba(183,200,208,.92); border-radius: 17px; background: rgba(251,253,253,.94); color: var(--text); outline: none; transition: border-color .18s ease, box-shadow .18s ease, background .18s ease, transform .18s ease; }
-    .select-shell { position: relative; border-radius: 20px; background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(241,248,249,.92)); box-shadow: 0 10px 26px rgba(16,40,52,.07), inset 0 1px 0 rgba(255,255,255,.9); }
-    .select-shell::before { content: attr(data-count); position: absolute; top: 9px; right: 9px; z-index: 2; min-width: 26px; height: 22px; padding: 0 8px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; background: rgba(15,118,110,.10); color: var(--brand); font-size: 11px; font-weight: 950; pointer-events: none; }
-    .select-shell::after { content: '⌘ clique para multiseleção'; position: absolute; right: 12px; bottom: 9px; color: rgba(100,118,126,.72); font-size: 10px; font-weight: 800; pointer-events: none; }
-    select { min-height: 48px; padding: 11px 42px 11px 12px; }
-    select[multiple] { min-height: 118px; padding: 11px 12px 28px; background: transparent; border-radius: 20px; scrollbar-width: thin; }
-    .filter-matrix select[multiple] { min-height: 132px; }
-    select[multiple] option { margin: 3px 0; padding: 8px 10px; border-radius: 12px; color: #2f464e; font-weight: 700; }
-    select[multiple] option:checked { background: linear-gradient(135deg, rgba(15,118,110,.95), rgba(20,184,166,.88)); color: #fff; }
-    textarea { min-height: 112px; padding: 12px 13px; resize: vertical; line-height: 1.55; }
-    select:focus, textarea:focus, input[type="text"]:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rgba(15,118,110,.12); background: #fff; }
-    .select-shell:focus-within { transform: translateY(-1px); box-shadow: 0 16px 34px rgba(16,40,52,.11), 0 0 0 4px rgba(15,118,110,.08); }
-    .filter-summary { display: flex; flex-wrap: wrap; gap: 8px; margin: -2px 0 14px; min-height: 34px; }
-    .filter-chip { display: inline-flex; align-items: center; gap: 7px; max-width: 100%; border-radius: 999px; padding: 8px 10px; background: rgba(255,255,255,.82); border: 1px solid rgba(195,211,218,.78); color: #35515a; font-size: 11px; font-weight: 900; box-shadow: 0 8px 18px rgba(16,40,52,.06); }
-    .filter-chip.empty { color: var(--muted); background: rgba(245,250,251,.72); }
-    .filter-quick-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-top: 2px; }
-
-    .commission-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0; }
-    .commission-option { position: relative; border: 1px solid rgba(183,200,208,.86); border-radius: 20px; padding: 15px; background: rgba(255,255,255,.72); cursor: pointer; transition: .18s ease; box-shadow: 0 10px 22px rgba(16,40,52,.06); overflow: hidden; }
-    .commission-option input { display: none; }
-    .commission-option strong { display: block; font-size: 19px; letter-spacing: -.04em; }
-    .commission-option span { display: block; margin-top: 4px; color: var(--muted); font-size: 12px; line-height: 1.4; }
-    .commission-option:has(input:checked) { border-color: rgba(15,118,110,.74); background: linear-gradient(135deg, rgba(229,244,242,.96), rgba(255,255,255,.86)); box-shadow: 0 0 0 4px rgba(15,118,110,.08), 0 16px 32px rgba(16,40,52,.09); color: var(--brand); }
-    .commission-option:has(input:checked)::after { content: '\f00c'; font-family: 'Font Awesome 6 Free'; font-weight: 900; position: absolute; top: 12px; right: 12px; width: 24px; height: 24px; border-radius: 999px; display: grid; place-items: center; background: var(--brand); color: #fff; font-size: 11px; }
-    .commission-option.disabled { opacity: .58; cursor: not-allowed; }
-
-    .actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin-top: 0; }
-    .btn { border: 0; border-radius: 16px; min-height: 48px; padding: 12px 16px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 9px; font-weight: 900; letter-spacing: -.01em; transition: transform .18s ease, box-shadow .18s ease, background .18s ease; }
-    .btn:hover { transform: translateY(-1px); }
-    .btn-primary { background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; box-shadow: 0 18px 30px rgba(15,118,110,.24); }
-    .btn-secondary { background: rgba(255,255,255,.92); color: #36515b; border: 1px solid rgba(187,204,212,.92); }
-
-    .loading-box { display: flex; align-items: center; gap: 12px; min-height: 92px; padding: 20px; color: var(--muted); font-weight: 800; }
-    .spinner { width: 22px; height: 22px; border: 3px solid #dce8ec; border-top-color: var(--brand); border-radius: 50%; animation: spin .75s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    button { cursor: pointer; }
     .hidden { display: none !important; }
-    .report-tools { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; justify-content: flex-end; }
 
-    .document-page { width: 210mm; min-height: 297mm; margin: 0 auto 18px; padding: 10mm; background: rgba(255,255,255,.98); border: 1px solid rgba(255,255,255,.96); box-shadow: 0 24px 60px rgba(15, 23, 42, 0.13); display: flex; flex-direction: column; gap: 10px; overflow: hidden; page-break-after: always; }
-    .page-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(31, 41, 55, 0.12); }
+    .app-shell {
+      position: relative;
+      z-index: 1;
+      width: min(1280px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 22px 0 56px;
+    }
+
+    .top-nav {
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 16px;
+    }
+    .top-nav__inner {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px;
+      overflow-x: auto;
+      border: 1px solid rgba(191, 212, 208, .85);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, .78);
+      backdrop-filter: blur(14px);
+      box-shadow: var(--shadow-subtle);
+    }
+    .top-nav a {
+      flex: 0 0 auto;
+      padding: 8px 13px;
+      border-radius: 999px;
+      color: var(--muted-strong);
+      font-size: 13px;
+      font-weight: 800;
+      text-decoration: none;
+      transition: color .18s ease, background .18s ease;
+    }
+    .top-nav a:hover, .top-nav a.active { background: var(--brand-soft); color: var(--brand-dark); }
+
+    .page-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: clamp(18px, 3vw, 34px);
+      align-items: end;
+      padding: clamp(24px, 4vw, 42px);
+      border: 1px solid rgba(204, 221, 218, .82);
+      border-radius: var(--radius-xl);
+      background: rgba(255, 255, 255, .86);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 14px;
+      padding: 7px 11px;
+      border-radius: 999px;
+      background: var(--brand-soft);
+      color: var(--brand-dark);
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+    }
+    h1 {
+      margin: 0;
+      max-width: 820px;
+      color: #132a31;
+      font-size: clamp(34px, 5vw, 58px);
+      line-height: 1;
+      letter-spacing: -.055em;
+      font-weight: 900;
+    }
+    .header-copy {
+      margin: 14px 0 0;
+      max-width: 760px;
+      color: var(--muted);
+      font-size: clamp(15px, 1.45vw, 18px);
+      line-height: 1.65;
+      font-weight: 560;
+    }
+
+    .indicator-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(150px, 1fr));
+      gap: 10px;
+      min-width: min(430px, 100%);
+    }
+    .indicator-card {
+      min-height: 106px;
+      padding: 17px;
+      border: 1px solid rgba(207, 223, 220, .8);
+      border-radius: var(--radius-lg);
+      background: linear-gradient(180deg, #fff, #f8fcfb);
+      box-shadow: 0 8px 20px rgba(23, 48, 55, .045);
+    }
+    .indicator-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .indicator-card strong {
+      display: block;
+      margin-top: 9px;
+      color: var(--text);
+      font-size: 28px;
+      line-height: 1.05;
+      letter-spacing: -.04em;
+    }
+
+    .editor-card, .preview-card, .loading-box {
+      border: 1px solid rgba(207, 223, 220, .84);
+      border-radius: var(--radius-xl);
+      background: rgba(255, 255, 255, .92);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+    .editor-card { margin-top: 22px; overflow: hidden; }
+    .card-section { padding: clamp(20px, 3vw, 30px); }
+    .card-section + .card-section { border-top: 1px solid rgba(217, 230, 228, .72); }
+    .section-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+    .section-head h2 {
+      margin: 0;
+      color: var(--text);
+      font-size: clamp(20px, 2.1vw, 27px);
+      line-height: 1.15;
+      letter-spacing: -.04em;
+      font-weight: 900;
+    }
+    .section-head p {
+      margin: 6px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.55;
+      font-weight: 600;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      flex: 0 0 auto;
+      padding: 8px 11px;
+      border-radius: 999px;
+      background: #eef8f6;
+      color: var(--brand-dark);
+      font-size: 12px;
+      font-weight: 900;
+      white-space: nowrap;
+    }
+
+    .filter-grid {
+      display: grid;
+      grid-template-columns: minmax(260px, .9fr) repeat(3, minmax(180px, 1fr));
+      gap: 14px;
+      align-items: stretch;
+    }
+    .filter-field {
+      min-width: 0;
+      padding: 14px;
+      border-radius: var(--radius-lg);
+      background: var(--surface-soft);
+    }
+    .field-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 9px;
+      color: var(--muted-strong);
+      font-size: 13px;
+      font-weight: 900;
+    }
+    .field-label small {
+      color: var(--brand);
+      font-size: 10px;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+    }
+    .commission-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .commission-option {
+      position: relative;
+      min-height: 112px;
+      padding: 15px;
+      border: 1px solid transparent;
+      border-radius: 18px;
+      background: #fff;
+      color: var(--muted-strong);
+      transition: border-color .18s ease, background .18s ease, color .18s ease;
+    }
+    .commission-option input { position: absolute; opacity: 0; pointer-events: none; }
+    .commission-option strong { display: block; color: inherit; font-size: 21px; letter-spacing: -.04em; }
+    .commission-option span { display: block; margin-top: 6px; font-size: 12px; line-height: 1.45; }
+    .commission-option:has(input:checked) { border-color: rgba(15, 118, 110, .55); background: var(--brand-soft); color: var(--brand-dark); }
+    .commission-option.disabled { cursor: not-allowed; opacity: .56; }
+
+    .select-shell { position: relative; }
+    .select-shell::after {
+      content: attr(data-count) ' selecionado(s)';
+      position: absolute;
+      right: 10px;
+      bottom: 9px;
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 900;
+      pointer-events: none;
+    }
+    select, textarea {
+      width: 100%;
+      outline: none;
+      border: 1px solid rgba(190, 211, 207, .9);
+      border-radius: var(--radius-md);
+      background: #fff;
+      color: var(--text);
+      transition: border-color .18s ease, box-shadow .18s ease;
+    }
+    select { min-height: 48px; padding: 10px 12px; }
+    select[multiple] { min-height: 144px; padding: 9px 10px 30px; scrollbar-width: thin; }
+    select[multiple] option { margin: 3px 0; padding: 8px 10px; border-radius: 10px; font-weight: 700; }
+    select[multiple] option:checked { background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; }
+    textarea {
+      min-height: 380px;
+      padding: 18px;
+      resize: vertical;
+      color: #213f47;
+      font-size: 16px;
+      line-height: 1.72;
+      font-weight: 520;
+    }
+    select:focus, textarea:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rgba(15, 118, 110, .12); }
+
+    .filter-summary {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 16px;
+      min-height: 32px;
+    }
+    .filter-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      max-width: 100%;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: #eef8f6;
+      color: var(--brand-dark);
+      font-size: 12px;
+      font-weight: 800;
+    }
+    .filter-chip.empty { background: #f0f6f5; color: var(--muted); }
+
+    .filter-actions, .footer-actions, .report-tools {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+    .filter-actions { justify-content: flex-end; margin-top: 18px; }
+    .footer-actions { justify-content: space-between; }
+    .footer-actions__secondary { display: flex; flex-wrap: wrap; gap: 10px; }
+    .btn {
+      min-height: 46px;
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 17px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      color: var(--muted-strong);
+      background: #fff;
+      font-size: 14px;
+      font-weight: 900;
+      text-decoration: none;
+      transition: transform .18s ease, box-shadow .18s ease, background .18s ease, color .18s ease;
+    }
+    .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-subtle); }
+    .btn-primary { background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; box-shadow: 0 12px 28px rgba(15, 118, 110, .22); }
+    .btn-secondary { border: 1px solid rgba(190, 211, 207, .9); }
+    .btn-ghost { background: transparent; color: var(--brand-dark); }
+
+    .tabs {
+      display: flex;
+      gap: 8px;
+      overflow-x: auto;
+      padding: 6px;
+      border-radius: 999px;
+      background: #eef6f5;
+      margin-bottom: 18px;
+    }
+    .tab-button {
+      flex: 0 0 auto;
+      min-height: 42px;
+      border: 0;
+      border-radius: 999px;
+      padding: 10px 14px;
+      background: transparent;
+      color: var(--muted-strong);
+      font-size: 13px;
+      font-weight: 900;
+      transition: background .18s ease, color .18s ease, box-shadow .18s ease;
+    }
+    .tab-button.active { background: #fff; color: var(--brand-dark); box-shadow: 0 8px 18px rgba(23, 48, 55, .07); }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; animation: fadeIn .18s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+    .loading-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-height: 86px;
+      padding: 20px;
+      color: var(--muted);
+      font-weight: 800;
+      margin-top: 22px;
+    }
+    .spinner { width: 22px; height: 22px; border: 3px solid #dce8e6; border-top-color: var(--brand); border-radius: 50%; animation: spin .75s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .preview-card { margin-top: 22px; padding: clamp(14px, 2vw, 22px); }
+    .report-tools { justify-content: flex-end; margin-bottom: 14px; }
+    .document-page {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto 18px;
+      padding: 10mm;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      page-break-after: always;
+      border: 1px solid #e3ecea;
+      background: #fff;
+      box-shadow: 0 18px 46px rgba(23, 48, 55, .1);
+    }
+    .doc-page-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(31, 41, 55, .12); }
     .page-header-main { display: flex; align-items: flex-start; gap: 10px; min-width: 0; }
     .page-logo { width: 52px; height: 52px; flex: 0 0 52px; object-fit: contain; object-position: center; }
-    .page-header h2 { margin: 0 0 4px; color: var(--ink); font-size: 20px; line-height: 1.16; letter-spacing: -.035em; }
-    .page-header p, .page-meta { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
+    .doc-page-header h2 { margin: 0 0 4px; color: var(--text); font-size: 20px; line-height: 1.16; letter-spacing: -.035em; }
+    .doc-page-header p, .page-meta { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
     .page-meta { min-width: 205px; text-align: right; }
     .doc-content { flex: 1 1 auto; display: flex; flex-direction: column; }
     .doc-header { display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: start; padding: 12px 0 4px; }
@@ -170,11 +416,10 @@
     .doc-title { margin: 6px 0 0; color: #1e2f36; font-size: 27px; line-height: 1.08; letter-spacing: -.035em; }
     .doc-subtitle { margin: 8px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
     .doc-badge { border: 1px solid #bfd0d6; border-radius: 16px; padding: 12px; text-align: right; min-width: 150px; background: linear-gradient(180deg, #fff, #f8fbfc); }
-    .doc-badge strong { display: block; font-size: 30px; line-height: 1; color: var(--brand); letter-spacing: -.04em; }
-    .doc-badge span { display: block; margin-top: 5px; font-size: 11px; color: var(--muted); font-weight: 900; text-transform: uppercase; }
+    .doc-badge strong { display: block; color: var(--brand); font-size: 30px; line-height: 1; letter-spacing: -.04em; }
+    .doc-badge span { display: block; margin-top: 5px; color: var(--muted); font-size: 11px; font-weight: 900; text-transform: uppercase; }
     .footer-note { display: flex; justify-content: center; align-items: center; padding-top: 4px; margin-top: auto; border-top: 1px solid var(--line); overflow: hidden; }
     .footer-brand { height: 40px; width: auto; max-width: 156mm; object-fit: contain; object-position: center; flex: 0 1 auto; }
-
     .doc-section { margin-top: 16px; break-inside: avoid; }
     .doc-section h3 { display: flex; align-items: center; gap: 9px; margin: 0 0 10px; color: #1f343c; font-size: 16px; letter-spacing: -.02em; }
     .doc-section h3::before { content: ''; width: 8px; height: 22px; border-radius: 999px; background: linear-gradient(180deg, var(--brand), var(--brand-2)); }
@@ -182,7 +427,7 @@
     .metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
     .metric-card { border: 1px solid #d4e0e4; border-radius: 16px; padding: 12px; background: linear-gradient(180deg, #fff, #f8fbfc); break-inside: avoid; }
     .metric-card span { display: block; color: var(--muted); font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
-    .metric-card strong { display: block; margin-top: 7px; color: var(--ink); font-size: 24px; letter-spacing: -.04em; }
+    .metric-card strong { display: block; margin-top: 7px; color: var(--text); font-size: 24px; letter-spacing: -.04em; }
     .metric-card small { display: block; margin-top: 4px; color: var(--muted); line-height: 1.35; }
     .chart-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 12px; margin-top: 12px; }
     .chart-box { border: 1px solid #d4e0e4; border-radius: 18px; padding: 12px; min-height: 230px; background: #fbfdfd; }
@@ -193,136 +438,137 @@
     th { background: #eef6f5; color: #31525b; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; }
     tr:last-child td { border-bottom: 0; }
     .tag { display: inline-flex; border-radius: 999px; padding: 3px 7px; font-size: 10px; font-weight: 900; background: var(--brand-soft); color: var(--brand); }
-    .tag.red { background: var(--red-soft); color: var(--red); }
-    .tag.amber { background: var(--amber-soft); color: var(--amber); }
-    .tag.green { background: var(--green-soft); color: var(--green); }
+    .tag.red { background: #fff0eb; color: var(--danger); }
+    .tag.amber { background: #fff5e5; color: var(--warning); }
+    .tag.green { background: #eaf7f0; color: var(--success); }
     .structure-alert { border: 1px solid #f2c078; background: linear-gradient(180deg, #fff9ed, #fff4dc); color: #7c4a03; border-radius: 16px; padding: 12px 14px; margin-top: 14px; font-size: 11px; line-height: 1.55; break-inside: avoid; }
     .structure-alert strong { display: block; margin-bottom: 6px; color: #8a5200; font-size: 12px; }
     .structure-alert ul { margin: 0; padding-left: 18px; }
 
-    .editor-grid { display: grid; grid-template-columns: repeat(5, minmax(180px, 1fr)); gap: 10px; }
-    .toast { position: fixed; right: 18px; bottom: 18px; z-index: 30; background: #18323a; color: #fff; border-radius: 16px; padding: 13px 15px; box-shadow: 0 16px 35px rgba(0,0,0,.18); font-weight: 900; transform: translateY(120%); transition: transform .22s ease; }
-    .toast.show { transform: translateY(0); }
-
-    @media (max-width: 1200px) { .control-surface, .filter-matrix, .editor-grid, .actions { grid-template-columns: 1fr; } .document-page { width: 100%; min-height: auto; } }
-    @media (max-width: 780px) { .hero-grid, .chart-grid, .metric-grid { grid-template-columns: 1fr; } .document-page { padding: 22px; } .doc-header, .page-header { grid-template-columns: 1fr; flex-direction: column; } .doc-badge, .page-meta { text-align: left; min-width: 0; } .commission-switch { grid-template-columns: 1fr; } .filter-matrix select[multiple] { min-height: 108px; } }
+    @media (max-width: 1100px) {
+      .page-header { grid-template-columns: 1fr; }
+      .indicator-grid, .filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .document-page { width: 100%; min-height: auto; }
+    }
+    @media (max-width: 720px) {
+      .app-shell { width: min(100% - 20px, 1280px); padding-top: 12px; }
+      .page-header, .card-section { padding: 20px; }
+      .indicator-grid, .filter-grid, .commission-switch, .chart-grid, .metric-grid { grid-template-columns: 1fr; }
+      .section-head, .footer-actions { display: grid; grid-template-columns: 1fr; }
+      .footer-actions__secondary, .filter-actions { justify-content: stretch; }
+      .btn { width: 100%; }
+      textarea { min-height: 330px; }
+      .doc-header, .doc-page-header { grid-template-columns: 1fr; flex-direction: column; }
+      .doc-badge, .page-meta { text-align: left; min-width: 0; }
+      .document-page { padding: 22px; }
+    }
     @media print {
       body { background: #fff; }
-      body::before, .hero-card, .filters-panel, .report-tools, .loading-box, #toast-root { display: none !important; }
-      .app-shell { max-width: none; padding: 0; }
-      .workspace { display: block; margin: 0; }
-      .preview-panel { padding: 0; border: 0; box-shadow: none; }
+      body::before, .top-nav, .page-header, .editor-card, .report-tools, .loading-box, #toast-root { display: none !important; }
+      .app-shell { width: auto; max-width: none; padding: 0; }
+      .preview-card { margin: 0; padding: 0; border: 0; box-shadow: none; }
       .document-page { width: 210mm; min-height: 297mm; margin: 0; box-shadow: none; border: 0; page-break-after: always; }
     }
   </style>
 </head>
 <body>
-  <div id="toast-root" class="fixed right-4 top-4 z-[9999] grid w-[min(420px,calc(100vw-2rem))] gap-3 pointer-events-none" aria-live="polite" aria-atomic="true"></div>
-  <main class="app-shell selection:bg-cosep-soft selection:text-cosep-teal">
-    <section class="hero-card isolate">
-      <div class="top-menu-wrap">
-        <nav class="top-menu" aria-label="Menu superior">
-          <div class="top-menu-inner">
-            <span class="top-menu-toggle" aria-hidden="true"><i class="fa-solid fa-bars"></i></span>
-            <div class="top-menu-links">
-              <a class="top-menu-link" href="<?!= appUrl ?>">Boletim</a>
-              <a class="top-menu-link active" href="<?!= appUrl ?>?page=relatorios">Relatórios</a>
-              <a class="top-menu-link" href="https://script.google.com/macros/s/AKfycbyrFcu7qj-Ydr2nwWqaaYpzntLct0jjN2ylXnrL5hXP5vWuiYcG_c4LYVVilFvJy-tadg/exec" target="_blank" rel="noopener noreferrer">Painel NUGESP</a>
+  <div id="toast-root" style="position:fixed;right:16px;top:16px;z-index:9999;display:grid;gap:10px;width:min(420px,calc(100vw - 32px));pointer-events:none" aria-live="polite" aria-atomic="true"></div>
+  <main class="app-shell">
+    <nav class="top-nav" aria-label="Menu superior">
+      <div class="top-nav__inner">
+        <a href="<?!= appUrl ?>">Boletim</a>
+        <a class="active" href="<?!= appUrl ?>?page=relatorios">Relatórios</a>
+        <a href="https://script.google.com/macros/s/AKfycbyrFcu7qj-Ydr2nwWqaaYpzntLct0jjN2ylXnrL5hXP5vWuiYcG_c4LYVVilFvJy-tadg/exec" target="_blank" rel="noopener noreferrer">Painel NUGESP</a>
+      </div>
+    </nav>
+
+    <header class="page-header">
+      <div>
+        <span class="eyebrow"><i class="fa-solid fa-file-pen"></i> Produção executiva</span>
+        <h1>Relatório Analítico Editável</h1>
+        <p class="header-copy">Monte um relatório institucional claro, editável e pronto para PDF com filtros essenciais, indicadores consolidados e texto analítico estruturado.</p>
+      </div>
+      <section class="indicator-grid" aria-label="Indicadores do relatório">
+        <article class="indicator-card"><span>Comissão atual</span><strong id="hero-comissao">CRP</strong></article>
+        <article class="indicator-card"><span>Conformidade geral</span><strong id="hero-conformidade">--</strong></article>
+        <article class="indicator-card"><span>Avaliações analisadas</span><strong id="hero-avaliacoes">--</strong></article>
+        <article class="indicator-card"><span>Indicadores avaliados</span><strong id="hero-indicadores">--</strong></article>
+      </section>
+    </header>
+
+    <section class="editor-card" aria-label="Editor do relatório">
+      <section class="card-section">
+        <div class="section-head">
+          <div>
+            <h2>Filtros do relatório</h2>
+            <p>Use apenas os recortes essenciais para manter a leitura objetiva e a geração do relatório mais rápida.</p>
+          </div>
+          <span class="status-pill"><i class="fa-solid fa-sliders"></i> Filtros essenciais</span>
+        </div>
+
+        <div class="filter-grid">
+          <div class="filter-field">
+            <div class="field-label"><span>Comissão</span><small>atual</small></div>
+            <div class="commission-switch" role="radiogroup" aria-label="Comissão do relatório">
+              <label class="commission-option"><input type="radio" name="comissao" value="CRP" checked><strong>CRP</strong><span>Prontuário / registros assistenciais</span></label>
+              <label class="commission-option disabled"><input type="radio" name="comissao" value="CRO" disabled><strong>CRO</strong><span>Disponível em versão futura</span></label>
             </div>
           </div>
-        </nav>
-      </div>
 
-      <div class="hero-grid">
-        <div>
-          <span class="eyebrow"><i class="fa-solid fa-file-lines"></i> Relatório analítico editável</span>
-          <h1>Relatórios de auditoria em formato executivo.</h1>
-          <p class="hero-copy">Escolha comissão, período, setores e recortes assistenciais para montar um relatório escrito com indicadores, análise crítica, gráficos e plano de ação no mesmo padrão visual do boletim.</p>
+          <div class="filter-field">
+            <label class="field-label" for="anos"><span>Ano</span><small>multi</small></label>
+            <div class="select-shell" data-count="0"><select id="anos" multiple aria-label="Filtrar por ano"></select></div>
+          </div>
+
+          <div class="filter-field">
+            <label class="field-label" for="meses"><span>Mês</span><small>multi</small></label>
+            <div class="select-shell" data-count="0"><select id="meses" multiple aria-label="Filtrar por mês"></select></div>
+          </div>
+
+          <div class="filter-field">
+            <label class="field-label" for="unidades"><span>Setores</span><small>multi</small></label>
+            <div class="select-shell" data-count="0"><select id="unidades" multiple aria-label="Filtrar por setores"></select></div>
+          </div>
         </div>
-        <div class="hero-stat-grid">
-          <article class="hero-stat"><span>Comissão atual</span><strong id="hero-comissao">CRP</strong></article>
-          <article class="hero-stat"><span>Conformidade</span><strong id="hero-conformidade">--</strong></article>
-          <article class="hero-stat"><span>Avaliações</span><strong id="hero-avaliacoes">--</strong></article>
-          <article class="hero-stat"><span>Indicadores</span><strong id="hero-indicadores">--</strong></article>
+
+        <div class="filter-summary" id="active-filters" aria-live="polite">
+          <span class="filter-chip empty"><i class="fa-solid fa-layer-group"></i> Todos os dados selecionados</span>
         </div>
-      </div>
+
+        <div class="filter-actions">
+          <button class="btn btn-primary" type="button" id="btn-aplicar-filtros"><i class="fa-solid fa-filter-circle-check"></i> Aplicar filtros</button>
+          <button class="btn btn-secondary" type="button" id="btn-limpar-filtros"><i class="fa-solid fa-eraser"></i> Limpar filtros</button>
+        </div>
+      </section>
+
+      <section class="card-section">
+        <div class="section-head">
+          <div>
+            <h2>Texto do relatório</h2>
+            <p>Edite cada bloco narrativo em abas amplas, confortáveis e legíveis antes de gerar o PDF final.</p>
+          </div>
+          <span class="status-pill"><i class="fa-solid fa-pen-nib"></i> Editável</span>
+        </div>
+
+        <div id="report-text-react" aria-live="polite"></div>
+      </section>
+
+      <footer class="card-section footer-actions" aria-label="Ações do relatório">
+        <button class="btn btn-primary" type="button" id="btn-gerar"><i class="fa-solid fa-chart-line"></i> Gerar relatório</button>
+        <div class="footer-actions__secondary">
+          <button class="btn btn-secondary" type="button" id="btn-texto"><i class="fa-solid fa-rotate-left"></i> Restaurar texto padrão</button>
+          <button class="btn btn-secondary" type="button" id="btn-imprimir"><i class="fa-solid fa-print"></i> Imprimir / salvar PDF</button>
+        </div>
+      </footer>
     </section>
 
-    <section class="workspace">
-      <section class="panel filters-panel space-y-6 rounded-[1.75rem] border border-white/80 bg-white/80 p-5 shadow-premium ring-1 ring-slate-200/60 backdrop-blur-2xl">
-        <div class="control-surface grid grid-cols-1 gap-5 xl:grid-cols-[minmax(280px,.56fr)_minmax(0,1fr)]">
-          <div class="filters-command rounded-3xl border border-slate-200/70 bg-white/80 p-4 shadow-glass">
-            <div class="panel-title">
-              <div>
-                <h2>Central CRP</h2>
-                <p>Filtros essenciais acima do relatório, sem eixo, status ou critérios avançados.</p>
-              </div>
-              <span class="pill"><i class="fa-solid fa-wand-magic-sparkles"></i> Minimal</span>
-            </div>
-
-            <div class="filter-summary" id="active-filters" aria-live="polite">
-              <span class="filter-chip empty"><i class="fa-solid fa-layer-group"></i> Todos os dados selecionados</span>
-            </div>
-
-            <div class="filter-quick-actions grid grid-cols-2 gap-2">
-              <button class="btn btn-secondary rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 font-black text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-teal-200 hover:text-teal-700 hover:shadow-lg" type="button" id="btn-selecionar-tudo"><i class="fa-solid fa-check-double"></i> Tudo</button>
-              <button class="btn btn-secondary rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 font-black text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-teal-200 hover:text-teal-700 hover:shadow-lg" type="button" id="btn-limpar-filtros"><i class="fa-solid fa-eraser"></i> Limpar</button>
-            </div>
-          </div>
-
-          <div class="filter-matrix grid grid-cols-1 gap-3 xl:grid-cols-[minmax(220px,.78fr)_repeat(3,minmax(150px,1fr))]">
-            <div class="filter-section rounded-3xl border border-slate-200/70 bg-white/75 p-4 shadow-sm">
-              <p class="section-label"><i class="fa-solid fa-shield-heart"></i> Comissão</p>
-              <div class="commission-switch" role="radiogroup" aria-label="Comissão do relatório">
-                <label class="commission-option"><input type="radio" name="comissao" value="CRP" checked><strong>CRP</strong><span>Prontuário / registros assistenciais</span></label>
-                <label class="commission-option disabled"><input type="radio" name="comissao" value="CRO" disabled><strong>CRO</strong><span>Em breve no mesmo modelo</span></label>
-              </div>
-            </div>
-
-            <div class="filter-section rounded-3xl border border-slate-200/70 bg-white/75 p-4 shadow-sm">
-              <p class="section-label"><i class="fa-solid fa-calendar-days"></i> Ano</p>
-              <div class="field"><label for="anos">Ano <small>multi</small></label><div class="select-shell" data-count="0"><select id="anos" multiple></select></div></div>
-            </div>
-
-            <div class="filter-section rounded-3xl border border-slate-200/70 bg-white/75 p-4 shadow-sm">
-              <p class="section-label"><i class="fa-solid fa-calendar-check"></i> Mês</p>
-              <div class="field"><label for="meses">Mês <small>multi</small></label><div class="select-shell" data-count="0"><select id="meses" multiple></select></div></div>
-            </div>
-
-            <div class="filter-section rounded-3xl border border-slate-200/70 bg-white/75 p-4 shadow-sm">
-              <p class="section-label"><i class="fa-solid fa-hospital-user"></i> Setores</p>
-              <div class="field"><label for="unidades">Setores <small>multi</small></label><div class="select-shell" data-count="0"><select id="unidades" multiple></select></div></div>
-            </div>
-          </div>
-        </div>
-
-        <div class="panel-title !mb-0">
-          <div><h2>Texto do relatório</h2><p>Narrativa editável em linha, compacta e pronta para impressão.</p></div>
-          <span class="pill">Editável</span>
-        </div>
-        <div class="editor-grid">
-          <div class="field"><label for="texto-intro">Introdução</label><textarea id="texto-intro"></textarea></div>
-          <div class="field"><label for="texto-metodo">Metodologia</label><textarea id="texto-metodo"></textarea></div>
-          <div class="field"><label for="texto-analise">Análise crítica</label><textarea id="texto-analise"></textarea></div>
-          <div class="field"><label for="texto-plano">Plano de ação</label><textarea id="texto-plano"></textarea></div>
-          <div class="field"><label for="texto-conclusao">Conclusão</label><textarea id="texto-conclusao"></textarea></div>
-        </div>
-
-        <div class="actions grid grid-cols-1 gap-3 lg:grid-cols-3">
-          <button class="btn btn-primary rounded-2xl bg-gradient-to-br from-teal-500 via-teal-600 to-cyan-700 px-4 py-3 font-black text-white shadow-xl shadow-teal-900/25 transition hover:-translate-y-0.5 hover:shadow-2xl" type="button" id="btn-gerar"><i class="fa-solid fa-chart-line"></i> Gerar relatório</button>
-          <button class="btn btn-secondary rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 font-black text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-teal-200 hover:text-teal-700 hover:shadow-lg" type="button" id="btn-texto"><i class="fa-solid fa-pen-nib"></i> Recriar texto padrão</button>
-          <button class="btn btn-secondary rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 font-black text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-teal-200 hover:text-teal-700 hover:shadow-lg" type="button" id="btn-imprimir"><i class="fa-solid fa-print"></i> Imprimir / salvar PDF</button>
-        </div>
-      </section>
-
-      <section class="preview-panel min-w-0">
-        <div id="loading" class="loading-box"><span class="spinner" aria-hidden="true"></span><span>Carregando filtros e preparando relatório...</span></div>
-        <div class="report-tools hidden" id="report-tools">
-          <button class="btn btn-secondary rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 font-black text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-teal-200 hover:text-teal-700 hover:shadow-lg" type="button" id="btn-topo"><i class="fa-solid fa-arrow-up"></i> Topo</button>
-          <button class="btn btn-secondary rounded-2xl border border-slate-200 bg-white/90 px-4 py-3 font-black text-slate-700 shadow-sm transition hover:-translate-y-0.5 hover:border-teal-200 hover:text-teal-700 hover:shadow-lg" type="button" id="btn-copiar"><i class="fa-solid fa-copy"></i> Copiar resumo</button>
-        </div>
-        <article id="relatorio" class="hidden"></article>
-      </section>
+    <div id="loading" class="loading-box"><span class="spinner" aria-hidden="true"></span><span>Carregando filtros e preparando relatório...</span></div>
+    <section class="preview-card" aria-label="Prévia do relatório">
+      <div class="report-tools hidden" id="report-tools">
+        <button class="btn btn-secondary" type="button" id="btn-topo"><i class="fa-solid fa-arrow-up"></i> Topo</button>
+        <button class="btn btn-secondary" type="button" id="btn-copiar"><i class="fa-solid fa-copy"></i> Copiar resumo</button>
+      </div>
+      <article id="relatorio" class="hidden"></article>
     </section>
   </main>
 
@@ -330,13 +576,49 @@
     const APP_URL = '<?!= appUrl ?>';
     const LOGO_INSTITUCIONAL = 'https://i.ibb.co/tTGkBCXj/oie-transparent.png';
     const RODAPE_INSTITUCIONAL = 'https://i.ibb.co/VYv0RyF3/Rodape-1.png';
+    const textTabs = [
+      { key: 'intro', label: 'Introdução', textareaId: 'texto-intro', panelId: 'tab-intro', aria: 'Texto da introdução' },
+      { key: 'metodo', label: 'Metodologia', textareaId: 'texto-metodo', panelId: 'tab-metodo', aria: 'Texto da metodologia' },
+      { key: 'analise', label: 'Análise crítica', textareaId: 'texto-analise', panelId: 'tab-analise', aria: 'Texto da análise crítica' },
+      { key: 'plano', label: 'Plano de ação', textareaId: 'texto-plano', panelId: 'tab-plano', aria: 'Texto do plano de ação' },
+      { key: 'conclusao', label: 'Conclusão', textareaId: 'texto-conclusao', panelId: 'tab-conclusao', aria: 'Texto da conclusão' }
+    ];
+
+    function renderTextEditorReact(activeTab = 'intro') {
+      const root = document.getElementById('report-text-react');
+      if (!root) return;
+      if (!window.React || !window.ReactDOM) {
+        root.innerHTML = `<div class="tabs" role="tablist" aria-label="Seções do texto do relatório">${textTabs.map(tab => `<button class="tab-button ${tab.key === activeTab ? 'active' : ''}" type="button" role="tab" aria-selected="${tab.key === activeTab}" aria-controls="${tab.panelId}" data-tab="${tab.key}">${tab.label}</button>`).join('')}</div>${textTabs.map(tab => `<div class="tab-panel ${tab.key === activeTab ? 'active' : ''}" id="${tab.panelId}" role="tabpanel"><textarea id="${tab.textareaId}" aria-label="${tab.aria}"></textarea></div>`).join('')}`;
+        return;
+      }
+      const h = React.createElement;
+      const app = h(React.Fragment, null,
+        h('div', { className: 'tabs', role: 'tablist', 'aria-label': 'Seções do texto do relatório' },
+          textTabs.map(tab => h('button', {
+            key: `button-${tab.key}`,
+            className: `tab-button ${tab.key === activeTab ? 'active' : ''}`,
+            type: 'button',
+            role: 'tab',
+            'aria-selected': String(tab.key === activeTab),
+            'aria-controls': tab.panelId,
+            'data-tab': tab.key
+          }, tab.label))
+        ),
+        textTabs.map(tab => h('div', {
+          key: `panel-${tab.key}`,
+          className: `tab-panel ${tab.key === activeTab ? 'active' : ''}`,
+          id: tab.panelId,
+          role: 'tabpanel'
+        }, h('textarea', { id: tab.textareaId, 'aria-label': tab.aria })))
+      );
+      ReactDOM.render(app, root);
+    }
+
+    renderTextEditorReact();
+
     const state = { payload: null, charts: [] };
     const idsFiltros = ['anos', 'meses', 'unidades'];
-    const filtroLabels = {
-      anos: 'Ano',
-      meses: 'Mês',
-      unidades: 'Setores'
-    };
+    const filtroLabels = { anos: 'Ano', meses: 'Mês', unidades: 'Setores' };
     const textos = {
       intro: document.getElementById('texto-intro'),
       metodo: document.getElementById('texto-metodo'),
@@ -364,44 +646,25 @@
     }
 
     function selecionados(id) {
-      return Array.from(document.getElementById(id).selectedOptions).map(option => option.value);
+      return Array.from(document.getElementById(id).selectedOptions).map(option => option.value).filter(Boolean);
     }
 
     function atualizarResumoFiltros() {
-      idsFiltros.forEach(id => {
-        const select = document.getElementById(id);
-        const shell = select?.closest('.select-shell');
-        if (shell) shell.dataset.count = String(selecionados(id).length);
-      });
-
-      const chips = idsFiltros
-        .map(id => {
-          const values = selecionados(id);
-          if (!values.length) return '';
-          const preview = values.slice(0, 2).join(', ');
-          const extra = values.length > 2 ? ` +${values.length - 2}` : '';
-          return `<span class="filter-chip"><i class="fa-solid fa-circle-check"></i>${escapeHtml(filtroLabels[id])}: ${escapeHtml(preview)}${extra}</span>`;
-        })
-        .filter(Boolean)
-        .join('');
-
+      const chips = idsFiltros.flatMap(id => {
+        const valores = selecionados(id);
+        const shell = document.getElementById(id).closest('.select-shell');
+        if (shell) shell.dataset.count = valores.length;
+        if (!valores.length) return [];
+        const texto = valores.length > 3 ? `${valores.slice(0, 3).join(', ')} +${valores.length - 3}` : valores.join(', ');
+        return [`<span class="filter-chip"><i class="fa-solid fa-circle-check"></i> ${filtroLabels[id]}: ${escapeHtml(texto)}</span>`];
+      }).join('');
       document.getElementById('active-filters').innerHTML = chips || '<span class="filter-chip empty"><i class="fa-solid fa-layer-group"></i> Todos os dados selecionados</span>';
     }
 
     function limparFiltros() {
-      idsFiltros.forEach(id => {
-        Array.from(document.getElementById(id).options).forEach(option => { option.selected = false; });
-      });
+      idsFiltros.forEach(id => Array.from(document.getElementById(id).options).forEach(option => { option.selected = false; }));
       atualizarResumoFiltros();
       toast('Filtros limpos. O relatório usará todos os dados.', 'info', 'Filtros atualizados');
-    }
-
-    function selecionarTodosFiltros() {
-      idsFiltros.forEach(id => {
-        Array.from(document.getElementById(id).options).forEach(option => { option.selected = true; });
-      });
-      atualizarResumoFiltros();
-      toast('Todos os filtros disponíveis foram selecionados.', 'success', 'Filtros atualizados');
     }
 
     function setLoading(message, active = true) {
@@ -410,50 +673,40 @@
       loading.innerHTML = active ? `<span class="spinner" aria-hidden="true"></span><span>${escapeHtml(message)}</span>` : '';
     }
 
-    const toastRoot = () => document.getElementById('toast-root');
-
     function mostrarToast(message, tipo = 'info', titulo = '') {
-      const root = toastRoot();
+      const root = document.getElementById('toast-root');
       if (!root) return;
       const estilos = {
-        success: { tone: 'border-emerald-200 bg-emerald-50/95 text-emerald-900', dot: 'bg-emerald-500' },
-        error: { tone: 'border-rose-200 bg-rose-50/95 text-rose-900', dot: 'bg-rose-500' },
-        warning: { tone: 'border-amber-200 bg-amber-50/95 text-amber-950', dot: 'bg-amber-500' },
-        info: { tone: 'border-sky-200 bg-sky-50/95 text-sky-950', dot: 'bg-sky-500' }
+        success: { bg: '#ecfdf5', color: '#064e3b', border: '#bbf7d0', dot: '#10b981' },
+        error: { bg: '#fff1f2', color: '#881337', border: '#fecdd3', dot: '#f43f5e' },
+        warning: { bg: '#fffbeb', color: '#78350f', border: '#fde68a', dot: '#f59e0b' },
+        info: { bg: '#eff6ff', color: '#1e3a8a', border: '#bfdbfe', dot: '#3b82f6' }
       };
       const cfg = estilos[tipo] || estilos.info;
       const toastEl = document.createElement('section');
-      toastEl.className = `pointer-events-auto relative overflow-hidden rounded-2xl border ${cfg.tone} p-4 shadow-2xl shadow-slate-900/15 backdrop-blur-xl transition duration-300 ease-out translate-x-4 opacity-0`;
       toastEl.setAttribute('role', tipo === 'error' ? 'alert' : 'status');
+      toastEl.style.cssText = `pointer-events:auto;border:1px solid ${cfg.border};background:${cfg.bg};color:${cfg.color};border-radius:18px;padding:14px 15px;box-shadow:0 18px 36px rgba(15,23,42,.14);transform:translateX(16px);opacity:0;transition:.24s ease;`;
       toastEl.innerHTML = `
-        <div class="flex items-start gap-3">
-          <span class="mt-1 h-2.5 w-2.5 flex-none rounded-full ${cfg.dot} shadow-lg"></span>
-          <div class="min-w-0 flex-1">
-            ${titulo ? `<strong class="block text-sm font-extrabold">${escapeHtml(titulo)}</strong>` : ''}
-            <p class="m-0 text-sm font-semibold leading-6">${escapeHtml(message)}</p>
+        <div style="display:flex;align-items:flex-start;gap:11px">
+          <span style="width:10px;height:10px;border-radius:999px;background:${cfg.dot};margin-top:7px;flex:0 0 auto"></span>
+          <div style="min-width:0;flex:1">
+            ${titulo ? `<strong style="display:block;font-size:14px;font-weight:900">${escapeHtml(titulo)}</strong>` : ''}
+            <p style="margin:2px 0 0;font-size:13px;font-weight:700;line-height:1.5">${escapeHtml(message)}</p>
           </div>
-          <button type="button" class="rounded-full p-1 text-current/60 transition hover:bg-white/70 hover:text-current" aria-label="Fechar notificação">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </div>
-      `;
+          <button type="button" style="border:0;background:transparent;color:currentColor;padding:2px;opacity:.65" aria-label="Fechar notificação"><i class="fa-solid fa-xmark"></i></button>
+        </div>`;
       const fechar = () => {
-        toastEl.classList.add('translate-x-4', 'opacity-0');
-        toastEl.classList.remove('translate-x-0', 'opacity-100');
+        toastEl.style.transform = 'translateX(16px)';
+        toastEl.style.opacity = '0';
         window.setTimeout(() => toastEl.remove(), 260);
       };
       toastEl.querySelector('button').addEventListener('click', fechar);
       root.appendChild(toastEl);
-      window.requestAnimationFrame(() => {
-        toastEl.classList.remove('translate-x-4', 'opacity-0');
-        toastEl.classList.add('translate-x-0', 'opacity-100');
-      });
+      window.requestAnimationFrame(() => { toastEl.style.transform = 'translateX(0)'; toastEl.style.opacity = '1'; });
       window.setTimeout(fechar, tipo === 'error' ? 7200 : 4200);
     }
 
-    function toast(message, tipo = 'info', titulo = '') {
-      mostrarToast(message, tipo, titulo);
-    }
+    function toast(message, tipo = 'info', titulo = '') { mostrarToast(message, tipo, titulo); }
 
     function validarPayload(payload) {
       if (!payload || payload.success === false) {
@@ -581,86 +834,62 @@
       const alertas = (rel.alertasEstrutura || []).slice(0, 8);
       if (!alertas.length) return '';
       const itens = alertas.map(alerta => `<li>${escapeHtml(alerta)}</li>`).join('');
-      const total = rel.alertasEstrutura.length > alertas.length ? `<li>Mais ${fmtNum(rel.alertasEstrutura.length - alertas.length)} divergências ocultas para manter o relatório enxuto.</li>` : '';
-      return `<aside class="structure-alert"><strong>Atenção: estrutura da base CRP diferente do padrão oficial A:AQ</strong><ul>${itens}${total}</ul></aside>`;
+      const total = rel.alertasEstrutura.length > alertas.length ? `<li>Mais ${fmtNum(rel.alertasEstrutura.length - alertas.length)} alerta(s) oculto(s).</li>` : '';
+      return `<div class="structure-alert"><strong>Alertas de estrutura da base</strong><ul>${itens}${total}</ul></div>`;
+    }
+
+    function renderMetricas(rel) {
+      return `
+        <section class="metric-grid">
+          <article class="metric-card"><span>Avaliações</span><strong>${fmtNum(rel.totalAvaliacoes)}</strong><small>Registros no recorte</small></article>
+          <article class="metric-card"><span>Conformidade</span><strong>${fmtPct(rel.conformidadeGeral)}</strong><small>Meta ${fmtPct(rel.metaInstitucional)}</small></article>
+          <article class="metric-card"><span>Conformes</span><strong>${fmtNum(rel.conformes)}</strong><small>Itens auditáveis aprovados</small></article>
+          <article class="metric-card"><span>Não conformes</span><strong>${fmtNum(rel.naoConformes)}</strong><small>Itens que exigem ação</small></article>
+        </section>`;
+    }
+
+    function renderGraficos() {
+      return `
+        <section class="chart-grid">
+          <div class="chart-box"><canvas id="chart-evolucao" aria-label="Gráfico de evolução mensal"></canvas></div>
+          <div class="chart-box"><canvas id="chart-distribuicao" aria-label="Gráfico de distribuição dos itens"></canvas></div>
+        </section>`;
     }
 
     function renderRelatorio() {
-      const payload = state.payload || {};
-      const rel = payload.relatorio || {};
-      const aplicado = payload.aplicado || {};
+      const rel = state.payload?.relatorio;
+      if (!rel) return;
+      destroyCharts();
+      const aplicado = state.payload.aplicado || {};
       const html = `
         <section class="document-page">
-          <header class="page-header">
+          <header class="doc-page-header">
             <div class="page-header-main">
-              <img class="page-logo" src="${LOGO_INSTITUCIONAL}" alt="Logo institucional COSEP">
+              <img class="page-logo" src="${LOGO_INSTITUCIONAL}" alt="Logo institucional">
               <div>
-                <h2>Relatório de Gestão Analítica</h2>
+                <h2>Relatório Analítico Editável</h2>
                 <p>Comissão ${escapeHtml(rel.comissao || 'CRP')} · ${escapeHtml(periodoTexto(aplicado))}</p>
               </div>
             </div>
-            <div class="page-meta">Gerado em ${escapeHtml(payload.geradoEm || '')}<br>Base: ${escapeHtml(rel.abaEncontrada || 'aba não encontrada')}</div>
+            <p class="page-meta">Gerado em ${new Date().toLocaleDateString('pt-BR')}<br>Fonte: ${escapeHtml(rel.abaEncontrada || 'CRP')}</p>
           </header>
 
           <main class="doc-content">
-            <header class="doc-header">
+            <section class="doc-header">
               <div>
-                <div class="doc-kicker">Síntese executiva e análise crítica</div>
-                <h2 class="doc-title">Relatório de Análise de Prontuários</h2>
-                <p class="doc-subtitle">Documento consolidado no padrão visual do boletim. Recorte com ${fmtNum(rel.totalAvaliacoes)} avaliações de ${fmtNum(rel.totalRegistrosBase)} registros disponíveis.</p>
+                <span class="doc-kicker">Análise institucional</span>
+                <h1 class="doc-title">Panorama de conformidade dos registros assistenciais</h1>
+                <p class="doc-subtitle">Recorte: ${escapeHtml(aplicado.unidades?.length ? aplicado.unidades.join(', ') : 'todos os setores elegíveis')}.</p>
               </div>
               <aside class="doc-badge"><strong>${fmtPct(rel.conformidadeGeral)}</strong><span>Conformidade geral</span></aside>
-            </header>
-
-            <div class="metric-grid">
-              <article class="metric-card"><span>Avaliações</span><strong>${fmtNum(rel.totalAvaliacoes)}</strong><small>Registros filtrados</small></article>
-              <article class="metric-card"><span>Itens auditáveis</span><strong>${fmtNum(rel.totalAuditavel)}</strong><small>Conforme + Não conforme</small></article>
-              <article class="metric-card"><span>Não conformes</span><strong>${fmtNum(rel.naoConformes)}</strong><small>Pontos de melhoria</small></article>
-              <article class="metric-card"><span>Meta institucional</span><strong>${fmtPct(rel.metaInstitucional)}</strong><small>${rel.diferencaMeta >= 0 ? 'Acima da meta' : 'Abaixo da meta'} em ${fmtPct(Math.abs(rel.diferencaMeta || 0))}</small></article>
-            </div>
-            ${renderAlertasEstrutura(rel)}
-
+            </section>
+            ${renderMetricas(rel)}
             ${renderTexto('1. Introdução', textos.intro.value)}
             ${renderTexto('2. Metodologia', textos.metodo.value)}
             ${renderTexto('3. Análise crítica', textos.analise.value)}
-            ${renderTabelaIndicadores(rel)}
-          </main>
-
-          <footer class="footer-note">
-            <img class="footer-brand" src="${RODAPE_INSTITUCIONAL}" alt="Rodapé institucional">
-          </footer>
-        </section>
-
-        <section class="document-page">
-          <header class="page-header">
-            <div class="page-header-main">
-              <img class="page-logo" src="${LOGO_INSTITUCIONAL}" alt="Logo institucional COSEP">
-              <div>
-                <h2>Boletim da Segurança do Paciente · Detalhamento</h2>
-                <p>Comissão ${escapeHtml(rel.comissao || 'CRP')} · ${escapeHtml(periodoTexto(aplicado))}</p>
-              </div>
-            </div>
-            <div class="page-meta">Indicadores, setores e plano de ação<br>${fmtNum(rel.totalAuditavel)} itens auditáveis</div>
-          </header>
-
-          <main class="doc-content">
-            <header class="doc-header">
-              <div>
-                <div class="doc-kicker">Detalhamento e plano de ação</div>
-                <h2 class="doc-title">Desempenho por indicador e setor</h2>
-                <p class="doc-subtitle">Distribuição sintética dos resultados para apoiar priorização de intervenções e acompanhamento executivo.</p>
-              </div>
-              <aside class="doc-badge"><strong>${fmtNum(rel.naoSeAplica)}</strong><span>Não se aplica</span></aside>
-            </header>
-
-            <section class="doc-section">
-              <h3>4. Visualização dos resultados</h3>
-              <div class="chart-grid">
-                <div class="chart-box"><canvas id="chart-evolucao"></canvas></div>
-                <div class="chart-box"><canvas id="chart-distribuicao"></canvas></div>
-              </div>
-            </section>
-
+            ${renderGraficos()}
+            ${renderAlertasEstrutura(rel)}
+            <section class="doc-section"><h3>4. Indicadores críticos</h3>${renderTabelaIndicadores(rel)}</section>
             <section class="doc-section"><h3>5. Setores com maior oportunidade</h3>${renderTabelaSetores(rel)}</section>
             ${renderTexto('6. Plano de ação recomendado', textos.plano.value)}
             ${renderTexto('7. Conclusão', textos.conclusao.value)}
@@ -698,7 +927,7 @@
       if (chartDistribuicao) {
         state.charts.push(new Chart(chartDistribuicao, {
           type: 'doughnut',
-          data: { labels: ['Conforme', 'Não conforme', 'Não se aplica', 'Vazio / hífen'], datasets: [{ data: [rel.conformes || 0, rel.naoConformes || 0, rel.naoSeAplica || 0, rel.vazios || 0], backgroundColor: ['#1f8f5f', '#c05621', '#b7791f', '#d7e1e5'], borderWidth: 0 }] },
+          data: { labels: ['Conforme', 'Não conforme', 'Não se aplica', 'Vazio / hífen'], datasets: [{ data: [rel.conformes || 0, rel.naoConformes || 0, rel.naoSeAplica || 0, rel.vazios || 0], backgroundColor: ['#16845b', '#b54721', '#a56613', '#d7e1e5'], borderWidth: 0 }] },
           options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Distribuição dos itens' } }, cutout: '62%' }
         }));
       }
@@ -726,7 +955,22 @@
       navigator.clipboard?.writeText(resumo).then(() => toast('Resumo copiado para a área de transferência.', 'success', 'Resumo copiado'), () => toast(resumo, 'info', 'Resumo do relatório'));
     }
 
+    function setupTabs() {
+      document.querySelectorAll('.tab-button').forEach(button => {
+        button.addEventListener('click', () => {
+          const tab = button.dataset.tab;
+          document.querySelectorAll('.tab-button').forEach(item => {
+            const active = item === button;
+            item.classList.toggle('active', active);
+            item.setAttribute('aria-selected', String(active));
+          });
+          document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.toggle('active', panel.id === `tab-${tab}`));
+        });
+      });
+    }
+
     async function init() {
+      setupTabs();
       try {
         const payload = await fetchPayload({ comissao: 'CRP' });
         state.payload = payload;
@@ -744,10 +988,10 @@
     }
 
     document.getElementById('btn-gerar').addEventListener('click', () => gerarRelatorio(false));
-    document.getElementById('btn-selecionar-tudo').addEventListener('click', selecionarTodosFiltros);
+    document.getElementById('btn-aplicar-filtros').addEventListener('click', () => gerarRelatorio(false));
     document.getElementById('btn-limpar-filtros').addEventListener('click', limparFiltros);
     idsFiltros.forEach(id => document.getElementById(id).addEventListener('change', atualizarResumoFiltros));
-    document.getElementById('btn-texto').addEventListener('click', () => { gerarTextosPadrao(); renderRelatorio(); toast('Texto padrão recriado com base nos indicadores atuais.', 'success', 'Narrativa atualizada'); });
+    document.getElementById('btn-texto').addEventListener('click', () => { gerarTextosPadrao(); renderRelatorio(); toast('Texto padrão restaurado com base nos indicadores atuais.', 'success', 'Narrativa atualizada'); });
     document.getElementById('btn-imprimir').addEventListener('click', () => { toast('Janela de impressão aberta com layout A4 preservado.', 'info', 'PDF A4'); window.print(); });
     document.getElementById('btn-topo').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
     document.getElementById('btn-copiar').addEventListener('click', copiarResumo);
