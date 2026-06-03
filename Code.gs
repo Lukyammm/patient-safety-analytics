@@ -167,6 +167,12 @@ function doGet(e) {
     }));
   }
 
+  if (params.api === 'filtros') {
+    return responderJson(executarRota('api-boletim-filtros', () => {
+      return executarComPlanilha('principal', ss => montarPayloadFiltros(ss));
+    }));
+  }
+
   if (params.api === 'relatorios') {
     return responderJson(executarRota('api-relatorios', () => {
       return executarComPlanilha('relatorios', ss => montarPayloadRelatorios(ss, extrairFiltrosRelatorios(params)));
@@ -270,6 +276,14 @@ function extrairListaFiltros(rawValue, normalizerFn) {
   return [...new Set(valores)];
 }
 
+function montarPayloadFiltros(ss) {
+  return {
+    success: true,
+    geradoEm: Utilities.formatDate(new Date(), FUSO_HORARIO, "dd/MM/yyyy 'às' HH:mm"),
+    filtros: getFiltros(ss)
+  };
+}
+
 function montarPayload(ss, filtros) {
   const filtrosAplicados = filtros || { caminhadas: {}, notificacoes: {} };
   return {
@@ -280,6 +294,12 @@ function montarPayload(ss, filtros) {
     caminhadas: processarCaminhadas(ss, filtrosAplicados.caminhadas || {}),
     notificacoes: processarNotificacoes(ss, filtrosAplicados.notificacoes || {})
   };
+}
+
+function obterFiltrosBoletim() {
+  return executarRota('rpc-boletim-filtros', () => {
+    return executarComPlanilha('principal', ss => montarPayloadFiltros(ss));
+  });
 }
 
 function obterPayload(filtros) {
