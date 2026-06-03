@@ -80,53 +80,56 @@
     .top-menu-wrap {
       display: flex;
       justify-content: flex-end;
-      margin: 8px 0 10px;
+      margin: 0 0 22px;
     }
 
     .top-menu {
       position: relative;
-      z-index: 10;
-      width: 52px;
-      transition: width 0.22s ease;
-    }
-
-    .top-menu:hover,
-    .top-menu:focus-within {
-      width: 460px;
+      z-index: 20;
+      width: min(100%, 720px);
     }
 
     .top-menu-inner {
       border: 1px solid rgba(191, 206, 213, 0.88);
       border-radius: 999px;
-      background: rgba(255, 255, 255, 0.95);
-      box-shadow: 0 8px 22px rgba(22, 52, 63, 0.1);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
+      background: rgba(255, 255, 255, 0.86);
+      box-shadow: 0 18px 42px rgba(22, 52, 63, 0.11);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 5px;
-      overflow: hidden;
+      gap: 6px;
+      padding: 6px;
+      overflow-x: auto;
+      scrollbar-width: none;
     }
 
+    .top-menu-inner::-webkit-scrollbar { display: none; }
+
     .top-menu-toggle {
-      width: 40px;
-      height: 32px;
-      border-radius: 999px;
-      border: 1px solid rgba(176, 194, 203, 0.9);
-      background: #f5fafb;
-      color: #4b6770;
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      flex: 0 0 40px;
-      font-size: 14px;
+      gap: 8px;
+      min-height: 38px;
+      border-radius: 999px;
+      padding: 0 13px;
+      border: 1px solid rgba(176, 194, 203, 0.72);
+      background: linear-gradient(180deg, #ffffff, #f4faf9);
+      color: #0f766e;
+      flex: 0 0 auto;
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: .08em;
+      text-transform: uppercase;
     }
+
+    .top-menu-toggle::after { content: 'Menu'; }
 
     .top-menu-links {
       display: inline-flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       min-width: 0;
     }
 
@@ -134,36 +137,42 @@
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      min-height: 32px;
+      gap: 8px;
+      min-height: 38px;
       border-radius: 999px;
-      border: 1px solid rgba(187, 204, 212, 0.92);
+      border: 1px solid transparent;
       color: #36515b;
       text-decoration: none;
       font-size: 13px;
-      font-weight: 700;
-      padding: 0 12px;
+      font-weight: 850;
+      padding: 0 14px;
       white-space: nowrap;
-      background: #fff;
-      transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+      background: transparent;
+      transition: transform 0.18s ease, background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease, box-shadow .18s ease;
     }
 
     .top-menu-link:hover,
     .top-menu-link:focus-visible {
-      background: #e7f4f2;
-      border-color: #0f766e;
+      background: #ffffff;
+      border-color: rgba(15, 118, 110, .22);
       color: #0f766e;
+      box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+      transform: translateY(-1px);
       outline: none;
     }
 
-    @media (max-width: 680px) {
-      .top-menu-wrap {
-        justify-content: center;
-      }
+    .top-menu-link.active {
+      background: linear-gradient(135deg, #14b8a6, #0f766e 62%, #0e7490);
+      border-color: rgba(15, 118, 110, .95);
+      color: #ffffff;
+      box-shadow: 0 14px 30px rgba(15, 118, 110, .24);
+    }
 
-      .top-menu:hover,
-      .top-menu:focus-within {
-        width: min(460px, calc(100vw - 24px));
-      }
+    @media (max-width: 680px) {
+      .top-menu-wrap { justify-content: center; }
+      .top-menu { width: 100%; }
+      .top-menu-toggle::after { content: ''; }
+      .top-menu-link { padding: 0 12px; }
     }
 
     .app-shell {
@@ -1822,9 +1831,9 @@
           <div class="top-menu-inner">
             <span class="top-menu-toggle" aria-hidden="true"><i class="fa-solid fa-bars"></i></span>
             <div class="top-menu-links">
-              <a class="top-menu-link" href="#pagina-cosep">COSEP</a>
-              <a class="top-menu-link" href="<?!= appUrl ?>?page=relatorios" data-app-link="relatorios">Relatórios</a>
-              <a class="top-menu-link" href="https://script.google.com/macros/s/AKfycbyrFcu7qj-Ydr2nwWqaaYpzntLct0jjN2ylXnrL5hXP5vWuiYcG_c4LYVVilFvJy-tadg/exec" target="_blank" rel="noopener noreferrer">Painel NUGESP</a>
+              <a class="top-menu-link" href="<?!= appUrl ?>" data-app-link="boletim" data-view-link="boletim"><i class="fa-solid fa-shield-heart"></i> COSEP</a>
+              <a class="top-menu-link" href="<?!= appUrl ?>?page=relatorios" data-app-link="relatorios" data-view-link="relatorios"><i class="fa-solid fa-chart-line"></i> Relatórios</a>
+              <a class="top-menu-link" href="https://script.google.com/macros/s/AKfycbyrFcu7qj-Ydr2nwWqaaYpzntLct0jjN2ylXnrL5hXP5vWuiYcG_c4LYVVilFvJy-tadg/exec" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-gauge-high"></i> Painel NUGESP</a>
             </div>
           </div>
         </nav>
@@ -2213,6 +2222,7 @@
 
     * { box-sizing: border-box; }
     html { scroll-behavior: smooth; }
+    html, body { overflow-x: hidden; }
     body {
       margin: 0;
       min-height: 100vh;
@@ -2271,7 +2281,8 @@
       text-decoration: none;
       transition: color .18s ease, background .18s ease;
     }
-    .top-nav a:hover, .top-nav a.active { background: var(--brand-soft); color: var(--brand-dark); }
+    .top-nav a { display: inline-flex; align-items: center; gap: 8px; }
+    .top-nav a:hover, .top-nav a.active { background: linear-gradient(135deg, #14b8a6, #0f766e 62%, #0e7490); color: #fff; box-shadow: 0 12px 28px rgba(15, 118, 110, .2); }
 
     .page-header {
       display: grid;
@@ -2403,8 +2414,10 @@
     .filter-field {
       min-width: 0;
       padding: 14px;
-      border-radius: var(--radius-lg);
-      background: var(--surface-soft);
+      border: 1px solid rgba(215, 225, 229, .9);
+      border-radius: 22px;
+      background: linear-gradient(180deg, rgba(255,255,255,.94), rgba(248,252,251,.88));
+      box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 10px 24px rgba(23,48,55,.045);
     }
     .field-label {
       display: flex;
@@ -2454,8 +2467,8 @@
       width: 100%;
       outline: none;
       border: 1px solid rgba(190, 211, 207, .9);
-      border-radius: var(--radius-md);
-      background: #fff;
+      border-radius: 16px;
+      background: rgba(255,255,255,.96);
       color: var(--text);
       transition: border-color .18s ease, box-shadow .18s ease;
     }
@@ -2575,6 +2588,7 @@
       display: flex;
       flex-direction: column;
       gap: 10px;
+      break-after: page;
       page-break-after: always;
       border: 1px solid #e3ecea;
       background: #fff;
@@ -2606,8 +2620,8 @@
     .metric-card strong { display: block; margin-top: 7px; color: var(--text); font-size: 24px; letter-spacing: -.04em; }
     .metric-card small { display: block; margin-top: 4px; color: var(--muted); line-height: 1.35; }
     .chart-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 12px; margin-top: 12px; }
-    .chart-box { border: 1px solid #d4e0e4; border-radius: 18px; padding: 12px; min-height: 230px; background: #fbfdfd; }
-    .chart-box canvas { width: 100% !important; height: 205px !important; }
+    .chart-box { position: relative; border: 1px solid #d4e0e4; border-radius: 18px; padding: 12px; height: 238px; min-height: 238px; background: #fbfdfd; overflow: hidden; break-inside: avoid; }
+    .chart-box canvas, .chart-box img { display: block; width: 100% !important; height: 210px !important; object-fit: contain; }
     .table-wrap { border: 1px solid #d4e0e4; border-radius: 18px; overflow: hidden; margin-top: 12px; }
     table { width: 100%; border-collapse: collapse; font-size: 11px; }
     th, td { padding: 8px 9px; border-bottom: 1px solid #e4ecef; text-align: left; vertical-align: top; }
@@ -2643,7 +2657,9 @@
       body::before, .top-nav, .page-header, .editor-card, .report-tools, .loading-box, #toast-root { display: none !important; }
       .app-shell { width: auto; max-width: none; padding: 0; }
       .preview-card { margin: 0; padding: 0; border: 0; box-shadow: none; }
-      .document-page { width: 210mm; min-height: 297mm; margin: 0; box-shadow: none; border: 0; page-break-after: always; }
+      .document-page { width: 210mm; min-height: 297mm; height: auto; margin: 0; box-shadow: none; border: 0; break-after: page; page-break-after: always; }
+      .document-page:last-child { break-after: auto; page-break-after: auto; }
+      .footer-note { margin-top: auto; }
     }
   </style>
 </head>
@@ -2652,9 +2668,9 @@
   <main class="app-shell">
     <nav class="top-nav" aria-label="Menu superior">
       <div class="top-nav__inner">
-        <a href="<?!= appUrl ?>">Boletim</a>
-        <a class="active" href="<?!= appUrl ?>?page=relatorios">Relatórios</a>
-        <a href="https://script.google.com/macros/s/AKfycbyrFcu7qj-Ydr2nwWqaaYpzntLct0jjN2ylXnrL5hXP5vWuiYcG_c4LYVVilFvJy-tadg/exec" target="_blank" rel="noopener noreferrer">Painel NUGESP</a>
+        <a href="<?!= appUrl ?>" target="_top"><i class="fa-solid fa-shield-heart"></i> COSEP</a>
+        <a class="active" href="<?!= appUrl ?>?page=relatorios" target="_top"><i class="fa-solid fa-chart-line"></i> Relatórios</a>
+        <a href="https://script.google.com/macros/s/AKfycbyrFcu7qj-Ydr2nwWqaaYpzntLct0jjN2ylXnrL5hXP5vWuiYcG_c4LYVVilFvJy-tadg/exec" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-gauge-high"></i> Painel NUGESP</a>
       </div>
     </nav>
 
@@ -2980,14 +2996,13 @@
     function renderTabelaIndicadores(rel) {
       const rows = (rel.indicadoresCriticos || []).map(item => `
         <tr>
-          <td>${escapeHtml(item.coluna || '')}</td>
           <td>${escapeHtml(item.nome)}</td>
           <td>${fmtNum(item.avaliados)}</td>
           <td>${fmtNum(item.conformes)}</td>
           <td>${fmtNum(item.naoConformes)}</td>
           <td>${tagPct(item.percentual)}</td>
         </tr>`).join('');
-      return `<div class="table-wrap"><table><thead><tr><th>Coluna</th><th>Indicador crítico</th><th>Avaliados</th><th>Conformes</th><th>Não conformes</th><th>Resultado</th></tr></thead><tbody>${rows || '<tr><td colspan="6">Sem indicadores no recorte selecionado.</td></tr>'}</tbody></table></div>`;
+      return `<div class="table-wrap"><table><thead><tr><th>Indicador crítico</th><th>Avaliados</th><th>Conformes</th><th>Não conformes</th><th>Resultado</th></tr></thead><tbody>${rows || '<tr><td colspan="5">Sem indicadores no recorte selecionado.</td></tr>'}</tbody></table></div>`;
     }
 
     function renderTabelaSetores(rel) {
@@ -3103,7 +3118,7 @@
       if (chartDistribuicao) {
         state.charts.push(new Chart(chartDistribuicao, {
           type: 'doughnut',
-          data: { labels: ['Conforme', 'Não conforme', 'Não se aplica', 'Vazio / hífen'], datasets: [{ data: [rel.conformes || 0, rel.naoConformes || 0, rel.naoSeAplica || 0, rel.vazios || 0], backgroundColor: ['#16845b', '#b54721', '#a56613', '#d7e1e5'], borderWidth: 0 }] },
+          data: { labels: ['Conforme', 'Não conforme', 'Não se aplica'], datasets: [{ data: [rel.conformes || 0, rel.naoConformes || 0, rel.naoSeAplica || 0], backgroundColor: ['#16845b', '#b54721', '#a56613'], borderWidth: 0 }] },
           options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Distribuição dos itens' } }, cutout: '62%' }
         }));
       }
@@ -3168,7 +3183,91 @@
     document.getElementById('btn-limpar-filtros').addEventListener('click', limparFiltros);
     idsFiltros.forEach(id => document.getElementById(id).addEventListener('change', atualizarResumoFiltros));
     document.getElementById('btn-texto').addEventListener('click', () => { gerarTextosPadrao(); renderRelatorio(); toast('Texto padrão restaurado com base nos indicadores atuais.', 'success', 'Narrativa atualizada'); });
-    document.getElementById('btn-imprimir').addEventListener('click', () => { toast('Janela de impressão aberta com layout A4 preservado.', 'info', 'PDF A4'); window.print(); });
+    let html2pdfLoader = null;
+
+    function loadScript(src) {
+      return new Promise((resolve, reject) => {
+        const existing = document.querySelector(`script[src="${src}"]`);
+        if (existing) {
+          existing.addEventListener('load', () => resolve(window.html2pdf), { once: true });
+          if (window.html2pdf) resolve(window.html2pdf);
+          return;
+        }
+        const script = document.createElement('script');
+        script.src = src;
+        script.async = true;
+        script.onload = () => resolve(window.html2pdf);
+        script.onerror = () => reject(new Error('Não foi possível carregar o gerador de PDF.'));
+        document.head.appendChild(script);
+      });
+    }
+
+    async function getHtml2PdfRelatorio() {
+      if (window.html2pdf) return window.html2pdf;
+      if (!html2pdfLoader) html2pdfLoader = loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js');
+      const ref = await html2pdfLoader;
+      if (!ref) throw new Error('html2pdf indisponível.');
+      return ref;
+    }
+
+    async function aguardarEstabilidadeRelatorio() {
+      if (document.fonts && document.fonts.ready) {
+        try { await document.fonts.ready; } catch (_) {}
+      }
+      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      await new Promise(resolve => setTimeout(resolve, 120));
+    }
+
+    function cloneRelatorioParaPdf() {
+      const original = document.getElementById('relatorio');
+      const clone = original.cloneNode(true);
+      clone.classList.remove('hidden');
+      const originais = original.querySelectorAll('canvas');
+      clone.querySelectorAll('canvas').forEach((canvas, idx) => {
+        const origem = originais[idx];
+        if (!origem) return;
+        const img = document.createElement('img');
+        try { img.src = origem.toDataURL('image/png'); } catch (_) { return; }
+        img.alt = canvas.getAttribute('aria-label') || '';
+        img.style.width = '100%';
+        img.style.height = '210px';
+        img.style.objectFit = 'contain';
+        canvas.replaceWith(img);
+      });
+      clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
+      return clone;
+    }
+
+    async function baixarRelatorioPdf() {
+      if (!state.payload?.relatorio) return;
+      const rel = state.payload.relatorio;
+      const nomeArquivo = `relatorio-${String(rel.comissao || 'crp').toLowerCase()}-${new Date().toISOString().slice(0, 10)}.pdf`;
+      const html2pdf = await getHtml2PdfRelatorio();
+      await aguardarEstabilidadeRelatorio();
+      const clone = cloneRelatorioParaPdf();
+      clone.style.width = '210mm';
+      clone.style.position = 'fixed';
+      clone.style.left = '-99999px';
+      clone.style.top = '0';
+      document.body.appendChild(clone);
+      document.body.classList.add('pdf-export');
+      try {
+        await html2pdf().set({
+          margin: [0, 0, 0, 0],
+          filename: nomeArquivo,
+          image: { type: 'png', quality: 1 },
+          html2canvas: { scale: 2.4, useCORS: true, scrollY: 0, backgroundColor: '#ffffff' },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+          pagebreak: { mode: ['css', 'legacy'], avoid: ['.chart-box', '.metric-card', '.doc-section'] }
+        }).from(clone).save();
+        toast('PDF gerado sem cabeçalho/rodapé do navegador.', 'success', 'PDF baixado');
+      } finally {
+        document.body.classList.remove('pdf-export');
+        clone.remove();
+      }
+    }
+
+    document.getElementById('btn-imprimir').addEventListener('click', () => { baixarRelatorioPdf().catch(error => { console.error(error); toast(error.message || 'Não foi possível gerar o PDF.', 'error', 'Erro no PDF'); }); });
     document.getElementById('btn-topo').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
     document.getElementById('btn-copiar').addEventListener('click', copiarResumo);
     Object.values(textos).forEach(textarea => textarea.addEventListener('input', () => state.payload && renderRelatorio()));
@@ -4735,6 +4834,7 @@
         img.alt = '';
         img.style.width = '100%';
         img.style.height = '100%';
+        img.style.objectFit = 'contain';
         img.style.display = 'block';
         img.width = origem.width || canvas.width || 0;
         img.height = origem.height || canvas.height || 0;
@@ -4809,7 +4909,6 @@
 
     async function baixarPDF() {
       if (!boletimGerado) return;
-      const elemento = document.getElementById('boletim');
       const filtros = obterFiltrosTela();
       const anoCosepArquivo = filtros.anosCosep.length ? filtros.anosCosep.join('-') : 'todos';
       const mesCosepArquivo = filtros.mesesCosep.length ? filtros.mesesCosep.join('-') : 'todos';
@@ -4817,24 +4916,33 @@
       const mesNotificaArquivo = filtros.mesesNotifica.length ? filtros.mesesNotifica.join('-') : 'todos';
       const nomeArquivo = `boletim-seguranca-paciente-${mesCosepArquivo}-${anoCosepArquivo}-notifica-${mesNotificaArquivo}-${anoNotificaArquivo}.pdf`;
 
+      const clone = criarCloneBoletimComCanvas();
+      clone.style.position = 'fixed';
+      clone.style.left = '-99999px';
+      clone.style.top = '0';
+      clone.style.width = '210mm';
+      clone.style.pointerEvents = 'none';
+      document.body.appendChild(clone);
+
       document.body.classList.add('pdf-export');
       try {
         const html2pdf = await getHtml2Pdf();
-        await aguardarRender();
+        await aguardarEstabilidadeVisual();
         await html2pdf().set({
           margin: [0, 0, 0, 0],
           filename: nomeArquivo,
           image: { type: 'png', quality: 1 },
-          html2canvas: { scale: 3, useCORS: true, scrollY: 0, backgroundColor: '#ffffff' },
+          html2canvas: { scale: 2.6, useCORS: true, scrollY: 0, backgroundColor: '#ffffff' },
           jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-          pagebreak: { mode: ['css', 'legacy'] }
-        }).from(elemento).save();
-        mostrarToast('PDF baixado com sucesso.', 'success', 'Download iniciado');
+          pagebreak: { mode: ['css', 'legacy'], avoid: ['.chart-box', '.metric-card', '.panel'] }
+        }).from(clone).save();
+        mostrarToast('PDF baixado sem cabeçalho/rodapé do navegador.', 'success', 'Download iniciado');
       } catch (erro) {
         console.error(erro);
         mostrarToast(erro.message || 'Não foi possível baixar o PDF.', 'error', 'Erro no download');
       } finally {
         document.body.classList.remove('pdf-export');
+        clone.remove();
       }
     }
 
@@ -4855,6 +4963,34 @@
       frame.dataset.loaded = '1';
     }
 
+    function sincronizarMenuSuperior(view) {
+      document.querySelectorAll('[data-view-link]').forEach(link => {
+        const active = link.dataset.viewLink === view;
+        link.classList.toggle('active', active);
+        if (active) link.setAttribute('aria-current', 'page');
+        else link.removeAttribute('aria-current');
+      });
+    }
+
+    function navegarParaView(view, atualizarHistorico = true) {
+      const destino = view === 'relatorios' ? 'relatorios' : 'boletim';
+      const url = destino === 'relatorios' ? `${window.location.pathname}?page=relatorios` : window.location.pathname;
+      if (atualizarHistorico) window.history.pushState({ view: destino }, '', url);
+      aplicarRoteamentoInterno();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    document.querySelectorAll('[data-app-link]').forEach(link => {
+      link.addEventListener('click', (event) => {
+        const destino = link.dataset.appLink;
+        if (!destino || link.target === '_blank') return;
+        event.preventDefault();
+        navegarParaView(destino);
+      });
+    });
+
+    window.addEventListener('popstate', () => aplicarRoteamentoInterno());
+
     function aplicarRoteamentoInterno() {
       const view = obterViewAtual();
       const boletim = document.getElementById('boletim-app');
@@ -4862,6 +4998,7 @@
       if (boletim) boletim.hidden = view !== 'boletim';
       if (relatorios) relatorios.hidden = view !== 'relatorios';
       document.title = view === 'relatorios' ? 'Relatórios COSEP' : 'Boletim COSEP';
+      sincronizarMenuSuperior(view);
       if (view === 'relatorios') carregarRelatoriosFrame();
     }
 
