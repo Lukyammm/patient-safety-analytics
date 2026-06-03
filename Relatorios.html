@@ -349,8 +349,8 @@
           <div class="top-menu-inner">
             <span class="top-menu-toggle" aria-hidden="true"><i class="fa-solid fa-bars"></i></span>
             <div class="top-menu-links">
-              <a class="top-menu-link" href="?">Boletim</a>
-              <a class="top-menu-link active" href="?page=relatorios">Relatórios</a>
+              <a class="top-menu-link" href="<?!= appUrl ?>">Boletim</a>
+              <a class="top-menu-link active" href="<?!= appUrl ?>?page=relatorios">Relatórios</a>
               <a class="top-menu-link" href="https://script.google.com/macros/s/AKfycbyrFcu7qj-Ydr2nwWqaaYpzntLct0jjN2ylXnrL5hXP5vWuiYcG_c4LYVVilFvJy-tadg/exec" target="_blank" rel="noopener noreferrer">Painel NUGESP</a>
             </div>
           </div>
@@ -419,6 +419,7 @@
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
   <script>
+    const APP_URL = '<?!= appUrl ?>';
     const state = { payload: null, charts: [] };
     const idsFiltros = ['anos', 'meses', 'unidades', 'eixos', 'categorias', 'satisfacoes', 'status'];
     const textos = {
@@ -478,7 +479,8 @@
           if (value.length) query.set(key, value.join('|'));
         } else if (value != null && String(value).trim()) query.set(key, String(value));
       });
-      const response = await fetch(`${location.pathname}?${query.toString()}`, { cache: 'no-store' });
+      const endpoint = APP_URL || location.pathname;
+      const response = await fetch(`${endpoint}?${query.toString()}`, { cache: 'no-store' });
       if (!response.ok) throw new Error('Falha ao carregar relatório.');
       return response.json();
     }
