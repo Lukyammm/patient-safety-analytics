@@ -1755,11 +1755,86 @@
       }
     }
 
+    .pdf-progress-modal {
+      position: fixed;
+      top: 18px;
+      left: 50%;
+      z-index: 2147483646;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      width: min(420px, calc(100vw - 28px));
+      padding: 12px 16px;
+      border: 1px solid rgba(15, 118, 110, 0.18);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.16), inset 0 1px 0 rgba(255,255,255,.82);
+      color: #24424a;
+      transform: translate(-50%, -18px) scale(.98);
+      opacity: 0;
+      pointer-events: none;
+      backdrop-filter: blur(18px) saturate(1.18);
+      -webkit-backdrop-filter: blur(18px) saturate(1.18);
+      transition: opacity .22s ease, transform .22s ease;
+    }
+
+    .pdf-progress-modal.is-visible {
+      opacity: 1;
+      transform: translate(-50%, 0) scale(1);
+    }
+
+    .pdf-progress-spinner {
+      position: relative;
+      width: 28px;
+      height: 28px;
+      flex: 0 0 28px;
+      border-radius: 999px;
+      background: conic-gradient(from 90deg, rgba(20,184,166,.08), #14b8a6, #0f766e, rgba(20,184,166,.08));
+      animation: pdfSpin .8s linear infinite;
+      box-shadow: 0 0 0 6px rgba(20, 184, 166, .08);
+    }
+
+    .pdf-progress-spinner::after {
+      content: '';
+      position: absolute;
+      inset: 5px;
+      border-radius: inherit;
+      background: rgba(255,255,255,.96);
+    }
+
+    .pdf-progress-text {
+      display: grid;
+      gap: 1px;
+      min-width: 0;
+      line-height: 1.25;
+    }
+
+    .pdf-progress-text strong {
+      font-size: 13px;
+      font-weight: 900;
+      letter-spacing: -.01em;
+      color: #173037;
+    }
+
+    .pdf-progress-text span {
+      overflow: hidden;
+      color: #647982;
+      font-size: 12px;
+      font-weight: 650;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    @keyframes pdfSpin { to { transform: rotate(360deg); } }
+
     .pdf-capture-stage {
       position: fixed;
-      inset: 0;
-      z-index: 2147483647;
-      overflow: auto;
+      top: 0;
+      left: -10000px;
+      z-index: -1;
+      width: 210mm;
+      min-height: 297mm;
+      overflow: visible;
       background: #ffffff;
       pointer-events: none;
       opacity: 1;
@@ -2112,7 +2187,7 @@
       <article class="document-page" id="pagina-notifica">
         <header class="page-header">
           <div class="page-header-main">
-            <img class="page-logo" src="https://i.ibb.co/ccny4xx5/NGQS-Caminhada-Pela-Seguran-a-Mascote-Toten-Mandala-24-x-25cm-final-1.png" alt="Logo">
+            <img class="page-logo" src="https://i.ibb.co/7xnQsN29/Design-sem-nome-9.png" alt="Ícone de notificações">
             <div>
               <h2>Boletim da Segurança do Paciente · Notificações</h2>
             </div>
@@ -4978,6 +5053,53 @@
       await aguardarRender(80);
     }
 
+    async function aguardarImagensPdf(raiz) {
+      const imagens = Array.from((raiz || document).querySelectorAll('img'));
+      await Promise.all(imagens.map((img) => {
+        if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+        return new Promise((resolve) => {
+          const finalizar = () => resolve();
+          img.addEventListener('load', finalizar, { once: true });
+          img.addEventListener('error', finalizar, { once: true });
+          window.setTimeout(finalizar, 4000);
+        });
+      }));
+    }
+
+    let pdfProgressModal = null;
+
+    function mostrarProgressoPdf(titulo = 'Preparando seu PDF', detalhe = 'Organizando páginas e gráficos com alta qualidade...') {
+      if (!pdfProgressModal) {
+        pdfProgressModal = document.createElement('section');
+        pdfProgressModal.className = 'pdf-progress-modal';
+        pdfProgressModal.setAttribute('role', 'status');
+        pdfProgressModal.setAttribute('aria-live', 'polite');
+        pdfProgressModal.innerHTML = `
+          <span class="pdf-progress-spinner" aria-hidden="true"></span>
+          <span class="pdf-progress-text">
+            <strong data-pdf-progress-title></strong>
+            <span data-pdf-progress-detail></span>
+          </span>
+        `;
+        document.body.appendChild(pdfProgressModal);
+      }
+
+      const titleEl = pdfProgressModal.querySelector('[data-pdf-progress-title]');
+      const detailEl = pdfProgressModal.querySelector('[data-pdf-progress-detail]');
+      if (titleEl) titleEl.textContent = titulo;
+      if (detailEl) detailEl.textContent = detalhe;
+      pdfProgressModal.classList.add('is-visible');
+    }
+
+    function atualizarProgressoPdf(detalhe, titulo = 'Preparando seu PDF') {
+      mostrarProgressoPdf(titulo, detalhe);
+    }
+
+    function ocultarProgressoPdf() {
+      if (!pdfProgressModal) return;
+      pdfProgressModal.classList.remove('is-visible');
+    }
+
     function criarPalcoCapturaPdf(conteudo) {
       const palco = document.createElement('div');
       palco.className = 'pdf-capture-stage';
@@ -4987,16 +5109,40 @@
       return palco;
     }
 
+    function dimensoesPaginaPdf(elemento) {
+      const rect = elemento.getBoundingClientRect();
+      return {
+        width: Math.ceil(rect.width || elemento.offsetWidth || 794),
+        height: Math.ceil(rect.height || elemento.offsetHeight || 1123)
+      };
+    }
+
     function opcoesHtml2CanvasPdf(elemento, escala = 2.6) {
+      const dimensoes = dimensoesPaginaPdf(elemento);
       return {
         scale: escala,
         useCORS: true,
-        allowTaint: true,
+        allowTaint: false,
         scrollX: 0,
         scrollY: 0,
-        windowWidth: Math.max(elemento.scrollWidth, document.documentElement.clientWidth, 794),
-        windowHeight: Math.max(elemento.scrollHeight, document.documentElement.clientHeight, 1123),
-        backgroundColor: '#ffffff'
+        x: 0,
+        y: 0,
+        width: dimensoes.width,
+        height: dimensoes.height,
+        windowWidth: dimensoes.width,
+        windowHeight: dimensoes.height,
+        backgroundColor: '#ffffff',
+        imageTimeout: 15000,
+        logging: false,
+        onclone: (doc) => {
+          doc.body.classList.add('pdf-export');
+          doc.querySelectorAll('.pdf-capture-stage .chart-box img, .pdf-capture-stage .response-chart-box img').forEach((img) => {
+            img.style.width = '100%';
+            img.style.height = '100%';
+            img.style.objectFit = 'contain';
+            img.style.display = 'block';
+          });
+        }
       };
     }
 
@@ -5005,6 +5151,7 @@
       if (!paginasValidas.length) throw new Error('Nenhuma página disponível para exportação.');
 
       const { html2canvas, jsPDF } = await getBibliotecasPdf();
+      await aguardarImagensPdf(paginasValidas[0] ? paginasValidas[0].closest('.pdf-capture-stage') || document : document);
       await aguardarEstabilidadeVisual();
 
       const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
@@ -5019,14 +5166,9 @@
         pagina.style.maxHeight = '297mm';
         pagina.style.overflow = 'hidden';
 
+        atualizarProgressoPdf(`Renderizando página ${indice + 1} de ${paginasValidas.length}...`);
         await aguardarFrame();
-        const canvas = await html2canvas(pagina, {
-          ...opcoesHtml2CanvasPdf(pagina, escala),
-          width: pagina.offsetWidth,
-          height: pagina.offsetHeight,
-          windowWidth: Math.max(pagina.scrollWidth, pagina.offsetWidth, 794),
-          windowHeight: Math.max(pagina.scrollHeight, pagina.offsetHeight, 1123)
-        });
+        const canvas = await html2canvas(pagina, opcoesHtml2CanvasPdf(pagina, escala));
 
         const imagem = canvas.toDataURL('image/png', 1);
         if (indice > 0) pdf.addPage('a4', 'portrait');
@@ -5087,14 +5229,14 @@
       const palco = criarPalcoCapturaPdf(container);
 
       try {
-        loading.classList.remove('hidden');
+        mostrarProgressoPdf('Preparando PDF da fila', `Organizando ${filaBoletins.length} boletim(ns) para download...`);
         if (boletimEstavaOculto) boletim.classList.remove('hidden');
         await aguardarRender(120);
-        loading.textContent = `Preparando fila (${filaBoletins.length})...`;
+        if (loading) loading.classList.add('hidden');
 
         for (let i = 0; i < filaBoletins.length; i += 1) {
           const item = filaBoletins[i];
-          loading.textContent = `Gerando boletim ${i + 1} de ${filaBoletins.length}...`;
+          atualizarProgressoPdf(`Gerando boletim ${i + 1} de ${filaBoletins.length}...`, 'Preparando PDF da fila');
           const payload = await fetchAPIComRetry(item.filtros);
           renderCosep(payload.caminhadas || {}, (payload.aplicado || {}).caminhadas || {}, payload.geradoEm || '');
           renderNotifica(payload.notificacoes || {}, (payload.aplicado || {}).notificacoes || {}, payload.geradoEm || '');
@@ -5114,16 +5256,21 @@
         }
         mostrarToast('Fila exportada em PDF com sucesso.', 'success', 'Exportação concluída');
       } catch (erro) {
-        loading.classList.remove('hidden');
-        loading.textContent = 'Não foi possível imprimir a fila agora.';
+        if (loading) {
+          loading.classList.remove('hidden');
+          loading.textContent = 'Não foi possível imprimir a fila agora.';
+        }
         console.error(erro);
         mostrarToast(erro.message || 'Não foi possível imprimir a fila.', 'error', 'Erro na fila');
       } finally {
         document.body.classList.remove('pdf-export');
+        ocultarProgressoPdf();
         palco.remove();
         if (boletimEstavaOculto) boletim.classList.add('hidden');
-        loading.classList.remove('hidden');
-        loading.textContent = 'Selecione os filtros e clique em “Gerar boletim”.';
+        if (loading) {
+          loading.classList.add('hidden');
+          loading.textContent = 'Selecione os filtros e clique em “Gerar boletim”.';
+        }
       }
     }
 
@@ -5143,14 +5290,16 @@
       const palco = criarPalcoCapturaPdf(clone);
 
       document.body.classList.add('pdf-export');
+      mostrarProgressoPdf('Preparando seu PDF', 'Ajustando páginas, gráficos e imagens para o download...');
       try {
         await exportarPaginasComoPdf(clone.querySelectorAll('.document-page'), nomeArquivo, 2.35);
-        mostrarToast('PDF baixado sem cortes na página de Caminhadas.', 'success', 'Download iniciado');
+        mostrarToast('PDF baixado com o layout preservado e pronto para uso.', 'success', 'Download iniciado');
       } catch (erro) {
         console.error(erro);
         mostrarToast(erro.message || 'Não foi possível baixar o PDF.', 'error', 'Erro no download');
       } finally {
         document.body.classList.remove('pdf-export');
+        ocultarProgressoPdf();
         palco.remove();
       }
     }
