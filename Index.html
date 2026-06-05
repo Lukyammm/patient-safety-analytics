@@ -1858,6 +1858,10 @@
       box-shadow: none !important;
     }
 
+    body.pdf-export .panel {
+      min-height: 0 !important;
+    }
+
     body.pdf-export .document-page {
       width: 210mm !important;
       min-width: 210mm !important;
@@ -1877,16 +1881,24 @@
       page-break-after: always !important;
     }
 
-    body.pdf-export.pdf-export-expandido .document-page {
-      height: auto !important;
-      min-height: 297mm !important;
-      max-height: none !important;
-      overflow: visible !important;
+    body.pdf-export .pdf-page-fit-wrapper {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-height: 100% !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 8px !important;
+      transform-origin: top left !important;
+      will-change: transform;
     }
 
-    body.pdf-export.pdf-export-expandido .pdf-page-cosep,
-    body.pdf-export.pdf-export-expandido #pagina-cosep {
-      overflow: visible !important;
+    body.pdf-export .pdf-page-cosep,
+    body.pdf-export #pagina-cosep {
+      width: 210mm !important;
+      height: 297mm !important;
+      min-height: 297mm !important;
+      max-height: 297mm !important;
+      overflow: hidden !important;
     }
 
     body.pdf-export .pdf-capture-stage,
@@ -1951,21 +1963,22 @@
     }
 
     body.pdf-export .pdf-page-cosep .panel-metas {
-      flex: 1 1 auto !important;
+      flex: 0 0 auto !important;
       min-height: 0 !important;
-      padding: 5px !important;
-      overflow: hidden !important;
+      padding: 6px !important;
+      overflow: visible !important;
     }
 
     body.pdf-export .pdf-page-cosep .meta-grid {
       grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-      gap: 4px !important;
+      gap: 6px !important;
       align-items: start !important;
     }
 
     body.pdf-export .pdf-page-cosep .meta-card {
-      border-radius: 9px !important;
+      border-radius: 10px !important;
       border-left-width: 3px !important;
+      overflow: visible !important;
     }
 
     body.pdf-export .pdf-page-cosep .meta-card.best-meta {
@@ -1975,8 +1988,9 @@
 
     body.pdf-export .pdf-page-cosep .meta-card-header {
       gap: 5px !important;
-      padding: 4px 5px !important;
-      font-size: 10px !important;
+      padding: 5px 6px !important;
+      font-size: 10.5px !important;
+      line-height: 1.25 !important;
     }
 
     body.pdf-export .pdf-page-cosep .meta-card-title {
@@ -1985,8 +1999,8 @@
 
     body.pdf-export .pdf-page-cosep .meta-card-title span,
     body.pdf-export .pdf-page-cosep .meta-item-label {
-      font-size: 9.5px !important;
-      line-height: 1.08 !important;
+      font-size: 10.2px !important;
+      line-height: 1.25 !important;
       white-space: nowrap !important;
     }
 
@@ -2015,14 +2029,19 @@
     }
 
     body.pdf-export .pdf-page-cosep .meta-card-header strong {
-      font-size: 11px !important;
+      font-size: 11.5px !important;
+    }
+
+    body.pdf-export .pdf-page-cosep .meta-card table {
+      overflow: visible !important;
     }
 
     body.pdf-export .pdf-page-cosep .meta-card th,
     body.pdf-export .pdf-page-cosep .meta-card td {
-      padding: 1px 3px !important;
-      font-size: 9.5px !important;
-      line-height: 1.08 !important;
+      padding: 2px 4px !important;
+      font-size: 10.2px !important;
+      line-height: 1.28 !important;
+      vertical-align: middle !important;
     }
 
     body.pdf-export .pdf-page-cosep .ranking-setores-box.grid-slot {
@@ -5328,7 +5347,62 @@
       return palco;
     }
 
+    function aplicarDimensoesA4FixasPdf(pagina) {
+      if (!pagina) return;
+      pagina.style.width = '210mm';
+      pagina.style.minWidth = '210mm';
+      pagina.style.maxWidth = '210mm';
+      pagina.style.height = '297mm';
+      pagina.style.minHeight = '297mm';
+      pagina.style.maxHeight = '297mm';
+      pagina.style.overflow = 'hidden';
+      pagina.style.flex = '0 0 auto';
+      pagina.style.breakInside = 'avoid';
+      pagina.style.pageBreakInside = 'avoid';
+    }
+
+    function obterWrapperAjustePaginaPdf(pagina) {
+      if (!pagina) return null;
+      let wrapper = pagina.querySelector(':scope > .pdf-page-fit-wrapper');
+      if (!wrapper) {
+        wrapper = (pagina.ownerDocument || document).createElement('div');
+        wrapper.className = 'pdf-page-fit-wrapper';
+        while (pagina.firstChild) wrapper.appendChild(pagina.firstChild);
+        pagina.appendChild(wrapper);
+      }
+      return wrapper;
+    }
+
+    function prepararPaginaA4ParaCaptura(pagina) {
+      aplicarDimensoesA4FixasPdf(pagina);
+      const wrapper = obterWrapperAjustePaginaPdf(pagina);
+      if (!wrapper) return;
+
+      wrapper.style.transform = 'none';
+      wrapper.style.width = '100%';
+      wrapper.style.maxWidth = '100%';
+      wrapper.style.height = 'auto';
+      wrapper.style.minHeight = '100%';
+      wrapper.style.display = 'flex';
+      wrapper.style.flexDirection = 'column';
+      wrapper.style.gap = '8px';
+      wrapper.style.flex = '0 0 auto';
+
+      const larguraDisponivel = Math.max(1, pagina.clientWidth || pagina.getBoundingClientRect().width || 794);
+      const alturaDisponivel = Math.max(1, pagina.clientHeight || pagina.getBoundingClientRect().height || 1123);
+      const larguraConteudo = Math.max(wrapper.scrollWidth || 0, wrapper.offsetWidth || 0, larguraDisponivel);
+      const alturaConteudo = Math.max(wrapper.scrollHeight || 0, wrapper.offsetHeight || 0, alturaDisponivel);
+      const escalaAjuste = Math.min(1, larguraDisponivel / larguraConteudo, alturaDisponivel / alturaConteudo);
+
+      if (escalaAjuste < 1) {
+        wrapper.style.width = `${100 / escalaAjuste}%`;
+        wrapper.style.maxWidth = `${100 / escalaAjuste}%`;
+        wrapper.style.transform = `scale(${escalaAjuste})`;
+      }
+    }
+
     function dimensoesPaginaPdf(elemento) {
+      aplicarDimensoesA4FixasPdf(elemento);
       const rect = elemento.getBoundingClientRect();
       return {
         width: Math.ceil(rect.width || elemento.offsetWidth || 794),
@@ -5337,6 +5411,7 @@
     }
 
     function opcoesHtml2CanvasPdf(elemento, escala = 2.6) {
+      aplicarDimensoesA4FixasPdf(elemento);
       const dimensoes = dimensoesPaginaPdf(elemento);
       return {
         scale: escala,
@@ -5348,13 +5423,14 @@
         y: 0,
         width: dimensoes.width,
         height: dimensoes.height,
-        windowWidth: 1400,
-        windowHeight: Math.max(dimensoes.height, 1123),
+        windowWidth: dimensoes.width,
+        windowHeight: dimensoes.height,
         backgroundColor: '#ffffff',
         imageTimeout: 15000,
         logging: false,
         onclone: (doc) => {
           doc.body.classList.add('pdf-export');
+          doc.querySelectorAll('.document-page').forEach(prepararPaginaA4ParaCaptura);
           doc.querySelectorAll('.pdf-capture-stage .chart-box img, .pdf-capture-stage .response-chart-box img').forEach((img) => {
             img.style.width = '100%';
             img.style.height = '100%';
@@ -5381,43 +5457,23 @@
 
       for (let indice = 0; indice < paginasValidas.length; indice += 1) {
         const pagina = paginasValidas[indice];
-        pagina.style.width = '210mm';
-        pagina.style.minWidth = '210mm';
-        pagina.style.maxWidth = '210mm';
-        pagina.style.height = 'auto';
-        pagina.style.minHeight = '297mm';
-        pagina.style.maxHeight = 'none';
-        pagina.style.overflow = 'visible';
+        prepararPaginaA4ParaCaptura(pagina);
 
-        atualizarProgressoPdf(`Renderizando página ${indice + 1} de ${paginasValidas.length}...`);
+        atualizarProgressoPdf(`Renderizando página A4 ${indice + 1} de ${paginasValidas.length}...`);
         await aguardarFrame();
-        const alturaOriginal = Math.max(pagina.scrollHeight || 0, pagina.offsetHeight || 0, dimensoesPaginaPdf(pagina).height);
+        prepararPaginaA4ParaCaptura(pagina);
+        const dimensoes = dimensoesPaginaPdf(pagina);
         const canvas = await html2canvas(pagina, {
           ...opcoesHtml2CanvasPdf(pagina, escala),
-          height: alturaOriginal,
-          windowHeight: Math.max(alturaOriginal, 1123)
+          width: dimensoes.width,
+          height: dimensoes.height,
+          windowWidth: dimensoes.width,
+          windowHeight: dimensoes.height
         });
 
-        const alturaPaginaPx = Math.max(1, Math.floor(canvas.width * (alturaMm / larguraMm)));
-        const totalPartes = Math.max(1, Math.ceil(canvas.height / alturaPaginaPx));
-
-        for (let parte = 0; parte < totalPartes; parte += 1) {
-          const yOrigem = parte * alturaPaginaPx;
-          const alturaParte = Math.min(alturaPaginaPx, canvas.height - yOrigem);
-          const canvasParte = document.createElement('canvas');
-          canvasParte.width = canvas.width;
-          canvasParte.height = alturaParte;
-          const ctx = canvasParte.getContext('2d');
-          if (!ctx) continue;
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(0, 0, canvasParte.width, canvasParte.height);
-          ctx.drawImage(canvas, 0, yOrigem, canvas.width, alturaParte, 0, 0, canvas.width, alturaParte);
-
-          if (paginasPdfGeradas > 0) pdf.addPage('a4', 'portrait');
-          const alturaImagemMm = Math.min(alturaMm, (alturaParte * larguraMm) / canvas.width);
-          pdf.addImage(canvasParte.toDataURL('image/png', 1), 'PNG', 0, 0, larguraMm, alturaImagemMm, undefined, 'FAST');
-          paginasPdfGeradas += 1;
-        }
+        if (paginasPdfGeradas > 0) pdf.addPage('a4', 'portrait');
+        pdf.addImage(canvas.toDataURL('image/png', 1), 'PNG', 0, 0, larguraMm, alturaMm, undefined, 'FAST');
+        paginasPdfGeradas += 1;
       }
 
       pdf.save(nomeArquivo);
@@ -5492,7 +5548,7 @@
           Array.from(clone.children).forEach((page) => container.appendChild(page));
         }
 
-        document.body.classList.add('pdf-export', 'pdf-export-expandido');
+        document.body.classList.add('pdf-export');
         await getHtml2Pdf();
         await exportarFilaComoPdf(container, nomeArquivo);
 
@@ -5508,7 +5564,7 @@
         console.error(erro);
         mostrarToast(erro.message || 'Não foi possível imprimir a fila.', 'error', 'Erro na fila');
       } finally {
-        document.body.classList.remove('pdf-export', 'pdf-export-expandido');
+        document.body.classList.remove('pdf-export');
         ocultarProgressoPdf();
         palco.remove();
         if (boletimEstavaOculto) boletim.classList.add('hidden');
@@ -5534,7 +5590,7 @@
       clone.style.pointerEvents = 'none';
       const palco = criarPalcoCapturaPdf(clone);
 
-      document.body.classList.add('pdf-export', 'pdf-export-expandido');
+      document.body.classList.add('pdf-export');
       mostrarProgressoPdf('Preparando seu PDF', 'Ajustando páginas, gráficos e imagens para o download...');
       try {
         await exportarPaginasComoPdf(clone.querySelectorAll('.document-page'), nomeArquivo, 2.35);
@@ -5543,7 +5599,7 @@
         console.error(erro);
         mostrarToast(erro.message || 'Não foi possível baixar o PDF.', 'error', 'Erro no download');
       } finally {
-        document.body.classList.remove('pdf-export', 'pdf-export-expandido');
+        document.body.classList.remove('pdf-export');
         ocultarProgressoPdf();
         palco.remove();
       }
