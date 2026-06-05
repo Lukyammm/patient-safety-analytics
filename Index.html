@@ -1938,6 +1938,42 @@
       margin-top: 0 !important;
     }
 
+    body.pdf-export .pdf-page-cosep.pdf-page-cosep-resumo .footer-note {
+      margin-top: auto !important;
+    }
+
+    body.pdf-export .pdf-page-cosep.pdf-page-cosep-metas .panel-metas {
+      flex: 0 0 auto !important;
+      overflow: visible !important;
+      padding: 8px !important;
+    }
+
+    body.pdf-export .pdf-page-cosep.pdf-page-cosep-metas .meta-grid {
+      gap: 8px !important;
+    }
+
+    body.pdf-export .pdf-page-cosep.pdf-page-cosep-metas .meta-card-header {
+      padding: 7px 8px !important;
+      font-size: 12px !important;
+    }
+
+    body.pdf-export .pdf-page-cosep.pdf-page-cosep-metas .meta-card-title span,
+    body.pdf-export .pdf-page-cosep.pdf-page-cosep-metas .meta-item-label {
+      font-size: 11.5px !important;
+      line-height: 1.18 !important;
+    }
+
+    body.pdf-export .pdf-page-cosep.pdf-page-cosep-metas .meta-card-header strong {
+      font-size: 13px !important;
+    }
+
+    body.pdf-export .pdf-page-cosep.pdf-page-cosep-metas .meta-card th,
+    body.pdf-export .pdf-page-cosep.pdf-page-cosep-metas .meta-card td {
+      padding: 3px 4px !important;
+      font-size: 11.2px !important;
+      line-height: 1.16 !important;
+    }
+
     body.pdf-export .pdf-page-cosep .panel-metas {
       flex: 1 1 auto !important;
       min-height: 0 !important;
@@ -5389,6 +5425,41 @@
       await exportarPaginasComoPdf(container.querySelectorAll('.document-page'), nomeArquivo, 2);
     }
 
+    function obterFilhoDiretoPorClasse(elemento, classe) {
+      return Array.from((elemento && elemento.children) || []).find((filho) => filho.classList && filho.classList.contains(classe)) || null;
+    }
+
+    function prepararPaginasCaminhadasPdf(clone) {
+      const paginaCaminhadas = clone.querySelector('.pdf-page-cosep');
+      if (!paginaCaminhadas || paginaCaminhadas.classList.contains('pdf-page-cosep-resumo')) return;
+
+      const painelMetas = obterFilhoDiretoPorClasse(paginaCaminhadas, 'panel-metas');
+      if (!painelMetas) return;
+
+      const legenda = obterFilhoDiretoPorClasse(paginaCaminhadas, 'legenda-melhor-meta');
+      const rodape = obterFilhoDiretoPorClasse(paginaCaminhadas, 'footer-note');
+      const cabecalho = obterFilhoDiretoPorClasse(paginaCaminhadas, 'page-header');
+      const paginaMetas = document.createElement('article');
+      paginaMetas.className = 'document-page page-break pdf-page-cosep pdf-page-cosep-metas';
+
+      if (cabecalho) {
+        const cabecalhoMetas = cabecalho.cloneNode(true);
+        const titulo = cabecalhoMetas.querySelector('h2');
+        if (titulo) titulo.textContent = 'Boletim da Segurança do Paciente · Metas de Segurança';
+        paginaMetas.appendChild(cabecalhoMetas);
+      }
+
+      if (legenda) paginaMetas.appendChild(legenda);
+      paginaMetas.appendChild(painelMetas);
+      if (rodape) {
+        paginaCaminhadas.appendChild(rodape.cloneNode(true));
+        paginaMetas.appendChild(rodape);
+      }
+
+      paginaCaminhadas.classList.add('pdf-page-cosep-resumo');
+      paginaCaminhadas.after(paginaMetas);
+    }
+
     function criarCloneBoletimComCanvas() {
       const original = document.getElementById('boletim');
       const clone = original.cloneNode(true);
@@ -5414,6 +5485,7 @@
         img.height = origem.height || canvas.height || 0;
         canvas.replaceWith(img);
       });
+      prepararPaginasCaminhadasPdf(clone);
       clone.querySelectorAll('[id]').forEach((el) => el.removeAttribute('id'));
       return clone;
     }
