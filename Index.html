@@ -1858,6 +1858,10 @@
       box-shadow: none !important;
     }
 
+    body.pdf-export .panel {
+      min-height: 0 !important;
+    }
+
     body.pdf-export .document-page {
       width: 210mm !important;
       min-width: 210mm !important;
@@ -1875,6 +1879,17 @@
     body.pdf-export .document-page:not(:last-child) {
       break-after: page !important;
       page-break-after: always !important;
+    }
+
+    body.pdf-export .pdf-page-fit-wrapper {
+      width: 100% !important;
+      max-width: 100% !important;
+      min-height: 100% !important;
+      display: flex !important;
+      flex-direction: column !important;
+      gap: 8px !important;
+      transform-origin: top left !important;
+      will-change: transform;
     }
 
     body.pdf-export .pdf-page-cosep,
@@ -5339,6 +5354,46 @@
       pagina.style.pageBreakInside = 'avoid';
     }
 
+    function obterWrapperAjustePaginaPdf(pagina) {
+      if (!pagina) return null;
+      let wrapper = pagina.querySelector(':scope > .pdf-page-fit-wrapper');
+      if (!wrapper) {
+        wrapper = (pagina.ownerDocument || document).createElement('div');
+        wrapper.className = 'pdf-page-fit-wrapper';
+        while (pagina.firstChild) wrapper.appendChild(pagina.firstChild);
+        pagina.appendChild(wrapper);
+      }
+      return wrapper;
+    }
+
+    function prepararPaginaA4ParaCaptura(pagina) {
+      aplicarDimensoesA4FixasPdf(pagina);
+      const wrapper = obterWrapperAjustePaginaPdf(pagina);
+      if (!wrapper) return;
+
+      wrapper.style.transform = 'none';
+      wrapper.style.width = '100%';
+      wrapper.style.maxWidth = '100%';
+      wrapper.style.height = 'auto';
+      wrapper.style.minHeight = '100%';
+      wrapper.style.display = 'flex';
+      wrapper.style.flexDirection = 'column';
+      wrapper.style.gap = '8px';
+      wrapper.style.flex = '0 0 auto';
+
+      const larguraDisponivel = Math.max(1, pagina.clientWidth || pagina.getBoundingClientRect().width || 794);
+      const alturaDisponivel = Math.max(1, pagina.clientHeight || pagina.getBoundingClientRect().height || 1123);
+      const larguraConteudo = Math.max(wrapper.scrollWidth || 0, wrapper.offsetWidth || 0, larguraDisponivel);
+      const alturaConteudo = Math.max(wrapper.scrollHeight || 0, wrapper.offsetHeight || 0, alturaDisponivel);
+      const escalaAjuste = Math.min(1, larguraDisponivel / larguraConteudo, alturaDisponivel / alturaConteudo);
+
+      if (escalaAjuste < 1) {
+        wrapper.style.width = `${100 / escalaAjuste}%`;
+        wrapper.style.maxWidth = `${100 / escalaAjuste}%`;
+        wrapper.style.transform = `scale(${escalaAjuste})`;
+      }
+    }
+
     function dimensoesPaginaPdf(elemento) {
       aplicarDimensoesA4FixasPdf(elemento);
       const rect = elemento.getBoundingClientRect();
@@ -5368,7 +5423,7 @@
         logging: false,
         onclone: (doc) => {
           doc.body.classList.add('pdf-export');
-          doc.querySelectorAll('.document-page').forEach(aplicarDimensoesA4FixasPdf);
+          doc.querySelectorAll('.document-page').forEach(prepararPaginaA4ParaCaptura);
           doc.querySelectorAll('.pdf-capture-stage .chart-box img, .pdf-capture-stage .response-chart-box img').forEach((img) => {
             img.style.width = '100%';
             img.style.height = '100%';
@@ -5395,10 +5450,11 @@
 
       for (let indice = 0; indice < paginasValidas.length; indice += 1) {
         const pagina = paginasValidas[indice];
-        aplicarDimensoesA4FixasPdf(pagina);
+        prepararPaginaA4ParaCaptura(pagina);
 
         atualizarProgressoPdf(`Renderizando página A4 ${indice + 1} de ${paginasValidas.length}...`);
         await aguardarFrame();
+        prepararPaginaA4ParaCaptura(pagina);
         const dimensoes = dimensoesPaginaPdf(pagina);
         const canvas = await html2canvas(pagina, {
           ...opcoesHtml2CanvasPdf(pagina, escala),
