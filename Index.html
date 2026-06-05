@@ -3382,6 +3382,7 @@
     let boletimGerado = false;
     let filaBoletins = [];
     let html2pdfLoader = null;
+    const pdfLibraryLoaders = {};
     let buscaFiltrosConfigurada = false;
     let tabsConfiguradas = false;
     let listenersFiltrosConfigurados = false;
@@ -3515,32 +3516,89 @@
       atualizarEstadoAcoes();
     }
 
-    function loadScript(src) {
+    function resolverHtml2Pdf() {
+      return window.html2pdf || null;
+    }
+
+    function resolverHtml2Canvas() {
+      return window.html2canvas || null;
+    }
+
+    function resolverJsPdf() {
+      return (window.jspdf && window.jspdf.jsPDF) || window.jsPDF || null;
+    }
+
+    function carregarScriptPdf(src, resolver, nomeBiblioteca) {
       return new Promise((resolve, reject) => {
+        const bibliotecaPronta = resolver();
+        if (bibliotecaPronta) {
+          resolve(bibliotecaPronta);
+          return;
+        }
+
         const existente = document.querySelector(`script[src="${src}"]`);
-        if (existente) {
-          if (window.html2pdf) {
-            resolve(window.html2pdf);
-            return;
+        const concluir = () => {
+          const ref = resolver();
+          if (ref) {
+            resolve(ref);
+          } else {
+            reject(new Error(`${nomeBiblioteca} foi carregada, mas não ficou disponível no navegador.`));
           }
-          existente.addEventListener('load', () => resolve(window.html2pdf), { once: true });
-          existente.addEventListener('error', () => reject(new Error('Falha ao carregar biblioteca externa.')), { once: true });
+        };
+
+        if (existente) {
+          existente.addEventListener('load', concluir, { once: true });
+          existente.addEventListener('error', () => reject(new Error(`Falha ao carregar ${nomeBiblioteca}.`)), { once: true });
+          window.setTimeout(() => {
+            const ref = resolver();
+            if (ref) resolve(ref);
+          }, 0);
           return;
         }
 
         const script = document.createElement('script');
         script.src = src;
         script.async = true;
-        script.onload = () => resolve(window.html2pdf);
-        script.onerror = () => reject(new Error('Falha ao carregar biblioteca externa.'));
+        script.crossOrigin = 'anonymous';
+        script.referrerPolicy = 'no-referrer';
+        script.onload = concluir;
+        script.onerror = () => reject(new Error(`Falha ao carregar ${nomeBiblioteca}.`));
         document.head.appendChild(script);
       });
+    }
+
+    function carregarBibliotecaPdf(chave, urls, resolver, nomeBiblioteca) {
+      const pronta = resolver();
+      if (pronta) return Promise.resolve(pronta);
+
+      if (!pdfLibraryLoaders[chave]) {
+        pdfLibraryLoaders[chave] = urls.reduce((tentativa, url) => {
+          return tentativa.catch(() => carregarScriptPdf(url, resolver, nomeBiblioteca));
+        }, Promise.reject()).catch((erro) => {
+          delete pdfLibraryLoaders[chave];
+          throw erro;
+        });
+      }
+
+      return pdfLibraryLoaders[chave];
+    }
+
+    function loadScript(src) {
+      return carregarScriptPdf(src, resolverHtml2Pdf, 'html2pdf.js');
     }
 
     async function getHtml2Pdf() {
       if (window.html2pdf) return window.html2pdf;
       if (!html2pdfLoader) {
-        html2pdfLoader = loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js');
+        html2pdfLoader = carregarBibliotecaPdf(
+          'html2pdf',
+          [
+            'https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js',
+            'https://cdn.jsdelivr.net/npm/html2pdf.js@0.10.1/dist/html2pdf.bundle.min.js'
+          ],
+          resolverHtml2Pdf,
+          'html2pdf.js'
+        );
       }
       const html2pdfRef = await html2pdfLoader;
       if (!html2pdfRef) throw new Error('html2pdf indisponível.');
@@ -3548,13 +3606,33 @@
     }
 
     async function getBibliotecasPdf() {
-      await getHtml2Pdf();
-      const html2canvasRef = window.html2canvas;
-      const jsPdfRef = window.jspdf && window.jspdf.jsPDF;
-      if (!html2canvasRef || !jsPdfRef) {
-        throw new Error('Bibliotecas de PDF indisponíveis.');
+      try {
+        const [html2canvasRef, jsPdfRef] = await Promise.all([
+          carregarBibliotecaPdf(
+            'html2canvas',
+            [
+              'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js',
+              'https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js'
+            ],
+            resolverHtml2Canvas,
+            'html2canvas'
+          ),
+          carregarBibliotecaPdf(
+            'jspdf',
+            [
+              'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+              'https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js'
+            ],
+            resolverJsPdf,
+            'jsPDF'
+          )
+        ]);
+
+        return { html2canvas: html2canvasRef, jsPDF: jsPdfRef };
+      } catch (erro) {
+        console.error('Falha ao preparar bibliotecas de PDF:', erro);
+        throw new Error('Não foi possível carregar as bibliotecas de PDF. Verifique sua conexão e tente novamente.');
       }
-      return { html2canvas: html2canvasRef, jsPDF: jsPdfRef };
     }
 
     function fetchViaGoogleScript(params = {}) {
