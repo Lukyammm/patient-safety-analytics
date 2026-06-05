@@ -1877,6 +1877,18 @@
       page-break-after: always !important;
     }
 
+    body.pdf-export.pdf-export-expandido .document-page {
+      height: auto !important;
+      min-height: 297mm !important;
+      max-height: none !important;
+      overflow: visible !important;
+    }
+
+    body.pdf-export.pdf-export-expandido .pdf-page-cosep,
+    body.pdf-export.pdf-export-expandido #pagina-cosep {
+      overflow: visible !important;
+    }
+
     body.pdf-export .pdf-capture-stage,
     body.pdf-export .pdf-capture-stage > .report-stack,
     body.pdf-export .pdf-capture-stage > article,
@@ -5363,23 +5375,49 @@
 
       const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
 
+      let paginasPdfGeradas = 0;
+      const larguraMm = 210;
+      const alturaMm = 297;
+
       for (let indice = 0; indice < paginasValidas.length; indice += 1) {
         const pagina = paginasValidas[indice];
         pagina.style.width = '210mm';
         pagina.style.minWidth = '210mm';
         pagina.style.maxWidth = '210mm';
-        pagina.style.height = '297mm';
+        pagina.style.height = 'auto';
         pagina.style.minHeight = '297mm';
-        pagina.style.maxHeight = '297mm';
-        pagina.style.overflow = 'hidden';
+        pagina.style.maxHeight = 'none';
+        pagina.style.overflow = 'visible';
 
         atualizarProgressoPdf(`Renderizando página ${indice + 1} de ${paginasValidas.length}...`);
         await aguardarFrame();
-        const canvas = await html2canvas(pagina, opcoesHtml2CanvasPdf(pagina, escala));
+        const alturaOriginal = Math.max(pagina.scrollHeight || 0, pagina.offsetHeight || 0, dimensoesPaginaPdf(pagina).height);
+        const canvas = await html2canvas(pagina, {
+          ...opcoesHtml2CanvasPdf(pagina, escala),
+          height: alturaOriginal,
+          windowHeight: Math.max(alturaOriginal, 1123)
+        });
 
-        const imagem = canvas.toDataURL('image/png', 1);
-        if (indice > 0) pdf.addPage('a4', 'portrait');
-        pdf.addImage(imagem, 'PNG', 0, 0, 210, 297, undefined, 'FAST');
+        const alturaPaginaPx = Math.max(1, Math.floor(canvas.width * (alturaMm / larguraMm)));
+        const totalPartes = Math.max(1, Math.ceil(canvas.height / alturaPaginaPx));
+
+        for (let parte = 0; parte < totalPartes; parte += 1) {
+          const yOrigem = parte * alturaPaginaPx;
+          const alturaParte = Math.min(alturaPaginaPx, canvas.height - yOrigem);
+          const canvasParte = document.createElement('canvas');
+          canvasParte.width = canvas.width;
+          canvasParte.height = alturaParte;
+          const ctx = canvasParte.getContext('2d');
+          if (!ctx) continue;
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvasParte.width, canvasParte.height);
+          ctx.drawImage(canvas, 0, yOrigem, canvas.width, alturaParte, 0, 0, canvas.width, alturaParte);
+
+          if (paginasPdfGeradas > 0) pdf.addPage('a4', 'portrait');
+          const alturaImagemMm = Math.min(alturaMm, (alturaParte * larguraMm) / canvas.width);
+          pdf.addImage(canvasParte.toDataURL('image/png', 1), 'PNG', 0, 0, larguraMm, alturaImagemMm, undefined, 'FAST');
+          paginasPdfGeradas += 1;
+        }
       }
 
       pdf.save(nomeArquivo);
@@ -5454,7 +5492,7 @@
           Array.from(clone.children).forEach((page) => container.appendChild(page));
         }
 
-        document.body.classList.add('pdf-export');
+        document.body.classList.add('pdf-export', 'pdf-export-expandido');
         await getHtml2Pdf();
         await exportarFilaComoPdf(container, nomeArquivo);
 
@@ -5470,7 +5508,7 @@
         console.error(erro);
         mostrarToast(erro.message || 'Não foi possível imprimir a fila.', 'error', 'Erro na fila');
       } finally {
-        document.body.classList.remove('pdf-export');
+        document.body.classList.remove('pdf-export', 'pdf-export-expandido');
         ocultarProgressoPdf();
         palco.remove();
         if (boletimEstavaOculto) boletim.classList.add('hidden');
@@ -5496,7 +5534,7 @@
       clone.style.pointerEvents = 'none';
       const palco = criarPalcoCapturaPdf(clone);
 
-      document.body.classList.add('pdf-export');
+      document.body.classList.add('pdf-export', 'pdf-export-expandido');
       mostrarProgressoPdf('Preparando seu PDF', 'Ajustando páginas, gráficos e imagens para o download...');
       try {
         await exportarPaginasComoPdf(clone.querySelectorAll('.document-page'), nomeArquivo, 2.35);
@@ -5505,7 +5543,7 @@
         console.error(erro);
         mostrarToast(erro.message || 'Não foi possível baixar o PDF.', 'error', 'Erro no download');
       } finally {
-        document.body.classList.remove('pdf-export');
+        document.body.classList.remove('pdf-export', 'pdf-export-expandido');
         ocultarProgressoPdf();
         palco.remove();
       }
