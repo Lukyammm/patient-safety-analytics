@@ -1877,6 +1877,122 @@
       page-break-after: always !important;
     }
 
+    body.pdf-export .pdf-capture-stage,
+    body.pdf-export .pdf-capture-stage > .report-stack,
+    body.pdf-export .pdf-capture-stage > article,
+    body.pdf-export .pdf-capture-stage > section {
+      width: 210mm !important;
+      min-width: 210mm !important;
+      max-width: 210mm !important;
+    }
+
+    body.pdf-export .document-page {
+      padding: 10mm !important;
+      gap: 8px !important;
+    }
+
+    body.pdf-export .page-header {
+      flex-direction: row !important;
+      align-items: flex-start !important;
+      justify-content: space-between !important;
+    }
+
+    body.pdf-export .page-header-main {
+      flex-direction: row !important;
+      align-items: flex-start !important;
+    }
+
+    body.pdf-export .page-meta {
+      min-width: 205px !important;
+      text-align: right !important;
+    }
+
+    body.pdf-export .metrics {
+      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+      gap: 8px !important;
+    }
+
+    body.pdf-export .section-grid-2 {
+      grid-template-columns: 1fr 1fr !important;
+      gap: 10px !important;
+    }
+
+    body.pdf-export .section-grid-3 {
+      grid-template-columns: 1.05fr 0.95fr 0.95fr !important;
+      gap: 10px !important;
+    }
+
+    body.pdf-export .meta-grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+      gap: 8px !important;
+    }
+
+    body.pdf-export .pdf-page-cosep {
+      display: flex !important;
+      flex-direction: column !important;
+      align-content: initial !important;
+      overflow: hidden !important;
+    }
+
+    body.pdf-export .pdf-page-cosep .footer-note {
+      margin-top: 0 !important;
+    }
+
+    body.pdf-export .chart-box {
+      height: 150px !important;
+    }
+
+    body.pdf-export .chart-box.compact,
+    body.pdf-export .pdf-page-cosep .chart-box.compact {
+      height: 102px !important;
+    }
+
+    body.pdf-export .pie-chart-box {
+      height: 180px !important;
+    }
+
+    body.pdf-export .response-chart-box {
+      height: 112px !important;
+    }
+
+    body.pdf-export .chart-box canvas,
+    body.pdf-export .chart-box img,
+    body.pdf-export .response-chart-box canvas,
+    body.pdf-export .response-chart-box img {
+      width: 100% !important;
+      height: 100% !important;
+      object-fit: contain !important;
+    }
+
+    body.pdf-export .pdf-page-notifica {
+      position: relative !important;
+      padding-bottom: 24mm !important;
+    }
+
+    body.pdf-export .pdf-page-notifica table th,
+    body.pdf-export .pdf-page-notifica table td {
+      font-size: 12px !important;
+    }
+
+    body.pdf-export .pdf-page-notifica .compact-table {
+      table-layout: fixed !important;
+      width: 100% !important;
+      min-width: 0 !important;
+    }
+
+    body.pdf-export .pdf-page-notifica .cell-nowrap-ellipsis {
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+    }
+
+    body.pdf-export .pdf-page-notifica .footer-note {
+      position: absolute !important;
+      left: 10mm !important;
+      right: 10mm !important;
+      bottom: 10mm !important;
+    }
+
     @media print {
       .meta-card-icon.star-highlight {
         filter: none !important;
@@ -2128,7 +2244,7 @@
     <section id="loading" class="loading-box">Preparando filtros do boletim...</section>
 
     <section id="boletim" class="report-stack hidden">
-      <article class="document-page page-break" id="pagina-cosep">
+      <article class="document-page page-break pdf-page-cosep" id="pagina-cosep">
         <header class="page-header">
           <div class="page-header-main">
             <img class="page-logo" src="https://i.ibb.co/ccny4xx5/NGQS-Caminhada-Pela-Seguran-a-Mascote-Toten-Mandala-24-x-25cm-final-1.png" alt="Logo">
@@ -2184,7 +2300,7 @@
         </footer>
       </article>
 
-      <article class="document-page" id="pagina-notifica">
+      <article class="document-page pdf-page-notifica" id="pagina-notifica">
         <header class="page-header">
           <div class="page-header-main">
             <img class="page-logo" src="https://i.ibb.co/7xnQsN29/Design-sem-nome-9.png" alt="Ícone de notificações">
@@ -5129,8 +5245,8 @@
         y: 0,
         width: dimensoes.width,
         height: dimensoes.height,
-        windowWidth: dimensoes.width,
-        windowHeight: dimensoes.height,
+        windowWidth: 1400,
+        windowHeight: Math.max(dimensoes.height, 1123),
         backgroundColor: '#ffffff',
         imageTimeout: 15000,
         logging: false,
