@@ -1849,6 +1849,14 @@
       background: #ffffff;
     }
 
+    body.pdf-export,
+    body.pdf-export * {
+      font-family: Arial, Helvetica, sans-serif !important;
+      text-rendering: geometricPrecision !important;
+      -webkit-font-smoothing: antialiased !important;
+      font-kerning: normal !important;
+    }
+
     body.pdf-export .document-page,
     body.pdf-export .panel,
     body.pdf-export .metric-card {
@@ -1856,6 +1864,30 @@
       backdrop-filter: none !important;
       -webkit-backdrop-filter: none !important;
       box-shadow: none !important;
+    }
+
+    body.pdf-export table {
+      border-collapse: collapse !important;
+      border-spacing: 0 !important;
+    }
+
+    body.pdf-export th,
+    body.pdf-export td {
+      vertical-align: middle !important;
+      line-height: 1.18 !important;
+    }
+
+    body.pdf-export th > *,
+    body.pdf-export td > *,
+    body.pdf-export .metric-card span,
+    body.pdf-export .metric-card strong,
+    body.pdf-export .panel h3,
+    body.pdf-export .panel p,
+    body.pdf-export .page-header h2,
+    body.pdf-export .page-header p,
+    body.pdf-export .page-meta {
+      margin-top: 0 !important;
+      margin-bottom: 0 !important;
     }
 
     body.pdf-export .panel {
@@ -2034,6 +2066,10 @@
 
     body.pdf-export .pdf-page-cosep .meta-card table {
       overflow: visible !important;
+    }
+
+    body.pdf-export .pdf-page-cosep .meta-card tr {
+      height: 18px !important;
     }
 
     body.pdf-export .pdf-page-cosep .meta-card th,
@@ -5410,6 +5446,18 @@
       };
     }
 
+    async function aguardarFontesPdf() {
+      if (!document.fonts || !document.fonts.ready) return;
+      try {
+        await Promise.race([
+          document.fonts.ready,
+          new Promise(resolve => setTimeout(resolve, 1800))
+        ]);
+      } catch (_) {
+        // A exportação deve continuar mesmo se o navegador não conseguir resolver todas as fontes.
+      }
+    }
+
     function opcoesHtml2CanvasPdf(elemento, escala = 2.6) {
       aplicarDimensoesA4FixasPdf(elemento);
       const dimensoes = dimensoesPaginaPdf(elemento);
@@ -5446,6 +5494,7 @@
       if (!paginasValidas.length) throw new Error('Nenhuma página disponível para exportação.');
 
       const { html2canvas, jsPDF } = await getBibliotecasPdf();
+      await aguardarFontesPdf();
       await aguardarImagensPdf(paginasValidas[0] ? paginasValidas[0].closest('.pdf-capture-stage') || document : document);
       await aguardarEstabilidadeVisual();
 
