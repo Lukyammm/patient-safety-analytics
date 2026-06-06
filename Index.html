@@ -2342,6 +2342,10 @@
       background: linear-gradient(180deg, #0b1519 0%, #0c1a1f 55%, #0a161a 100%);
       color: #e7eef0;
     }
+    /* As páginas do boletim seguem claras (para o PDF/A4). No tema escuro elas
+       NÃO podem herdar o texto quase branco do body, senão a pré-visualização
+       fica ilegível (texto claro sobre fundo claro). Devolve a cor escura do texto. */
+    html[data-theme="dark"] .document-page { color: var(--text); }
     html[data-theme="dark"] body::before { background: rgba(20,184,166,.18); opacity: .28; }
     html[data-theme="dark"] body::after  { background: rgba(13,148,136,.16); opacity: .26; }
 
