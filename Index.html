@@ -2489,10 +2489,8 @@
     .admin-updated { color: var(--muted); font-size: 13px; }
     .admin-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
     .admin-buttons .btn { min-height: 48px; padding: 0 18px; }
-    .reg-fields { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
-    .reg-full { grid-column: 1 / -1; }
     @media (max-width: 760px) {
-      .admin-grid, .admin-two, .reg-fields { grid-template-columns: 1fr; }
+      .admin-grid, .admin-two { grid-template-columns: 1fr; }
       .admin-itens { padding-left: 0; }
     }
 
@@ -2554,7 +2552,6 @@
             <div class="top-menu-links">
               <a class="top-menu-link" href="<?!= appUrl ?>" data-app-link="boletim" data-view-link="boletim"><i class="fa-solid fa-shield-heart"></i> COSEP</a>
               <a class="top-menu-link" href="<?!= appUrl ?>?page=relatorios" data-app-link="relatorios" data-view-link="relatorios"><i class="fa-solid fa-chart-line"></i> Relatórios</a>
-              <a class="top-menu-link" href="<?!= appUrl ?>?page=registrar" data-app-link="registrar" data-view-link="registrar"><i class="fa-solid fa-pen-to-square"></i> Registrar</a>
               <a class="top-menu-link" href="<?!= appUrl ?>?page=admin" data-app-link="admin" data-view-link="admin"><i class="fa-solid fa-gear"></i> Admin</a>
               <a class="top-menu-link" href="https://script.google.com/macros/s/AKfycbyrFcu7qj-Ydr2nwWqaaYpzntLct0jjN2ylXnrL5hXP5vWuiYcG_c4LYVVilFvJy-tadg/exec" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-gauge-high"></i> Painel NUGESP</a>
             </div>
@@ -2885,7 +2882,6 @@
           <div class="top-menu-links">
             <a class="top-menu-link" href="<?!= appUrl ?>" data-app-link="boletim" data-view-link="boletim"><i class="fa-solid fa-shield-heart"></i> COSEP</a>
             <a class="top-menu-link" href="<?!= appUrl ?>?page=relatorios" data-app-link="relatorios" data-view-link="relatorios"><i class="fa-solid fa-chart-line"></i> Relatórios</a>
-            <a class="top-menu-link" href="<?!= appUrl ?>?page=registrar" data-app-link="registrar" data-view-link="registrar"><i class="fa-solid fa-pen-to-square"></i> Registrar</a>
             <a class="top-menu-link" href="<?!= appUrl ?>?page=admin" data-app-link="admin" data-view-link="admin"><i class="fa-solid fa-gear"></i> Admin</a>
             <a class="top-menu-link" href="https://script.google.com/macros/s/AKfycbyrFcu7qj-Ydr2nwWqaaYpzntLct0jjN2ylXnrL5hXP5vWuiYcG_c4LYVVilFvJy-tadg/exec" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-gauge-high"></i> Painel NUGESP</a>
           </div>
@@ -2908,7 +2904,6 @@
             <div class="top-menu-links">
               <a class="top-menu-link" href="<?!= appUrl ?>" data-app-link="boletim" data-view-link="boletim"><i class="fa-solid fa-shield-heart"></i> COSEP</a>
               <a class="top-menu-link" href="<?!= appUrl ?>?page=relatorios" data-app-link="relatorios" data-view-link="relatorios"><i class="fa-solid fa-chart-line"></i> Relatórios</a>
-              <a class="top-menu-link" href="<?!= appUrl ?>?page=registrar" data-app-link="registrar" data-view-link="registrar"><i class="fa-solid fa-pen-to-square"></i> Registrar</a>
               <a class="top-menu-link" href="<?!= appUrl ?>?page=admin" data-app-link="admin" data-view-link="admin"><i class="fa-solid fa-gear"></i> Admin</a>
             </div>
             <button type="button" class="theme-toggle" aria-label="Alternar entre tema claro e escuro" aria-pressed="false" title="Alternar tema">
@@ -2972,95 +2967,6 @@
           <div class="admin-buttons">
             <button type="button" class="btn" id="btn-config-reset"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Restaurar padrão</button>
             <button type="submit" class="btn btn-primary" id="btn-config-salvar"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Salvar configurações</button>
-          </div>
-        </section>
-      </form>
-    </section>
-  </main>
-
-  <main class="app-shell app-view" id="registrar-app" hidden aria-label="Registrar notificação">
-    <section class="hero-card">
-      <div class="top-menu-wrap">
-        <nav class="top-menu" aria-label="Menu superior">
-          <div class="top-menu-inner">
-            <span class="top-menu-toggle" aria-hidden="true"><i class="fa-solid fa-bars"></i></span>
-            <div class="top-menu-links">
-              <a class="top-menu-link" href="<?!= appUrl ?>" data-app-link="boletim" data-view-link="boletim"><i class="fa-solid fa-shield-heart"></i> COSEP</a>
-              <a class="top-menu-link" href="<?!= appUrl ?>?page=relatorios" data-app-link="relatorios" data-view-link="relatorios"><i class="fa-solid fa-chart-line"></i> Relatórios</a>
-              <a class="top-menu-link" href="<?!= appUrl ?>?page=registrar" data-app-link="registrar" data-view-link="registrar"><i class="fa-solid fa-pen-to-square"></i> Registrar</a>
-              <a class="top-menu-link" href="<?!= appUrl ?>?page=admin" data-app-link="admin" data-view-link="admin"><i class="fa-solid fa-gear"></i> Admin</a>
-            </div>
-            <button type="button" class="theme-toggle" aria-label="Alternar entre tema claro e escuro" aria-pressed="false" title="Alternar tema">
-              <i class="fa-solid fa-sun icon-sun" aria-hidden="true"></i>
-              <i class="fa-solid fa-moon icon-moon" aria-hidden="true"></i>
-            </button>
-          </div>
-        </nav>
-      </div>
-
-      <header class="hero-header">
-        <h1>Registrar notificação</h1>
-        <p>Inclua uma nova notificação diretamente pelo app. O registro é gravado na base e passa a contar nos boletins automaticamente.</p>
-      </header>
-
-      <div class="section-divider"></div>
-
-      <form id="registrar-form" class="admin-grid">
-        <section class="admin-card">
-          <h3><i class="fa-solid fa-hashtag" aria-hidden="true"></i> Identificação</h3>
-          <p>Dados de referência da notificação.</p>
-          <div class="reg-fields">
-            <label class="admin-field">Nº NOTIVISA<input type="text" id="reg-numero" class="admin-input"></label>
-            <label class="admin-field">Código<input type="text" id="reg-codigo" class="admin-input"></label>
-            <label class="admin-field reg-full">Link (opcional)<input type="url" id="reg-link" class="admin-input" placeholder="https://..."></label>
-          </div>
-        </section>
-
-        <section class="admin-card">
-          <h3><i class="fa-solid fa-location-dot" aria-hidden="true"></i> Ocorrência</h3>
-          <p>O mês e o ano são preenchidos a partir da data.</p>
-          <div class="reg-fields">
-            <label class="admin-field">Data da ocorrência <small>*</small><input type="date" id="reg-data-ocorrencia" class="admin-input"></label>
-            <label class="admin-field">Setor notificado <small>*</small><input type="text" id="reg-setor" class="admin-input"></label>
-            <label class="admin-field">Local da ocorrência<input type="text" id="reg-local" class="admin-input"></label>
-            <label class="admin-field">Prontuário<input type="text" id="reg-prontuario" class="admin-input"></label>
-          </div>
-        </section>
-
-        <section class="admin-card admin-card-wide">
-          <h3><i class="fa-solid fa-tags" aria-hidden="true"></i> Classificação</h3>
-          <p>Como a notificação foi classificada.</p>
-          <div class="reg-fields">
-            <label class="admin-field">Classificação / tipo <small>*</small><input type="text" id="reg-classificacao" class="admin-input" placeholder="Ex.: Evento adverso grave"></label>
-            <label class="admin-field">Natureza<input type="text" id="reg-natureza" class="admin-input"></label>
-            <label class="admin-field">Afetou o paciente?
-              <select id="reg-afetou" class="admin-input">
-                <option value="">—</option>
-                <option value="Sim">Sim</option>
-                <option value="Não">Não</option>
-              </select>
-            </label>
-            <label class="admin-field">Cód. interação<input type="text" id="reg-interacao" class="admin-input"></label>
-            <label class="admin-field">Status<input type="text" id="reg-status" class="admin-input" placeholder="Ex.: Concluída / Em análise"></label>
-          </div>
-        </section>
-
-        <section class="admin-card admin-card-wide">
-          <h3><i class="fa-solid fa-reply" aria-hidden="true"></i> Resposta e prazos</h3>
-          <p>Preencha conforme o andamento (pode deixar em branco e completar depois).</p>
-          <div class="reg-fields">
-            <label class="admin-field">Data da classificação<input type="date" id="reg-data-classificacao" class="admin-input"></label>
-            <label class="admin-field">Status da resposta<input type="text" id="reg-status-resposta" class="admin-input"></label>
-            <label class="admin-field">Data da resposta<input type="date" id="reg-data-resposta" class="admin-input"></label>
-            <label class="admin-field">Data da conclusão<input type="date" id="reg-data-conclusao" class="admin-input"></label>
-          </div>
-        </section>
-
-        <section class="admin-actions admin-card-wide">
-          <div class="admin-updated"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> Campos com <strong>*</strong> são obrigatórios.</div>
-          <div class="admin-buttons">
-            <button type="button" class="btn" id="btn-reg-limpar"><i class="fa-solid fa-eraser" aria-hidden="true"></i> Limpar</button>
-            <button type="submit" class="btn btn-primary" id="btn-reg-salvar"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Registrar notificação</button>
           </div>
         </section>
       </form>
@@ -6163,7 +6069,6 @@
       const page = String(params.get('page') || params.get('pagina') || APP_VIEW_INICIAL || '').toLowerCase();
       if (page === 'relatorios' || page === 'relatórios') return 'relatorios';
       if (page === 'admin' || page === 'administracao' || page === 'administração') return 'admin';
-      if (page === 'registrar' || page === 'registro') return 'registrar';
       return 'boletim';
     }
 
@@ -6188,11 +6093,9 @@
       let destino = 'boletim';
       if (view === 'relatorios') destino = 'relatorios';
       else if (view === 'admin') destino = 'admin';
-      else if (view === 'registrar') destino = 'registrar';
       let url = window.location.pathname;
       if (destino === 'relatorios') url += '?page=relatorios';
       else if (destino === 'admin') url += '?page=admin';
-      else if (destino === 'registrar') url += '?page=registrar';
       if (atualizarHistorico) window.history.pushState({ view: destino }, '', url);
       aplicarRoteamentoInterno();
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -6214,16 +6117,12 @@
       const boletim = document.getElementById('boletim-app');
       const relatorios = document.getElementById('relatorios-app');
       const admin = document.getElementById('admin-app');
-      const registrar = document.getElementById('registrar-app');
       if (boletim) boletim.hidden = view !== 'boletim';
       if (relatorios) relatorios.hidden = view !== 'relatorios';
       if (admin) admin.hidden = view !== 'admin';
-      if (registrar) registrar.hidden = view !== 'registrar';
       document.title = view === 'relatorios'
         ? 'Relatórios COSEP'
-        : (view === 'admin'
-          ? 'Administração · Boletim COSEP'
-          : (view === 'registrar' ? 'Registrar · Boletim COSEP' : 'Boletim COSEP'));
+        : (view === 'admin' ? 'Administração · Boletim COSEP' : 'Boletim COSEP');
       sincronizarMenuSuperior(view);
       if (view === 'relatorios') carregarRelatoriosFrame();
       if (view === 'admin') carregarConfigAdmin();
@@ -6403,77 +6302,6 @@
             btnReset.disabled = false;
           }
         });
-      }
-    })();
-
-    /* ════════════ REGISTRAR NOTIFICAÇÃO (Fase 3) ════════════ */
-    function registrarSalvarNotificacao(dados) {
-      return new Promise((resolve, reject) => {
-        if (window.google && google.script && google.script.run) {
-          google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).salvarNotificacaoCosep(dados);
-          return;
-        }
-        fetch(location.pathname, {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-          body: JSON.stringify({ acao: 'salvar-notificacao', dados: dados })
-        }).then(r => r.ok ? r.json() : Promise.reject(new Error('Falha ao enviar.'))).then(resolve).catch(reject);
-      });
-    }
-
-    function coletarNotificacao() {
-      const v = (id) => { const el = document.getElementById(id); return el ? String(el.value || '').trim() : ''; };
-      return {
-        numeroNotivisa: v('reg-numero'),
-        codigo: v('reg-codigo'),
-        link: v('reg-link'),
-        dataOcorrencia: v('reg-data-ocorrencia'),
-        setorNotificado: v('reg-setor'),
-        localOcorrencia: v('reg-local'),
-        prontuario: v('reg-prontuario'),
-        tipoClassificacao: v('reg-classificacao'),
-        natureza: v('reg-natureza'),
-        afetouPaciente: v('reg-afetou'),
-        codInteracao: v('reg-interacao'),
-        status: v('reg-status'),
-        dataClassificacao: v('reg-data-classificacao'),
-        statusResposta: v('reg-status-resposta'),
-        dataResposta: v('reg-data-resposta'),
-        dataConclusao: v('reg-data-conclusao')
-      };
-    }
-
-    (function configurarRegistrar() {
-      const form = document.getElementById('registrar-form');
-      const btnLimpar = document.getElementById('btn-reg-limpar');
-      if (form) {
-        form.addEventListener('submit', async (ev) => {
-          ev.preventDefault();
-          const dados = coletarNotificacao();
-          if (!dados.dataOcorrencia || !dados.setorNotificado || !dados.tipoClassificacao) {
-            if (typeof mostrarToast === 'function') mostrarToast('Preencha os campos obrigatórios (data, setor e classificação).', 'error', 'Registrar');
-            return;
-          }
-          const btn = document.getElementById('btn-reg-salvar');
-          const original = btn ? btn.innerHTML : '';
-          if (btn) { btn.disabled = true; btn.innerHTML = 'Registrando...'; }
-          try {
-            const resp = await registrarSalvarNotificacao(dados);
-            if (resp && resp.success) {
-              if (typeof mostrarToast === 'function') mostrarToast(resp.mensagem || 'Notificação registrada.', 'success', 'Registrar');
-              form.reset();
-            } else if (typeof mostrarToast === 'function') {
-              mostrarToast((resp && resp.mensagem) || 'Não foi possível registrar.', 'error', 'Registrar');
-            }
-          } catch (erro) {
-            if (typeof mostrarToast === 'function') mostrarToast(String((erro && erro.message) || erro), 'error', 'Registrar');
-          } finally {
-            if (btn) { btn.disabled = false; btn.innerHTML = original; }
-          }
-        });
-      }
-      if (btnLimpar && form) {
-        btnLimpar.addEventListener('click', () => form.reset());
       }
     })();
 
