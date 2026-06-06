@@ -160,6 +160,170 @@ const METAS_CAMINHADAS = [
   }
 ];
 
+/* ============================================================
+   CONFIGURAÇÃO SELF-SERVICE (Fase 1)
+   A configuração editável fica em Script Properties (fonte única),
+   com fallback para os padrões definidos acima. Sem nada salvo, o
+   comportamento é idêntico ao histórico (zero regressão).
+   Edição feita pela tela "Administração" do app (google.script.run).
+   ============================================================ */
+const CONFIG_PROP_KEY = 'COSEP_CONFIG_V1';
+const CONFIG_ADMINS_PROP_KEY = 'COSEP_ADMINS';
+const CONFIG_LOG_SHEET = 'COSEP_CONFIG_LOG';
+
+function configPadrao() {
+  return {
+    metaInstitucional: META_INSTITUCIONAL,
+    prazoMeta5Dias: 5,
+    prazoMeta10Dias: 10,
+    classificacoesMeta5Dias: CLASSIFICACOES_META_5_DIAS.slice(),
+    metasCaminhadas: METAS_CAMINHADAS.map(meta => ({
+      codigo: meta.codigo,
+      nome: meta.nome,
+      ativa: true,
+      observacaoIdx: meta.observacaoIdx,
+      itens: meta.itens.map(item => ({ codigo: item.codigo, nome: item.nome, idx: item.idx }))
+    })),
+    atualizadoEm: '',
+    atualizadoPor: ''
+  };
+}
+
+function obterConfig() {
+  const padrao = configPadrao();
+  try {
+    const raw = PropertiesService.getScriptProperties().getProperty(CONFIG_PROP_KEY);
+    if (!raw) return padrao;
+    return mesclarConfig(padrao, JSON.parse(raw));
+  } catch (erro) {
+    registrarErro('obter-config', erro);
+    return padrao;
+  }
+}
+
+function mesclarConfig(padrao, salvo) {
+  if (!salvo || typeof salvo !== 'object') return padrao;
+  const cfg = JSON.parse(JSON.stringify(padrao));
+
+  const metaInst = Number(salvo.metaInstitucional);
+  if (!Number.isNaN(metaInst) && metaInst >= 0 && metaInst <= 100) cfg.metaInstitucional = metaInst;
+
+  const p5 = Number(salvo.prazoMeta5Dias);
+  if (!Number.isNaN(p5) && p5 > 0) cfg.prazoMeta5Dias = Math.round(p5);
+  const p10 = Number(salvo.prazoMeta10Dias);
+  if (!Number.isNaN(p10) && p10 > 0) cfg.prazoMeta10Dias = Math.round(p10);
+
+  if (Array.isArray(salvo.classificacoesMeta5Dias)) {
+    const lista = salvo.classificacoesMeta5Dias.map(t => String(t || '').trim()).filter(Boolean);
+    if (lista.length) cfg.classificacoesMeta5Dias = lista;
+  }
+
+  if (Array.isArray(salvo.metasCaminhadas) && salvo.metasCaminhadas.length) {
+    // Mescla por código: preserva idx/estrutura dos padrões e aplica nome/ativa salvos.
+    const porCodigo = {};
+    salvo.metasCaminhadas.forEach(m => { if (m && m.codigo != null) porCodigo[String(m.codigo)] = m; });
+    cfg.metasCaminhadas = cfg.metasCaminhadas.map(metaPadrao => {
+      const ms = porCodigo[String(metaPadrao.codigo)];
+      if (!ms) return metaPadrao;
+      const itensSalvos = {};
+      (Array.isArray(ms.itens) ? ms.itens : []).forEach(it => { if (it && it.codigo != null) itensSalvos[String(it.codigo)] = it; });
+      return {
+        codigo: metaPadrao.codigo,
+        nome: String(ms.nome || '').trim() || metaPadrao.nome,
+        ativa: ms.ativa !== false,
+        observacaoIdx: metaPadrao.observacaoIdx,
+        itens: metaPadrao.itens.map(itemPadrao => {
+          const is = itensSalvos[String(itemPadrao.codigo)];
+          return {
+            codigo: itemPadrao.codigo,
+            nome: is && String(is.nome || '').trim() ? String(is.nome).trim() : itemPadrao.nome,
+            idx: itemPadrao.idx
+          };
+        })
+      };
+    });
+  }
+
+  cfg.atualizadoEm = salvo.atualizadoEm || '';
+  cfg.atualizadoPor = salvo.atualizadoPor || '';
+  return cfg;
+}
+
+function emailUsuarioAtual() {
+  try {
+    const ativo = Session.getActiveUser() && Session.getActiveUser().getEmail();
+    if (ativo) return ativo;
+    return (Session.getEffectiveUser() && Session.getEffectiveUser().getEmail()) || '';
+  } catch (erro) {
+    return '';
+  }
+}
+
+function listaAdmins() {
+  try {
+    const raw = PropertiesService.getScriptProperties().getProperty(CONFIG_ADMINS_PROP_KEY) || '';
+    return raw.split(/[;,]/).map(s => String(s || '').trim().toLowerCase()).filter(Boolean);
+  } catch (erro) {
+    return [];
+  }
+}
+
+function usuarioPodeEditarConfig() {
+  const admins = listaAdmins();
+  if (!admins.length) return true; // sem allowlist configurada → liberado (proprietário)
+  const email = emailUsuarioAtual().toLowerCase();
+  return !!email && admins.indexOf(email) !== -1;
+}
+
+function obterConfigCosep() {
+  return executarRota('rpc-config-get', () => ({
+    success: true,
+    config: obterConfig(),
+    podeEditar: usuarioPodeEditarConfig(),
+    usuario: emailUsuarioAtual(),
+    geradoEm: Utilities.formatDate(new Date(), FUSO_HORARIO, "dd/MM/yyyy 'às' HH:mm")
+  }));
+}
+
+function salvarConfigCosep(novaConfig) {
+  return executarRota('rpc-config-save', () => {
+    if (!usuarioPodeEditarConfig()) {
+      return { success: false, mensagem: 'Você não tem permissão para alterar as configurações.' };
+    }
+    const merged = mesclarConfig(configPadrao(), novaConfig || {});
+    merged.atualizadoEm = Utilities.formatDate(new Date(), FUSO_HORARIO, "dd/MM/yyyy 'às' HH:mm");
+    merged.atualizadoPor = emailUsuarioAtual() || 'desconhecido';
+    PropertiesService.getScriptProperties().setProperty(CONFIG_PROP_KEY, JSON.stringify(merged));
+    registrarLogConfig(merged.atualizadoPor, 'Configuração atualizada');
+    return { success: true, config: merged, mensagem: 'Configurações salvas com sucesso.' };
+  });
+}
+
+function restaurarConfigPadraoCosep() {
+  return executarRota('rpc-config-reset', () => {
+    if (!usuarioPodeEditarConfig()) {
+      return { success: false, mensagem: 'Você não tem permissão para alterar as configurações.' };
+    }
+    PropertiesService.getScriptProperties().deleteProperty(CONFIG_PROP_KEY);
+    registrarLogConfig(emailUsuarioAtual() || 'desconhecido', 'Configuração restaurada para o padrão');
+    return { success: true, config: obterConfig(), mensagem: 'Configurações restauradas para o padrão.' };
+  });
+}
+
+function registrarLogConfig(usuario, acao) {
+  try {
+    const ss = abrirPlanilhaLeitura('principal');
+    let sh = ss.getSheetByName(CONFIG_LOG_SHEET);
+    if (!sh) {
+      sh = ss.insertSheet(CONFIG_LOG_SHEET);
+      sh.appendRow(['Data/Hora', 'Usuário', 'Ação']);
+    }
+    sh.appendRow([Utilities.formatDate(new Date(), FUSO_HORARIO, 'dd/MM/yyyy HH:mm:ss'), usuario || '', acao || '']);
+  } catch (erro) {
+    registrarErro('config-log', erro);
+  }
+}
+
 function doGet(e) {
   const params = (e && e.parameter) || {};
 
@@ -179,6 +343,10 @@ function doGet(e) {
     return responderJson(executarRota('api-relatorios', () => {
       return executarComPlanilha('relatorios', ss => montarPayloadRelatorios(ss, extrairFiltrosRelatorios(params)));
     }));
+  }
+
+  if (params.api === 'config') {
+    return responderJson(obterConfigCosep());
   }
 
   try {
@@ -288,13 +456,15 @@ function montarPayloadFiltros(ss) {
 
 function montarPayload(ss, filtros) {
   const filtrosAplicados = filtros || { caminhadas: {}, notificacoes: {} };
+  const cfg = obterConfig();
   return {
     success: true,
     geradoEm: Utilities.formatDate(new Date(), FUSO_HORARIO, "dd/MM/yyyy 'às' HH:mm"),
     filtros: getFiltros(ss),
     aplicado: filtrosAplicados,
-    caminhadas: processarCaminhadas(ss, filtrosAplicados.caminhadas || {}),
-    notificacoes: processarNotificacoes(ss, filtrosAplicados.notificacoes || {})
+    config: { metaInstitucional: cfg.metaInstitucional, atualizadoEm: cfg.atualizadoEm },
+    caminhadas: processarCaminhadas(ss, filtrosAplicados.caminhadas || {}, cfg),
+    notificacoes: processarNotificacoes(ss, filtrosAplicados.notificacoes || {}, cfg)
   };
 }
 
@@ -563,7 +733,8 @@ function montarSetoresExcecaoMeta4(setoresSelecionados) {
   return mapaSetores;
 }
 
-function aplicarExcecaoMeta4CentroCirurgico(metas, linhas, filtros) {
+function aplicarExcecaoMeta4CentroCirurgico(metas, linhas, filtros, metaDefs) {
+  metaDefs = metaDefs || METAS_CAMINHADAS;
   const setoresSelecionados = (filtros.unidades || []).map(item => String(item || '').trim()).filter(Boolean);
   const setoresExcecao = montarSetoresExcecaoMeta4(setoresSelecionados);
   const chavesSetoresExcecao = Object.keys(setoresExcecao);
@@ -571,6 +742,9 @@ function aplicarExcecaoMeta4CentroCirurgico(metas, linhas, filtros) {
 
   const meta4 = metas.find(meta => meta.codigo === '4');
   if (!meta4) return;
+
+  const meta4Def = metaDefs.find(metaDef => String(metaDef.codigo) === '4');
+  if (!meta4Def) return;
 
   const anoFiltro = new Set((filtros.anos || []).map(normalizarAno).filter(Boolean));
   const mesFiltro = new Set((filtros.meses || []).map(normalizarMes).filter(Boolean));
@@ -589,7 +763,7 @@ function aplicarExcecaoMeta4CentroCirurgico(metas, linhas, filtros) {
     .filter(row => !mesFiltro.size || mesFiltro.has(normalizarMes(row[2])))
     .filter(row => chavesSetoresExcecao.includes(normalizarTexto(getUnidade(row))))
     .forEach(row => {
-      METAS_CAMINHADAS[3].itens.forEach((itemDef, itemIndex) => {
+      meta4Def.itens.forEach((itemDef, itemIndex) => {
         const valor = row[itemDef.idx];
         const item = meta4.itens[itemIndex];
 
@@ -613,11 +787,15 @@ function aplicarExcecaoMeta4CentroCirurgico(metas, linhas, filtros) {
   });
 }
 
-function processarCaminhadas(ss, filtros) {
+function processarCaminhadas(ss, filtros, cfg) {
+  cfg = cfg || obterConfig();
+  const META_DEF = (cfg.metasCaminhadas || METAS_CAMINHADAS).filter(meta => meta && meta.ativa !== false);
+  const metaInstitucional = cfg.metaInstitucional;
+
   const sh = ss.getSheetByName(ABA_CAMINHADAS);
   const linhas = sh.getDataRange().getValues().slice(1);
 
-  const metas = METAS_CAMINHADAS.map(meta => ({
+  const metas = META_DEF.map(meta => ({
     codigo: meta.codigo,
     nome: meta.nome,
     avaliados: 0,
@@ -682,7 +860,7 @@ function processarCaminhadas(ss, filtros) {
       observacoesGerais.push({ unidade: unidade, texto: observacaoGeral });
     }
 
-    METAS_CAMINHADAS.forEach((metaDef, metaIndex) => {
+    META_DEF.forEach((metaDef, metaIndex) => {
       metaDef.itens.forEach((itemDef, itemIndex) => {
         const valor = row[itemDef.idx];
         const item = metas[metaIndex].itens[itemIndex];
@@ -740,7 +918,7 @@ function processarCaminhadas(ss, filtros) {
         evolucaoMensalMap[mes] = { conformes: 0, naoConformes: 0 };
       }
 
-      METAS_CAMINHADAS.forEach(meta => {
+      META_DEF.forEach(meta => {
         meta.itens.forEach(item => {
           const valor = row[item.idx];
           if (ehSim(valor)) evolucaoMensalMap[mes].conformes++;
@@ -764,7 +942,7 @@ function processarCaminhadas(ss, filtros) {
     .sort((a, b) => b[1] - a[1])
     .map(([nome, quantidade]) => ({ nome, quantidade }));
 
-  aplicarExcecaoMeta4CentroCirurgico(metas, linhas, filtros);
+  aplicarExcecaoMeta4CentroCirurgico(metas, linhas, filtros, META_DEF);
 
   const metasCriticas = metas
     .slice()
@@ -784,7 +962,7 @@ function processarCaminhadas(ss, filtros) {
       };
     }
 
-    METAS_CAMINHADAS.forEach(meta => {
+    META_DEF.forEach(meta => {
       meta.itens.forEach(item => {
         const valor = row[item.idx];
         if (ehSim(valor)) {
@@ -817,7 +995,7 @@ function processarCaminhadas(ss, filtros) {
     const unidade = getUnidade(row);
     if (!desempenhoSetorMeta[unidade]) desempenhoSetorMeta[unidade] = {};
 
-    METAS_CAMINHADAS.forEach(metaDef => {
+    META_DEF.forEach(metaDef => {
       if (!desempenhoSetorMeta[unidade][metaDef.nome]) {
         desempenhoSetorMeta[unidade][metaDef.nome] = { conformes: 0, avaliados: 0 };
       }
@@ -834,7 +1012,7 @@ function processarCaminhadas(ss, filtros) {
   });
 
   const melhoresSetoresPorMeta = {};
-  METAS_CAMINHADAS.forEach(metaDef => {
+  META_DEF.forEach(metaDef => {
     const candidatos = Object.keys(desempenhoSetorMeta)
       .map(unidade => {
         const registro = desempenhoSetorMeta[unidade][metaDef.nome] || { conformes: 0, avaliados: 0 };
@@ -872,8 +1050,8 @@ function processarCaminhadas(ss, filtros) {
     geralConformes: geralConformes,
     geralNaoConformes: geralNaoConformes,
     conformidadeGeral: conformidadeGeral,
-    metaInstitucional: META_INSTITUCIONAL,
-    diferencaMeta: Number((conformidadeGeral - META_INSTITUCIONAL).toFixed(1)),
+    metaInstitucional: metaInstitucional,
+    diferencaMeta: Number((conformidadeGeral - metaInstitucional).toFixed(1)),
     metas: metas,
     porUnidade: unidadesOrdenadas,
     rankingSetoresConformidade: rankingSetoresConformidade,
@@ -884,13 +1062,16 @@ function processarCaminhadas(ss, filtros) {
   };
 }
 
-function processarNotificacoes(ss, filtros) {
+function processarNotificacoes(ss, filtros, cfg) {
+  cfg = cfg || obterConfig();
+  const setClassCriticas = new Set((cfg.classificacoesMeta5Dias || CLASSIFICACOES_META_5_DIAS).map(normalizarTexto));
+
   const sh = ss.getSheetByName(ABA_NOTIFICA);
   const linhas = sh.getDataRange().getValues().slice(2);
 
   const desempenhoResposta = {
-    meta5: criarResumoPrazoResposta(5),
-    meta10: criarResumoPrazoResposta(10)
+    meta5: criarResumoPrazoResposta(cfg.prazoMeta5Dias),
+    meta10: criarResumoPrazoResposta(cfg.prazoMeta10Dias)
   };
 
   const anosFiltro = new Set((filtros.anos || []).map(normalizarAno).filter(Boolean));
@@ -938,7 +1119,7 @@ function processarNotificacoes(ss, filtros) {
     const dataClassificacao = converterEmData(row[14]);
     const dataResposta = converterEmData(row[16]);
     const diasResposta = calcularDiferencaDias(dataClassificacao, dataResposta);
-    const grupoPrazo = CLASSIFICACOES_META_5_DIAS.includes(classificacao) ? desempenhoResposta.meta5 : desempenhoResposta.meta10;
+    const grupoPrazo = setClassCriticas.has(classificacao) ? desempenhoResposta.meta5 : desempenhoResposta.meta10;
 
     atualizarResumoPrazoResposta(grupoPrazo, dataClassificacao, diasResposta);
 

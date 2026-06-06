@@ -2430,6 +2430,83 @@
     html[data-theme="dark"] .pdf-progress-text span { color: #93a7ad; }
     html[data-theme="dark"] .pdf-progress-spinner::after { background: #13242b; }
 
+    /* ════════════ TELA DE ADMINISTRAÇÃO (Fase 1) ════════════ */
+    .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .admin-card-wide { grid-column: 1 / -1; }
+    .admin-card {
+      border: 1px solid rgba(196, 211, 218, 0.72);
+      border-radius: 18px;
+      background: rgba(255,255,255,0.9);
+      padding: 18px;
+      box-shadow: var(--shadow);
+    }
+    .admin-card h3 { margin: 0 0 6px; font-size: 17px; display: flex; align-items: center; gap: 8px; color: #1e2f36; }
+    .admin-card h3 i { color: var(--blue); }
+    .admin-card > p { margin: 0 0 14px; color: var(--muted); font-size: 13.5px; line-height: 1.5; }
+    .admin-input {
+      width: 100%;
+      border-radius: 12px;
+      border: 1.5px solid rgba(193, 208, 214, 0.95);
+      background: #fff;
+      color: #2b3b43;
+      font: inherit;
+      font-size: 15px;
+      padding: 10px 12px;
+      transition: border-color .16s ease, box-shadow .16s ease;
+    }
+    .admin-input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(15,118,110,.14); }
+    .admin-textarea { resize: vertical; min-height: 96px; line-height: 1.5; }
+    .admin-inline { display: flex; align-items: center; gap: 10px; max-width: 200px; }
+    .admin-inline .admin-input { text-align: center; font-size: 22px; font-weight: 800; }
+    .admin-suffix { font-size: 20px; font-weight: 800; color: var(--muted); }
+    .admin-two { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .admin-field { display: grid; gap: 6px; font-size: 13px; font-weight: 700; color: #4b5f67; }
+    .admin-field small { font-weight: 600; color: var(--muted); }
+    .admin-metas { display: grid; gap: 12px; }
+    .admin-meta-block {
+      border: 1px solid rgba(196, 211, 218, 0.7);
+      border-radius: 14px;
+      background: rgba(248, 251, 252, 0.8);
+      padding: 14px;
+      transition: opacity .2s ease;
+    }
+    .admin-meta-block.inativa { opacity: .55; }
+    .admin-meta-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
+    .admin-meta-codigo {
+      flex: 0 0 auto; min-width: 30px; height: 30px; padding: 0 8px;
+      display: inline-flex; align-items: center; justify-content: center;
+      border-radius: 8px; background: var(--blue-soft); color: var(--blue);
+      font-weight: 800; font-size: 13px;
+    }
+    .admin-meta-head .admin-meta-nome { flex: 1 1 180px; font-weight: 700; }
+    .admin-toggle { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 700; color: #4b5f67; white-space: nowrap; cursor: pointer; }
+    .admin-toggle input { width: 16px; height: 16px; accent-color: var(--blue); }
+    .admin-itens { display: grid; gap: 8px; padding-left: 40px; }
+    .admin-item-row { display: flex; align-items: center; gap: 10px; }
+    .admin-item-codigo { flex: 0 0 auto; min-width: 34px; color: var(--muted); font-size: 12.5px; font-weight: 700; }
+    .admin-item-row .admin-input { font-size: 14px; padding: 8px 10px; }
+    .admin-actions { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+    .admin-updated { color: var(--muted); font-size: 13px; }
+    .admin-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+    .admin-buttons .btn { min-height: 48px; padding: 0 18px; }
+    @media (max-width: 760px) {
+      .admin-grid, .admin-two { grid-template-columns: 1fr; }
+      .admin-itens { padding-left: 0; }
+    }
+
+    /* Admin no tema escuro */
+    html[data-theme="dark"] .admin-card { background: rgba(20,36,43,.9); border-color: rgba(148,180,190,.16); }
+    html[data-theme="dark"] .admin-card h3 { color: #eaf2f2; }
+    html[data-theme="dark"] .admin-card h3 i { color: #5eead4; }
+    html[data-theme="dark"] .admin-input { background: rgba(13,24,28,.92); border-color: rgba(148,180,190,.22); color: #e7eef0; }
+    html[data-theme="dark"] .admin-meta-block { background: rgba(15,28,33,.7); border-color: rgba(148,180,190,.14); }
+    html[data-theme="dark"] .admin-meta-codigo { background: rgba(45,212,191,.16); color: #9ef0e2; }
+    html[data-theme="dark"] .admin-field,
+    html[data-theme="dark"] .admin-toggle { color: #a9bcc2; }
+    html[data-theme="dark"] .admin-item-codigo,
+    html[data-theme="dark"] .admin-updated,
+    html[data-theme="dark"] .admin-suffix { color: #93a7ad; }
+
   </style>
   <script>
     /* Tema claro/escuro — define antes da pintura para evitar "flash" (FOUC). */
@@ -2475,6 +2552,7 @@
             <div class="top-menu-links">
               <a class="top-menu-link" href="<?!= appUrl ?>" data-app-link="boletim" data-view-link="boletim"><i class="fa-solid fa-shield-heart"></i> COSEP</a>
               <a class="top-menu-link" href="<?!= appUrl ?>?page=relatorios" data-app-link="relatorios" data-view-link="relatorios"><i class="fa-solid fa-chart-line"></i> Relatórios</a>
+              <a class="top-menu-link" href="<?!= appUrl ?>?page=admin" data-app-link="admin" data-view-link="admin"><i class="fa-solid fa-gear"></i> Admin</a>
               <a class="top-menu-link" href="https://script.google.com/macros/s/AKfycbyrFcu7qj-Ydr2nwWqaaYpzntLct0jjN2ylXnrL5hXP5vWuiYcG_c4LYVVilFvJy-tadg/exec" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-gauge-high"></i> Painel NUGESP</a>
             </div>
             <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Alternar entre tema claro e escuro" aria-pressed="false" title="Alternar tema">
@@ -2804,6 +2882,7 @@
           <div class="top-menu-links">
             <a class="top-menu-link" href="<?!= appUrl ?>" data-app-link="boletim" data-view-link="boletim"><i class="fa-solid fa-shield-heart"></i> COSEP</a>
             <a class="top-menu-link" href="<?!= appUrl ?>?page=relatorios" data-app-link="relatorios" data-view-link="relatorios"><i class="fa-solid fa-chart-line"></i> Relatórios</a>
+            <a class="top-menu-link" href="<?!= appUrl ?>?page=admin" data-app-link="admin" data-view-link="admin"><i class="fa-solid fa-gear"></i> Admin</a>
             <a class="top-menu-link" href="https://script.google.com/macros/s/AKfycbyrFcu7qj-Ydr2nwWqaaYpzntLct0jjN2ylXnrL5hXP5vWuiYcG_c4LYVVilFvJy-tadg/exec" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-gauge-high"></i> Painel NUGESP</a>
           </div>
           <button type="button" class="theme-toggle" aria-label="Alternar entre tema claro e escuro" aria-pressed="false" title="Alternar tema">
@@ -2815,6 +2894,84 @@
     </div>
     <iframe class="relatorios-frame" id="relatorios-frame" title="Relatório Analítico COSEP"></iframe>
   </section>
+
+  <main class="app-shell app-view" id="admin-app" hidden aria-label="Administração COSEP">
+    <section class="hero-card">
+      <div class="top-menu-wrap">
+        <nav class="top-menu" aria-label="Menu superior">
+          <div class="top-menu-inner">
+            <span class="top-menu-toggle" aria-hidden="true"><i class="fa-solid fa-bars"></i></span>
+            <div class="top-menu-links">
+              <a class="top-menu-link" href="<?!= appUrl ?>" data-app-link="boletim" data-view-link="boletim"><i class="fa-solid fa-shield-heart"></i> COSEP</a>
+              <a class="top-menu-link" href="<?!= appUrl ?>?page=relatorios" data-app-link="relatorios" data-view-link="relatorios"><i class="fa-solid fa-chart-line"></i> Relatórios</a>
+              <a class="top-menu-link" href="<?!= appUrl ?>?page=admin" data-app-link="admin" data-view-link="admin"><i class="fa-solid fa-gear"></i> Admin</a>
+            </div>
+            <button type="button" class="theme-toggle" aria-label="Alternar entre tema claro e escuro" aria-pressed="false" title="Alternar tema">
+              <i class="fa-solid fa-sun icon-sun" aria-hidden="true"></i>
+              <i class="fa-solid fa-moon icon-moon" aria-hidden="true"></i>
+            </button>
+          </div>
+        </nav>
+      </div>
+
+      <header class="hero-header">
+        <h1>Administração</h1>
+        <p>Configure as metas e regras do boletim sem mexer no código nem na planilha. As alterações valem para todos os boletins gerados a partir de agora.</p>
+      </header>
+
+      <div class="section-divider"></div>
+
+      <div id="admin-loading" class="loading-box">Carregando configurações...</div>
+      <div id="admin-bloqueio" class="info-strip" hidden>
+        <span class="filter-icon indigo" aria-hidden="true"><i class="fa-solid fa-lock"></i></span>
+        <div>Você está no modo <strong>somente leitura</strong>. Para editar, peça para um administrador incluir seu e-mail na lista de administradores.</div>
+      </div>
+
+      <form id="admin-form" class="admin-grid" hidden>
+        <section class="admin-card">
+          <h3><i class="fa-solid fa-bullseye" aria-hidden="true"></i> Meta institucional</h3>
+          <p>Percentual de conformidade considerado como meta do hospital.</p>
+          <div class="admin-inline">
+            <input type="number" id="cfg-meta" class="admin-input" min="0" max="100" step="1" inputmode="numeric">
+            <span class="admin-suffix">%</span>
+          </div>
+        </section>
+
+        <section class="admin-card">
+          <h3><i class="fa-solid fa-clock" aria-hidden="true"></i> Prazos de resposta (dias)</h3>
+          <p>Prazo para responder às notificações conforme a criticidade.</p>
+          <div class="admin-two">
+            <label class="admin-field">Crítica <small>(evento grave / óbito / never event)</small>
+              <input type="number" id="cfg-prazo5" class="admin-input" min="1" step="1" inputmode="numeric">
+            </label>
+            <label class="admin-field">Geral <small>(demais notificações)</small>
+              <input type="number" id="cfg-prazo10" class="admin-input" min="1" step="1" inputmode="numeric">
+            </label>
+          </div>
+        </section>
+
+        <section class="admin-card admin-card-wide">
+          <h3><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Classificações críticas</h3>
+          <p>Uma por linha. Notificações com essas classificações usam o prazo crítico.</p>
+          <textarea id="cfg-classificacoes" class="admin-input admin-textarea" rows="4" spellcheck="false"></textarea>
+        </section>
+
+        <section class="admin-card admin-card-wide">
+          <h3><i class="fa-solid fa-shoe-prints" aria-hidden="true"></i> Metas das Caminhadas de Segurança</h3>
+          <p>Renomeie metas e itens, ou desative uma meta para ocultá-la do boletim. A estrutura de cálculo (colunas) é preservada.</p>
+          <div id="cfg-metas" class="admin-metas"></div>
+        </section>
+
+        <section class="admin-actions admin-card-wide">
+          <div id="admin-meta-info" class="admin-updated"></div>
+          <div class="admin-buttons">
+            <button type="button" class="btn" id="btn-config-reset"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Restaurar padrão</button>
+            <button type="submit" class="btn btn-primary" id="btn-config-salvar"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Salvar configurações</button>
+          </div>
+        </section>
+      </form>
+    </section>
+  </main>
 
   <template id="relatorios-srcdoc">
 <!DOCTYPE html>
@@ -5910,7 +6067,9 @@
     function obterViewAtual() {
       const params = new URLSearchParams(window.location.search || '');
       const page = String(params.get('page') || params.get('pagina') || APP_VIEW_INICIAL || '').toLowerCase();
-      return page === 'relatorios' || page === 'relatórios' ? 'relatorios' : 'boletim';
+      if (page === 'relatorios' || page === 'relatórios') return 'relatorios';
+      if (page === 'admin' || page === 'administracao' || page === 'administração') return 'admin';
+      return 'boletim';
     }
 
     function carregarRelatoriosFrame() {
@@ -5931,8 +6090,12 @@
     }
 
     function navegarParaView(view, atualizarHistorico = true) {
-      const destino = view === 'relatorios' ? 'relatorios' : 'boletim';
-      const url = destino === 'relatorios' ? `${window.location.pathname}?page=relatorios` : window.location.pathname;
+      let destino = 'boletim';
+      if (view === 'relatorios') destino = 'relatorios';
+      else if (view === 'admin') destino = 'admin';
+      let url = window.location.pathname;
+      if (destino === 'relatorios') url += '?page=relatorios';
+      else if (destino === 'admin') url += '?page=admin';
       if (atualizarHistorico) window.history.pushState({ view: destino }, '', url);
       aplicarRoteamentoInterno();
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -5953,12 +6116,194 @@
       const view = obterViewAtual();
       const boletim = document.getElementById('boletim-app');
       const relatorios = document.getElementById('relatorios-app');
+      const admin = document.getElementById('admin-app');
       if (boletim) boletim.hidden = view !== 'boletim';
       if (relatorios) relatorios.hidden = view !== 'relatorios';
-      document.title = view === 'relatorios' ? 'Relatórios COSEP' : 'Boletim COSEP';
+      if (admin) admin.hidden = view !== 'admin';
+      document.title = view === 'relatorios'
+        ? 'Relatórios COSEP'
+        : (view === 'admin' ? 'Administração · Boletim COSEP' : 'Boletim COSEP');
       sincronizarMenuSuperior(view);
       if (view === 'relatorios') carregarRelatoriosFrame();
+      if (view === 'admin') carregarConfigAdmin();
     }
+
+    /* ════════════ ADMINISTRAÇÃO / CONFIG (Fase 1) ════════════ */
+    let adminConfigCarregada = false;
+    let adminPodeEditar = true;
+
+    function adminFetchConfig() {
+      return new Promise((resolve, reject) => {
+        if (window.google && google.script && google.script.run) {
+          google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).obterConfigCosep();
+          return;
+        }
+        fetch(`${location.pathname}?api=config`, { cache: 'no-store' })
+          .then(r => r.ok ? r.json() : Promise.reject(new Error('Falha ao carregar configurações.')))
+          .then(resolve).catch(reject);
+      });
+    }
+
+    function adminSalvarConfig(config) {
+      return new Promise((resolve, reject) => {
+        if (window.google && google.script && google.script.run) {
+          google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).salvarConfigCosep(config);
+          return;
+        }
+        reject(new Error('Salvar exige o app publicado (google.script.run indisponível).'));
+      });
+    }
+
+    function adminRestaurarConfig() {
+      return new Promise((resolve, reject) => {
+        if (window.google && google.script && google.script.run) {
+          google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).restaurarConfigPadraoCosep();
+          return;
+        }
+        reject(new Error('Restaurar exige o app publicado (google.script.run indisponível).'));
+      });
+    }
+
+    async function carregarConfigAdmin() {
+      if (adminConfigCarregada) return;
+      adminConfigCarregada = true;
+      const loading = document.getElementById('admin-loading');
+      const form = document.getElementById('admin-form');
+      try {
+        const resp = await adminFetchConfig();
+        if (!resp || resp.success === false || !resp.config) {
+          throw new Error((resp && resp.mensagem) || 'Configuração indisponível.');
+        }
+        adminPodeEditar = resp.podeEditar !== false;
+        renderConfigAdmin(resp.config);
+        if (loading) loading.classList.add('hidden');
+        if (form) form.hidden = false;
+        const bloqueio = document.getElementById('admin-bloqueio');
+        if (bloqueio) bloqueio.hidden = adminPodeEditar;
+      } catch (erro) {
+        adminConfigCarregada = false;
+        if (loading) loading.textContent = 'Não foi possível carregar as configurações. Tente novamente.';
+        if (typeof mostrarToast === 'function') mostrarToast(String((erro && erro.message) || erro), 'error', 'Administração');
+      }
+    }
+
+    function renderConfigAdmin(config) {
+      const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+      set('cfg-meta', config.metaInstitucional);
+      set('cfg-prazo5', config.prazoMeta5Dias);
+      set('cfg-prazo10', config.prazoMeta10Dias);
+      set('cfg-classificacoes', (config.classificacoesMeta5Dias || []).join('\n'));
+
+      const wrap = document.getElementById('cfg-metas');
+      if (wrap) {
+        wrap.innerHTML = (config.metasCaminhadas || []).map(meta => {
+          const itens = (meta.itens || []).map(item => `
+            <div class="admin-item-row">
+              <span class="admin-item-codigo">${escapeHtml(String(item.codigo))}</span>
+              <input type="text" class="admin-input cfg-item-nome" data-codigo="${escapeHtml(String(item.codigo))}" value="${escapeHtml(String(item.nome || ''))}">
+            </div>`).join('');
+          return `
+            <div class="admin-meta-block ${meta.ativa === false ? 'inativa' : ''}" data-meta-block="${escapeHtml(String(meta.codigo))}">
+              <div class="admin-meta-head">
+                <span class="admin-meta-codigo">${escapeHtml(String(meta.codigo))}</span>
+                <input type="text" class="admin-input admin-meta-nome cfg-meta-nome" value="${escapeHtml(String(meta.nome || ''))}">
+                <label class="admin-toggle"><input type="checkbox" class="cfg-meta-ativa" ${meta.ativa === false ? '' : 'checked'}> Ativa</label>
+              </div>
+              <div class="admin-itens">${itens}</div>
+            </div>`;
+        }).join('');
+
+        wrap.querySelectorAll('.cfg-meta-ativa').forEach(chk => {
+          chk.addEventListener('change', () => {
+            const block = chk.closest('.admin-meta-block');
+            if (block) block.classList.toggle('inativa', !chk.checked);
+          });
+        });
+      }
+
+      const info = document.getElementById('admin-meta-info');
+      if (info) {
+        const partes = [];
+        if (config.atualizadoEm) partes.push(`Última alteração em <strong>${escapeHtml(config.atualizadoEm)}</strong>`);
+        if (config.atualizadoPor) partes.push(`por <strong>${escapeHtml(config.atualizadoPor)}</strong>`);
+        info.innerHTML = partes.length ? partes.join(' ') : 'Ainda sem alterações registradas.';
+      }
+
+      if (!adminPodeEditar) {
+        document.querySelectorAll('#admin-form input, #admin-form textarea, #admin-form button').forEach(el => {
+          el.setAttribute('disabled', 'disabled');
+        });
+      }
+    }
+
+    function coletarConfigAdmin() {
+      const num = (id) => { const el = document.getElementById(id); return el ? Number(el.value) : undefined; };
+      const classifTxt = (document.getElementById('cfg-classificacoes') || {}).value || '';
+      const metas = Array.from(document.querySelectorAll('#cfg-metas .admin-meta-block')).map(block => {
+        const codigo = block.getAttribute('data-meta-block');
+        const nomeEl = block.querySelector('.cfg-meta-nome');
+        const ativaEl = block.querySelector('.cfg-meta-ativa');
+        const itens = Array.from(block.querySelectorAll('.cfg-item-nome')).map(inp => ({
+          codigo: inp.getAttribute('data-codigo'),
+          nome: inp.value
+        }));
+        return { codigo, nome: nomeEl ? nomeEl.value : '', ativa: ativaEl ? ativaEl.checked : true, itens };
+      });
+      return {
+        metaInstitucional: num('cfg-meta'),
+        prazoMeta5Dias: num('cfg-prazo5'),
+        prazoMeta10Dias: num('cfg-prazo10'),
+        classificacoesMeta5Dias: classifTxt.split('\n').map(s => s.trim()).filter(Boolean),
+        metasCaminhadas: metas
+      };
+    }
+
+    (function configurarAcoesAdmin() {
+      const form = document.getElementById('admin-form');
+      const btnReset = document.getElementById('btn-config-reset');
+      if (form) {
+        form.addEventListener('submit', async (ev) => {
+          ev.preventDefault();
+          if (!adminPodeEditar) return;
+          const btn = document.getElementById('btn-config-salvar');
+          const original = btn ? btn.innerHTML : '';
+          if (btn) { btn.disabled = true; btn.innerHTML = 'Salvando...'; }
+          try {
+            const resp = await adminSalvarConfig(coletarConfigAdmin());
+            if (resp && resp.success) {
+              if (resp.config) renderConfigAdmin(resp.config);
+              if (typeof mostrarToast === 'function') mostrarToast(resp.mensagem || 'Configurações salvas.', 'success', 'Administração');
+            } else if (typeof mostrarToast === 'function') {
+              mostrarToast((resp && resp.mensagem) || 'Não foi possível salvar.', 'error', 'Administração');
+            }
+          } catch (erro) {
+            if (typeof mostrarToast === 'function') mostrarToast(String((erro && erro.message) || erro), 'error', 'Administração');
+          } finally {
+            if (btn) { btn.disabled = false; btn.innerHTML = original; }
+          }
+        });
+      }
+      if (btnReset) {
+        btnReset.addEventListener('click', async () => {
+          if (!adminPodeEditar) return;
+          if (!window.confirm('Restaurar todas as configurações para o padrão de fábrica?')) return;
+          btnReset.disabled = true;
+          try {
+            const resp = await adminRestaurarConfig();
+            if (resp && resp.success) {
+              if (resp.config) renderConfigAdmin(resp.config);
+              if (typeof mostrarToast === 'function') mostrarToast(resp.mensagem || 'Configurações restauradas.', 'success', 'Administração');
+            } else if (typeof mostrarToast === 'function') {
+              mostrarToast((resp && resp.mensagem) || 'Não foi possível restaurar.', 'error', 'Administração');
+            }
+          } catch (erro) {
+            if (typeof mostrarToast === 'function') mostrarToast(String((erro && erro.message) || erro), 'error', 'Administração');
+          } finally {
+            btnReset.disabled = false;
+          }
+        });
+      }
+    })();
 
     aplicarRoteamentoInterno();
 
