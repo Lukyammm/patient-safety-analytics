@@ -324,6 +324,82 @@ function registrarLogConfig(usuario, acao) {
   }
 }
 
+/* ============================================================
+   ENTRADA DE DADOS NO APP (Fase 3) — registrar notificações
+   Grava na ABA_NOTIFICA usando a MESMA ordem de colunas que a
+   leitura usa (posições 0..17 = A..R), garantindo consistência
+   total com o que o boletim já lê. Validação + auditoria.
+   ============================================================ */
+function salvarNotificacaoCosep(dados) {
+  return executarRota('rpc-notifica-salvar', () => {
+    if (!usuarioPodeEditarConfig()) {
+      return { success: false, mensagem: 'Você não tem permissão para registrar notificações.' };
+    }
+
+    const d = dados || {};
+    const dataOcorrencia = converterEmData(d.dataOcorrencia);
+    const erros = [];
+    if (!String(d.setorNotificado || '').trim()) erros.push('Informe o setor notificado.');
+    if (!dataOcorrencia) erros.push('Informe uma data de ocorrência válida.');
+    if (!String(d.tipoClassificacao || '').trim()) erros.push('Informe a classificação.');
+    if (erros.length) return { success: false, mensagem: erros.join(' ') };
+
+    const fmt = (valor) => {
+      const dt = converterEmData(valor);
+      return dt ? Utilities.formatDate(dt, FUSO_HORARIO, 'dd/MM/yyyy') : '';
+    };
+
+    const linha = [
+      String(d.numeroNotivisa || '').trim(),                 // A  0
+      String(d.link || '').trim(),                           // B  1
+      MESES_CANONICOS[dataOcorrencia.getMonth() + 1],        // C  2  mês (derivado)
+      String(dataOcorrencia.getFullYear()),                  // D  3  ano (derivado)
+      String(d.codigo || '').trim(),                         // E  4
+      fmt(d.dataOcorrencia),                                 // F  5
+      String(d.setorNotificado || '').trim(),                // G  6
+      String(d.localOcorrencia || '').trim(),                // H  7
+      String(d.tipoClassificacao || '').trim(),              // I  8
+      String(d.codInteracao || '').trim(),                   // J  9
+      String(d.natureza || '').trim(),                       // K 10
+      String(d.afetouPaciente || '').trim(),                 // L 11
+      String(d.prontuario || '').trim(),                     // M 12
+      String(d.status || '').trim(),                         // N 13
+      fmt(d.dataClassificacao),                              // O 14
+      String(d.statusResposta || '').trim(),                 // P 15
+      fmt(d.dataResposta),                                   // Q 16
+      fmt(d.dataConclusao)                                   // R 17
+    ];
+
+    const ss = abrirPlanilhaLeitura('principal');
+    const sh = ss.getSheetByName(ABA_NOTIFICA);
+    if (!sh) return { success: false, mensagem: 'Aba de notificações não encontrada.' };
+
+    sh.appendRow(linha);
+
+    try { CacheService.getScriptCache().remove(CACHE_FILTROS_BOLETIM_KEY); } catch (erro) { registrarErro('notifica-cache', erro); }
+    registrarLogConfig(emailUsuarioAtual() || 'desconhecido', 'Notificação registrada: ' + (linha[0] || '(sem nº)') + ' — ' + linha[6]);
+
+    return { success: true, mensagem: 'Notificação registrada com sucesso.' };
+  });
+}
+
+function doPost(e) {
+  const params = (e && e.parameter) || {};
+  let body = {};
+  try {
+    if (e && e.postData && e.postData.contents) body = JSON.parse(e.postData.contents);
+  } catch (erro) {
+    registrarErro('do-post-parse', erro);
+  }
+  const acao = String(params.acao || body.acao || '').trim();
+
+  if (acao === 'salvar-notificacao') {
+    return responderJson(salvarNotificacaoCosep(body.dados || body));
+  }
+
+  return responderJson({ success: false, mensagem: 'Ação não reconhecida.' });
+}
+
 function doGet(e) {
   const params = (e && e.parameter) || {};
 
