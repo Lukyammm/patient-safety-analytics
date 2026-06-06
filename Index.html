@@ -2220,7 +2220,245 @@
       box-shadow: 0 16px 34px rgba(15, 118, 110, 0.24) !important;
     }
 
+    /* ════════════════════════════════════════════════════════════════
+       REDESIGN 2026 · Tema escuro, filtros, KPIs e micro-interações
+       Bloco ADITIVO — preserva 100% das classes/IDs/data-attrs que o JS usa.
+       O tema escuro veste apenas o "chrome" (filtros, nav, resumo). As páginas
+       do boletim (.document-page) permanecem claras para o PDF/A4 ficar fiel.
+       ════════════════════════════════════════════════════════════════ */
+
+    /* ---- Transição suave ao alternar tema (apenas superfícies de chrome) ---- */
+    body,
+    .hero-card, .loading-box, .filters-main, .actions, .action-group, .queue-box,
+    .queue-item, .top-menu-inner, .info-strip, .summary-pill, .section-divider,
+    .multi-select-dropdown, .multi-select-options {
+      transition: background-color .3s ease, color .3s ease, border-color .3s ease, box-shadow .3s ease;
+    }
+
+    /* ---- Foco visível acessível (teclado) ---- */
+    .btn:focus-visible,
+    .tab-btn:focus-visible,
+    .multi-select-trigger:focus-visible,
+    .theme-toggle:focus-visible,
+    .top-menu-link:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 4px rgba(20, 184, 166, 0.38);
+    }
+
+    /* ════════════ MICRO-INTERAÇÕES / FEEDBACK ════════════ */
+    @media (prefers-reduced-motion: no-preference) {
+      @keyframes riseIn { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+      @keyframes popIn  { from { opacity: 0; transform: translateY(10px) scale(.985); } to { opacity: 1; transform: none; } }
+      @keyframes skelShimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+
+      .hero-card { animation: riseIn .55s cubic-bezier(.16,.84,.44,1) both; }
+
+      body:not(.pdf-export) #boletim:not(.hidden) .document-page { animation: riseIn .5s cubic-bezier(.16,.84,.44,1) both; }
+      body:not(.pdf-export) #boletim:not(.hidden) .metric-card { animation: popIn .5s cubic-bezier(.16,.84,.44,1) both; }
+      body:not(.pdf-export) #boletim:not(.hidden) .metric-card:nth-child(2) { animation-delay: .06s; }
+      body:not(.pdf-export) #boletim:not(.hidden) .metric-card:nth-child(3) { animation-delay: .12s; }
+      body:not(.pdf-export) #boletim:not(.hidden) .metric-card:nth-child(4) { animation-delay: .18s; }
+      body:not(.pdf-export) #boletim:not(.hidden) .panel { animation: riseIn .5s cubic-bezier(.16,.84,.44,1) both; animation-delay: .08s; }
+
+      /* Skeleton "shimmer" enquanto carrega os filtros/dados */
+      body:not(.pdf-export) #loading:not(.hidden) {
+        background-image: linear-gradient(100deg, transparent 18%, rgba(15,118,110,.10) 40%, transparent 62%);
+        background-size: 200% 100%;
+        animation: skelShimmer 1.5s linear infinite;
+      }
+    }
+
+    /* Feedback de toque nos botões */
+    .btn:active:not(:disabled) { transform: translateY(1px) scale(.992); }
+    body:not(.pdf-export) .metric-card { transition: transform .2s ease, box-shadow .2s ease; }
+    body:not(.pdf-export) .metric-card:hover { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(16,40,52,.14); }
+    body:not(.pdf-export) .panel { transition: transform .2s ease, box-shadow .2s ease; }
+    body:not(.pdf-export) .panel:hover { box-shadow: 0 16px 34px rgba(16,40,52,.12); }
+
+    /* ════════════ KPIs EM DESTAQUE (mantém A4 imprimível) ════════════ */
+    .metric-card { position: relative; border-radius: 16px; overflow: hidden; }
+    .metric-card strong { font-size: 26px; letter-spacing: -.02em; font-weight: 800; }
+    .metric-card.green strong { color: var(--green); }
+    .metric-card.amber strong { color: var(--amber); }
+    .metric-card.red   strong { color: var(--red); }
+    .metric-card.blue  strong { color: var(--blue); }
+    .metric-card span { font-weight: 800; letter-spacing: .06em; }
+
+    /* ════════════ FILTROS MAIS FÁCEIS (multi-select) ════════════ */
+    .multi-select-trigger {
+      min-height: 52px;
+      border-radius: 16px;
+      border-width: 1.5px;
+      font-weight: 600;
+    }
+    .multi-select-trigger:hover { border-color: var(--blue); }
+    .multi-select-summary { font-size: 15px; color: #3a4d57; }
+    .multi-select-dropdown { border-radius: 16px; padding: 12px; }
+    .multi-select-search { min-height: 44px; border-radius: 12px; font-size: 15px; }
+    .multi-select-search:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(15,118,110,.14); }
+    .multi-select-actions { gap: 10px; }
+    .multi-select-action-btn {
+      min-height: 38px;
+      border-radius: 10px;
+      background: var(--blue-soft);
+      border-color: rgba(15,118,110,.28);
+      color: var(--blue);
+      font-weight: 800;
+      transition: background-color .16s ease, color .16s ease, transform .12s ease;
+    }
+    .multi-select-action-btn:hover { background: var(--blue); color: #fff; }
+    .multi-select-action-btn:active { transform: translateY(1px); }
+    .multi-option { min-height: 42px; border-radius: 12px; font-size: 14.5px; }
+    .multi-option input[type="checkbox"] {
+      width: 18px; height: 18px; flex: 0 0 18px;
+      accent-color: var(--blue); cursor: pointer;
+    }
+    .multi-option.selected { background: var(--blue-soft); color: #0f5752; }
+
+    /* ════════════ BOTÃO DE TEMA (claro/escuro) ════════════ */
+    .theme-toggle {
+      flex: 0 0 auto;
+      width: 40px; height: 38px;
+      display: inline-flex; align-items: center; justify-content: center;
+      border-radius: 999px;
+      border: 1px solid rgba(176,194,203,.72);
+      background: linear-gradient(180deg,#ffffff,#f1faf9);
+      color: #0f766e;
+      cursor: pointer;
+      font-size: 16px;
+      transition: transform .18s ease, background-color .2s ease, color .2s ease, box-shadow .2s ease;
+    }
+    .theme-toggle:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(15,23,42,.12); }
+    .theme-toggle:active { transform: translateY(0) scale(.96); }
+    .theme-toggle .icon-moon { display: none; }
+    html[data-theme="dark"] .theme-toggle .icon-sun { display: none; }
+    html[data-theme="dark"] .theme-toggle .icon-moon { display: inline; }
+
+    /* ════════════════════════════════════════════════════════════════
+       TEMA ESCURO (plantão noturno) — html[data-theme="dark"]
+       Veste o chrome do app; o documento do boletim continua claro.
+       ════════════════════════════════════════════════════════════════ */
+    html[data-theme="dark"] body {
+      background: linear-gradient(180deg, #0b1519 0%, #0c1a1f 55%, #0a161a 100%);
+      color: #e7eef0;
+    }
+    html[data-theme="dark"] body::before { background: rgba(20,184,166,.18); opacity: .28; }
+    html[data-theme="dark"] body::after  { background: rgba(13,148,136,.16); opacity: .26; }
+
+    html[data-theme="dark"] .hero-card,
+    html[data-theme="dark"] .loading-box {
+      background: rgba(20,36,43,.92) !important;
+      border-color: rgba(148,180,190,.16) !important;
+      box-shadow: 0 20px 50px rgba(0,0,0,.45);
+    }
+    html[data-theme="dark"] .hero-header h1 { color: #f1f7f7; }
+    html[data-theme="dark"] .hero-header p,
+    html[data-theme="dark"] .loading-box { color: #9fb2b8; }
+    html[data-theme="dark"] .section-divider { background: linear-gradient(90deg, rgba(148,180,190,.42), rgba(148,180,190,.08)); }
+
+    /* Navegação superior */
+    html[data-theme="dark"] .top-menu-inner { background: rgba(20,36,43,.82) !important; border-color: rgba(148,180,190,.18); }
+    html[data-theme="dark"] .top-menu-link { color: #b4c6cc; }
+    html[data-theme="dark"] .top-menu-link:hover,
+    html[data-theme="dark"] .top-menu-link:focus-visible { background: rgba(45,212,191,.12); color: #7ff0e2; border-color: rgba(45,212,191,.28); box-shadow: none; }
+    html[data-theme="dark"] .top-menu-toggle { background: linear-gradient(180deg,#16282f,#10242a); color: #5eead4; border-color: rgba(148,180,190,.22); }
+    html[data-theme="dark"] .theme-toggle { background: linear-gradient(180deg,#16282f,#10242a); color: #fcd34d; border-color: rgba(148,180,190,.22); }
+
+    /* Filtros */
+    html[data-theme="dark"] .filters-main { background: rgba(15,28,33,.72) !important; border-color: rgba(148,180,190,.16) !important; }
+    html[data-theme="dark"] .filter-tabs { background: rgba(10,20,24,.72) !important; border-color: rgba(148,180,190,.14) !important; }
+    html[data-theme="dark"] .filter-tabs .tab-btn:not(.active) {
+      background: rgba(20,36,43,.72) !important;
+      color: #a9bcc2 !important;
+      border-color: rgba(148,180,190,.16) !important;
+    }
+    html[data-theme="dark"] .filter-tabs .tab-btn:not(.active):hover { color: #7ff0e2 !important; background: rgba(45,212,191,.1) !important; box-shadow: none !important; }
+    html[data-theme="dark"] .filter-group h2 { color: #eaf2f2; }
+    html[data-theme="dark"] .field label { color: #a9bcc2; }
+    html[data-theme="dark"] .field label small { color: #8aa0a7; }
+    html[data-theme="dark"] .filter-icon.indigo { color: #5eead4; }
+
+    /* Ações e fila */
+    html[data-theme="dark"] .actions { background: rgba(15,28,33,.72) !important; border-color: rgba(148,180,190,.16) !important; }
+    html[data-theme="dark"] .action-group { background: rgba(20,36,43,.88) !important; border-color: rgba(148,180,190,.14) !important; }
+    html[data-theme="dark"] .action-group h4 { color: #9fb2b8; }
+    html[data-theme="dark"] .queue-box { background: rgba(13,24,28,.72) !important; border-color: rgba(148,180,190,.14) !important; color: #cdd9dc; }
+    html[data-theme="dark"] .queue-box strong { color: #e7eef0; }
+    html[data-theme="dark"] .queue-item { background: rgba(20,36,43,.92) !important; border-color: rgba(148,180,190,.14) !important; color: #dbe5e7; }
+
+    /* Botões secundários */
+    html[data-theme="dark"] .btn:not(.btn-primary) {
+      background: rgba(24,42,49,.95) !important;
+      color: #d6e3e5 !important;
+      border-color: rgba(148,180,190,.22) !important;
+    }
+    html[data-theme="dark"] .btn:not(.btn-primary):hover:not(:disabled) { border-color: rgba(45,212,191,.5) !important; color: #7ff0e2 !important; }
+
+    /* Multi-select no escuro */
+    html[data-theme="dark"] .multi-select-trigger { background: rgba(13,24,28,.92); border-color: rgba(148,180,190,.22); color: #dbe5e7; }
+    html[data-theme="dark"] .multi-select-summary { color: #aebfc5; }
+    html[data-theme="dark"] .multi-select-dropdown { background: #13242b; border-color: rgba(148,180,190,.22); box-shadow: 0 24px 50px rgba(0,0,0,.55); }
+    html[data-theme="dark"] .multi-select-search { background: rgba(10,20,24,.92); border-color: rgba(148,180,190,.22); color: #e7eef0; }
+    html[data-theme="dark"] .multi-select-action-btn { background: rgba(45,212,191,.14); border-color: rgba(45,212,191,.3); color: #7ff0e2; }
+    html[data-theme="dark"] .multi-select-action-btn:hover { background: #14b8a6; color: #04201c; }
+    html[data-theme="dark"] .multi-group-title { color: #8aa0a7; }
+    html[data-theme="dark"] .multi-option { color: #cdd9dc; }
+    html[data-theme="dark"] .multi-option:hover { background: rgba(45,212,191,.1); }
+    html[data-theme="dark"] .multi-option.selected { background: rgba(45,212,191,.18); color: #aef5ea; }
+    html[data-theme="dark"] .multi-option mark { background: rgba(250,204,21,.3); color: #fde68a; }
+    html[data-theme="dark"] .chip { background: rgba(45,212,191,.16); border-color: rgba(45,212,191,.32); color: #9ef0e2; }
+    html[data-theme="dark"] .chip-remove { color: #9ef0e2; }
+
+    /* Resumo + faixa informativa */
+    html[data-theme="dark"] .summary-title h3 { color: #eaf2f2; }
+    html[data-theme="dark"] .summary-updated { color: #93a7ad; }
+    html[data-theme="dark"] .summary-updated strong { color: #dbe5e7; }
+    html[data-theme="dark"] .summary-pill { background: rgba(30,48,56,.92); color: #b9ccd1; }
+    html[data-theme="dark"] .summary-pill.primary,
+    html[data-theme="dark"] .summary-pill.page-caminhadas { background: rgba(45,212,191,.16); color: #9ef0e2; }
+    html[data-theme="dark"] .summary-pill.page-notificacoes { background: rgba(251,146,60,.18); color: #fdba74; }
+    html[data-theme="dark"] .info-strip { background: linear-gradient(180deg, rgba(20,36,43,.92), rgba(15,28,33,.92)); color: #b9ccd1; border: 1px solid rgba(148,180,190,.14); }
+    html[data-theme="dark"] .info-strip strong { color: #e7eef0; }
+
+    /* Modal de progresso do PDF (chrome) */
+    html[data-theme="dark"] .pdf-progress-modal { background: rgba(20,36,43,.94); color: #dbe5e7; border-color: rgba(45,212,191,.25); }
+    html[data-theme="dark"] .pdf-progress-text strong { color: #eaf2f2; }
+    html[data-theme="dark"] .pdf-progress-text span { color: #93a7ad; }
+    html[data-theme="dark"] .pdf-progress-spinner::after { background: #13242b; }
+
   </style>
+  <script>
+    /* Tema claro/escuro — define antes da pintura para evitar "flash" (FOUC). */
+    (function () {
+      try {
+        var stored = localStorage.getItem('cosep-theme');
+        var sysDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.setAttribute('data-theme', stored || (sysDark ? 'dark' : 'light'));
+      } catch (e) {}
+
+      function wireThemeToggles() {
+        var toggles = document.querySelectorAll('.theme-toggle');
+        if (!toggles.length) return;
+        function aplicar(tema) {
+          document.documentElement.setAttribute('data-theme', tema);
+          try { localStorage.setItem('cosep-theme', tema); } catch (e) {}
+          toggles.forEach(function (b) {
+            b.setAttribute('aria-pressed', String(tema === 'dark'));
+            b.setAttribute('title', tema === 'dark' ? 'Mudar para tema claro' : 'Mudar para tema escuro (plantão noturno)');
+          });
+        }
+        toggles.forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var atual = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+            aplicar(atual === 'dark' ? 'light' : 'dark');
+          });
+        });
+        aplicar(document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light');
+      }
+      if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', wireThemeToggles);
+      else wireThemeToggles();
+    })();
+  </script>
 </head>
 <body>
   <div id="toast-root" class="fixed right-4 top-4 z-[9999] grid w-[min(420px,calc(100vw-2rem))] gap-3 pointer-events-none" aria-live="polite" aria-atomic="true"></div>
@@ -2235,6 +2473,10 @@
               <a class="top-menu-link" href="<?!= appUrl ?>?page=relatorios" data-app-link="relatorios" data-view-link="relatorios"><i class="fa-solid fa-chart-line"></i> Relatórios</a>
               <a class="top-menu-link" href="https://script.google.com/macros/s/AKfycbyrFcu7qj-Ydr2nwWqaaYpzntLct0jjN2ylXnrL5hXP5vWuiYcG_c4LYVVilFvJy-tadg/exec" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-gauge-high"></i> Painel NUGESP</a>
             </div>
+            <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Alternar entre tema claro e escuro" aria-pressed="false" title="Alternar tema">
+              <i class="fa-solid fa-sun icon-sun" aria-hidden="true"></i>
+              <i class="fa-solid fa-moon icon-moon" aria-hidden="true"></i>
+            </button>
           </div>
         </nav>
       </div>
@@ -2560,6 +2802,10 @@
             <a class="top-menu-link" href="<?!= appUrl ?>?page=relatorios" data-app-link="relatorios" data-view-link="relatorios"><i class="fa-solid fa-chart-line"></i> Relatórios</a>
             <a class="top-menu-link" href="https://script.google.com/macros/s/AKfycbyrFcu7qj-Ydr2nwWqaaYpzntLct0jjN2ylXnrL5hXP5vWuiYcG_c4LYVVilFvJy-tadg/exec" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-gauge-high"></i> Painel NUGESP</a>
           </div>
+          <button type="button" class="theme-toggle" aria-label="Alternar entre tema claro e escuro" aria-pressed="false" title="Alternar tema">
+            <i class="fa-solid fa-sun icon-sun" aria-hidden="true"></i>
+            <i class="fa-solid fa-moon icon-moon" aria-hidden="true"></i>
+          </button>
         </div>
       </nav>
     </div>
