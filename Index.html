@@ -1731,18 +1731,42 @@
     }
 
     @media print {
-      body { background: #fff; }
-      .hero-card, .loading-box { display: none !important; }
-      .app-shell { padding: 0; }
+      @page { size: A4 portrait; margin: 0; }
+      html, body { width: 210mm; background: #fff !important; }
+      body::before, body::after { display: none !important; }
+      /* Imprime apenas o boletim (cada página = uma folha A4 exata) */
+      .hero-card, .loading-box, #toast-root, .pdf-progress-modal, .pontos-card,
+      #relatorios-app, #admin-app { display: none !important; }
+      .app-shell { padding: 0 !important; margin: 0 !important; max-width: none !important; width: 210mm !important; }
+      .report-stack { display: block !important; gap: 0 !important; }
       .document-page {
-        box-shadow: none;
-        border: none;
-        width: 210mm;
-        height: 297mm;
-        margin: 0;
-        background: #fff;
-        backdrop-filter: none;
+        width: 210mm !important;
+        height: 297mm !important;
+        min-height: 297mm !important;
+        max-height: 297mm !important;
+        margin: 0 !important;
+        padding: 10mm !important;
+        box-shadow: none !important;
+        border: 0 !important;
+        background: #fff !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        overflow: hidden !important;
+        display: flex !important;
+        flex-direction: column !important;
+        break-inside: avoid !important;
+        page-break-inside: avoid !important;
       }
+      .document-page:not(:last-child) { break-after: page !important; page-break-after: always !important; }
+      .document-page:last-child { break-after: auto !important; page-break-after: auto !important; }
+      #pagina-cosep {
+        display: flex !important;
+        flex-direction: column !important;
+        align-content: normal !important;
+        overflow: hidden !important;
+      }
+      #pagina-cosep .footer-note,
+      .footer-note { margin-top: auto !important; }
     }
 
     @media (max-width: 1024px) {
@@ -1991,7 +2015,7 @@
     }
 
     body.pdf-export .pdf-page-cosep .footer-note {
-      margin-top: 0 !important;
+      margin-top: auto !important;
     }
 
     body.pdf-export .pdf-page-cosep .panel-metas {
@@ -6050,7 +6074,18 @@
         });
 
         if (paginasPdfGeradas > 0) pdf.addPage('a4', 'portrait');
-        pdf.addImage(canvas.toDataURL('image/png', 1), 'PNG', 0, 0, larguraMm, alturaMm, undefined, 'FAST');
+        // Preserva a proporção da captura para não esticar/achatar (gráficos inclusive).
+        const ratioCanvas = (canvas.width || 1) / (canvas.height || 1);
+        const ratioA4 = larguraMm / alturaMm;
+        let desenhoW = larguraMm, desenhoH = alturaMm, deslocX = 0, deslocY = 0;
+        if (ratioCanvas > ratioA4) {
+          desenhoH = larguraMm / ratioCanvas;
+          deslocY = (alturaMm - desenhoH) / 2;
+        } else if (ratioCanvas < ratioA4) {
+          desenhoW = alturaMm * ratioCanvas;
+          deslocX = (larguraMm - desenhoW) / 2;
+        }
+        pdf.addImage(canvas.toDataURL('image/png', 1), 'PNG', deslocX, deslocY, desenhoW, desenhoH, undefined, 'FAST');
         paginasPdfGeradas += 1;
       }
 
