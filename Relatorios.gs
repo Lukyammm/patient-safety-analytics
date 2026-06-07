@@ -12,6 +12,7 @@ const PLANILHAS = {
 const ABA_RELATORIO_CRP = 'BASE_DADOS(NÃOEDITAR)';
 const ABA_RELATORIO_CRO = 'CRO';
 const FUSO_HORARIO = 'America/Fortaleza';
+const META_INSTITUCIONAL = 80;
 
 const ORDEM_MESES = {
   'JANEIRO': 1,
