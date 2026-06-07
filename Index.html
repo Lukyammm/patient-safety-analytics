@@ -2430,6 +2430,25 @@
     html[data-theme="dark"] .pdf-progress-text span { color: #93a7ad; }
     html[data-theme="dark"] .pdf-progress-spinner::after { background: #13242b; }
 
+    /* ════════════ PONTOS DE ATENÇÃO (resumo automático por regras) ════════════ */
+    .panel-pontos .pontos-lista {
+      list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 6px;
+    }
+    .ponto-item {
+      display: flex; gap: 8px; align-items: flex-start;
+      font-size: 13px; line-height: 1.4;
+      padding: 7px 10px; border-radius: 10px;
+      border-left: 4px solid var(--blue); background: var(--blue-soft); color: #1f2a30;
+    }
+    .ponto-item i { margin-top: 2px; flex: 0 0 auto; }
+    .ponto-item.critico { border-left-color: var(--red); background: var(--red-soft); }
+    .ponto-item.alerta  { border-left-color: var(--amber); background: var(--amber-soft); }
+    .ponto-item.ok      { border-left-color: var(--green); background: var(--green-soft); }
+    .ponto-item.critico i { color: var(--red); }
+    .ponto-item.alerta i  { color: var(--amber); }
+    .ponto-item.ok i      { color: var(--green); }
+    .ponto-item.info i    { color: var(--blue); }
+
     /* ════════════ TELA DE ADMINISTRAÇÃO (Fase 1) ════════════ */
     .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
     .admin-card-wide { grid-column: 1 / -1; }
@@ -2758,6 +2777,11 @@
             <strong id="cosep-diferenca">0%</strong>
             <small id="cosep-meta-note">Meta institucional.</small>
           </div>
+        </section>
+
+        <section class="panel panel-pontos" id="pontos-atencao">
+          <h3><i class="fa-solid fa-clipboard-check" aria-hidden="true"></i> Pontos de atenção</h3>
+          <ul class="pontos-lista" id="lista-pontos-atencao"></ul>
         </section>
 
         <section class="panel">
@@ -5237,6 +5261,67 @@
       panelTopSetores.classList.toggle('hidden', Boolean((filtro && (filtro.unidades || []).length) || Number(totalSetores || 0) <= 1));
     }
 
+    /* Resumo automático por REGRAS (sem IA): gera "pontos de atenção" do payload. */
+    function montarPontosAtencao(cam, notif) {
+      cam = cam || {}; notif = notif || {};
+      const pts = [];
+      const meta = Number(cam.metaInstitucional || 0);
+      const conf = Number(cam.conformidadeGeral || 0);
+      const temCam = Number(cam.totalAvaliacoes || 0) > 0;
+
+      if (temCam && meta) {
+        if (conf >= meta) {
+          pts.push({ nivel: 'ok', icone: 'fa-circle-check', texto: `Conformidade geral de <strong>${formatPct(conf)}</strong> atingiu a meta de ${formatPct(meta)}.` });
+        } else {
+          const dif = Math.abs(Number((meta - conf).toFixed(1)));
+          pts.push({ nivel: 'critico', icone: 'fa-triangle-exclamation', texto: `Conformidade geral de <strong>${formatPct(conf)}</strong> está <strong>${formatPct(dif)}</strong> abaixo da meta de ${formatPct(meta)}.` });
+        }
+      }
+
+      const evo = (cam.evolucaoMensal || []).filter(x => x && x.mes);
+      if (evo.length >= 2) {
+        const ult = evo[evo.length - 1], ant = evo[evo.length - 2];
+        const delta = Number((Number(ult.percentual || 0) - Number(ant.percentual || 0)).toFixed(1));
+        if (delta < 0) pts.push({ nivel: 'alerta', icone: 'fa-arrow-trend-down', texto: `Queda de <strong>${formatPct(Math.abs(delta))}</strong> em relação a ${escapeHtml(ant.mes)}.` });
+        else if (delta > 0) pts.push({ nivel: 'ok', icone: 'fa-arrow-trend-up', texto: `Alta de <strong>${formatPct(delta)}</strong> em relação a ${escapeHtml(ant.mes)}.` });
+      }
+
+      const criticas = (cam.metasCriticas || []).filter(m => m && m.percentual != null);
+      if (criticas.length && (!meta || Number(criticas[0].percentual) < meta)) {
+        pts.push({ nivel: 'alerta', icone: 'fa-bullseye', texto: `Meta mais crítica: <strong>${escapeHtml(criticas[0].nome)}</strong> (${formatPct(criticas[0].percentual)}).` });
+      }
+
+      if (meta) {
+        const baixos = (cam.rankingSetoresConformidade || []).filter(s => s && Number(s.avaliados) > 0 && Number(s.percentual) < meta);
+        if (baixos.length) {
+          const nomes = baixos.slice().sort((a, b) => a.percentual - b.percentual).slice(0, 3).map(s => escapeHtml(s.setor)).join(', ');
+          pts.push({ nivel: 'critico', icone: 'fa-layer-group', texto: `<strong>${baixos.length}</strong> setor(es) abaixo da meta. Prioritários: ${nomes}.` });
+        }
+      }
+
+      const m5 = (notif.desempenhoResposta || {}).meta5 || {};
+      if (Number(m5.foraPrazo || 0) > 0) {
+        pts.push({ nivel: 'critico', icone: 'fa-clock', texto: `<strong>${m5.foraPrazo}</strong> resposta(s) a eventos críticos fora do prazo de ${m5.metaDias} dias.` });
+      }
+      if (Number(notif.pendentes || 0) > 0) {
+        pts.push({ nivel: 'alerta', icone: 'fa-bell', texto: `<strong>${notif.pendentes}</strong> notificação(ões) ainda não concluída(s).` });
+      }
+
+      if (!pts.length) {
+        pts.push({ nivel: 'ok', icone: 'fa-circle-check', texto: temCam ? 'Nenhum ponto crítico identificado neste período.' : 'Sem dados suficientes para gerar pontos de atenção.' });
+      }
+
+      return pts.slice(0, 6);
+    }
+
+    function renderPontosAtencao(cam, notif) {
+      const ul = document.getElementById('lista-pontos-atencao');
+      if (!ul) return;
+      ul.innerHTML = montarPontosAtencao(cam, notif)
+        .map(p => `<li class="ponto-item ${p.nivel}"><i class="fa-solid ${p.icone}" aria-hidden="true"></i><span>${p.texto}</span></li>`)
+        .join('');
+    }
+
     function renderCosep(data, filtro, geradoEm) {
       const periodo = formatPeriodo(filtro, 'cosep');
       document.getElementById('periodo-cosep').innerHTML = `
@@ -5407,6 +5492,7 @@
         const payload = await fetchAPIComRetry(obterFiltrosTela());
         renderCosep(payload.caminhadas || {}, (payload.aplicado || {}).caminhadas || {}, payload.geradoEm || '');
         renderNotifica(payload.notificacoes || {}, (payload.aplicado || {}).notificacoes || {}, payload.geradoEm || '');
+        renderPontosAtencao(payload.caminhadas || {}, payload.notificacoes || {});
         atualizarStatus(payload.aplicado || {}, payload.geradoEm || '', payload);
         if (preview) {
           const c = payload.caminhadas || {};
@@ -6015,6 +6101,7 @@
           const payload = await fetchAPIComRetry(item.filtros);
           renderCosep(payload.caminhadas || {}, (payload.aplicado || {}).caminhadas || {}, payload.geradoEm || '');
           renderNotifica(payload.notificacoes || {}, (payload.aplicado || {}).notificacoes || {}, payload.geradoEm || '');
+          renderPontosAtencao(payload.caminhadas || {}, payload.notificacoes || {});
           atualizarStatus(payload.aplicado || {}, payload.geradoEm || '', payload);
           await aguardarEstabilidadeVisual();
 
