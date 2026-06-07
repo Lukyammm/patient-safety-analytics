@@ -438,12 +438,18 @@ function coletarFiltrosRelatorio(linhas, abaEncontrada) {
 
 function montarPayloadRelatorios(ss, filtros) {
   const filtrosAplicados = extrairFiltrosRelatorios(filtros || {});
+  // Lê a base uma única vez (os filtros vêm sempre da CRP). Evita reler o
+  // getDataRange() duas vezes por requisição.
+  const baseCRP = obterLinhasRelatorio(ss, 'CRP');
+  const baseProcessamento = filtrosAplicados.comissao === 'CRP'
+    ? baseCRP
+    : obterLinhasRelatorio(ss, filtrosAplicados.comissao);
   return {
     success: true,
     geradoEm: Utilities.formatDate(new Date(), FUSO_HORARIO, "dd/MM/yyyy 'às' HH:mm"),
-    filtros: getRelatoriosFiltros(ss),
+    filtros: coletarFiltrosRelatorio(baseCRP.linhas, baseCRP.abaEncontrada),
     aplicado: filtrosAplicados,
-    relatorio: processarRelatorioCRP(ss, filtrosAplicados)
+    relatorio: processarRelatorioCRP(ss, filtrosAplicados, baseProcessamento)
   };
 }
 
@@ -479,8 +485,8 @@ function percentualRelatorio(conformes, naoConformes) {
   return denominador ? Number(((Number(conformes || 0) / denominador) * 100).toFixed(1)) : null;
 }
 
-function processarRelatorioCRP(ss, filtros) {
-  const base = obterLinhasRelatorio(ss, filtros.comissao || 'CRP');
+function processarRelatorioCRP(ss, filtros, base) {
+  base = base || obterLinhasRelatorio(ss, filtros.comissao || 'CRP');
   const col = RELATORIO_CRP_COLUNAS;
   const anosFiltro = new Set((filtros.anos || []).map(normalizarAno).filter(Boolean));
   const mesesFiltro = new Set((filtros.meses || []).map(normalizarMes).filter(Boolean));

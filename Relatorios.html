@@ -549,7 +549,8 @@
     }
 
     @media print {
-      body { background: #fff; }
+      @page { size: A4 portrait; margin: 0; }
+      html, body { width: 210mm; background: #fff !important; }
       body::before, .top-nav, .page-header, .editor-card, .report-tools, .loading-box, #toast-root { display: none !important; }
       .app-shell { width: auto; max-width: none; padding: 0; }
       .preview-card { margin: 0; padding: 0; border: 0; box-shadow: none; }
@@ -607,6 +608,39 @@
     }
     html[data-theme="dark"] .top-nav__inner { background: rgba(20,36,43,.82); border-color: rgba(148,180,190,.18); }
     html[data-theme="dark"] .top-nav a { color: #b4c6cc; }
+
+    /* Chrome (cores fixas que não viram escuro pelas variáveis) */
+    html[data-theme="dark"] .page-header { background: rgba(20,36,43,.85) !important; }
+    html[data-theme="dark"] .editor-card,
+    html[data-theme="dark"] .preview-card,
+    html[data-theme="dark"] .loading-box { background: rgba(20,36,43,.92) !important; border-color: rgba(148,180,190,.16) !important; }
+    html[data-theme="dark"] .commission-option { background: rgba(13,24,28,.7) !important; border-color: rgba(148,180,190,.18) !important; }
+    html[data-theme="dark"] select,
+    html[data-theme="dark"] textarea,
+    html[data-theme="dark"] .filter-search,
+    html[data-theme="dark"] input[type="search"] { background: rgba(13,24,28,.92) !important; border-color: rgba(148,180,190,.22) !important; color: #e7eef0 !important; }
+    html[data-theme="dark"] .btn:not(.btn-primary) { background: rgba(24,42,49,.95) !important; color: #d6e3e5 !important; border-color: rgba(148,180,190,.22) !important; }
+    html[data-theme="dark"] .tab-button.active { background: rgba(20,36,43,.95) !important; color: #7ff0e2 !important; }
+
+    /* O documento do relatório (.document-page) é A4 imprimível: mantém-se CLARO
+       mesmo no tema escuro. Re-declara os tokens claros aqui para o texto não
+       herdar a cor clara do tema (que ficaria ilegível sobre o branco). */
+    html[data-theme="dark"] .document-page {
+      --text: #173037;
+      --muted: #657b82;
+      --muted-strong: #425b63;
+      --line: #d9e6e4;
+      --line-strong: #bfd4d0;
+      --surface: #ffffff;
+      --surface-soft: #f8fcfb;
+      --brand: #0f766e;
+      --brand-dark: #0b4f4a;
+      --brand-2: #0e7490;
+      --success: #16845b;
+      --warning: #a56613;
+      --danger: #b54721;
+      color: #173037;
+    }
 
   </style>
 </head>
