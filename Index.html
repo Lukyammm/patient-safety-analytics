@@ -2957,6 +2957,24 @@
         </section>
 
         <section class="admin-card admin-card-wide">
+          <h3><i class="fa-solid fa-bell" aria-hidden="true"></i> Alertas proativos por e-mail</h3>
+          <p>O sistema verifica os dados e avisa quando há setores abaixo da meta ou notificações críticas sem resposta. Apenas <strong>lê</strong> os dados — nada é gravado na base.</p>
+          <div class="reg-fields">
+            <label class="admin-toggle admin-field"><input type="checkbox" id="cfg-alerta-ativo"> Ativar alertas</label>
+            <label class="admin-field">Conformidade mínima (%)<input type="number" id="cfg-alerta-min" class="admin-input" min="0" max="100" step="1"></label>
+            <label class="admin-toggle admin-field"><input type="checkbox" id="cfg-alerta-notif"> Incluir notificações críticas pendentes</label>
+          </div>
+          <label class="admin-field" style="margin-top:12px">Destinatários <small>(um e-mail por linha)</small>
+            <textarea id="cfg-alerta-emails" class="admin-input admin-textarea" rows="3" spellcheck="false" placeholder="fulano@hospital.org"></textarea>
+          </label>
+          <div class="admin-buttons" style="margin-top:12px">
+            <button type="button" class="btn" id="btn-alerta-teste"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Salvar e enviar teste</button>
+            <button type="button" class="btn" id="btn-alerta-gatilho"><i class="fa-solid fa-clock" aria-hidden="true"></i> Ativar envio diário</button>
+          </div>
+          <div id="alerta-status" class="admin-updated" style="margin-top:10px"></div>
+        </section>
+
+        <section class="admin-card admin-card-wide">
           <h3><i class="fa-solid fa-shoe-prints" aria-hidden="true"></i> Metas das Caminhadas de Segurança</h3>
           <p>Renomeie metas e itens, ou desative uma meta para ocultá-la do boletim. A estrutura de cálculo (colunas) é preservada.</p>
           <div id="cfg-metas" class="admin-metas"></div>
@@ -6194,6 +6212,13 @@
       set('cfg-prazo10', config.prazoMeta10Dias);
       set('cfg-classificacoes', (config.classificacoesMeta5Dias || []).join('\n'));
 
+      const alertas = config.alertas || {};
+      const setChk = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
+      setChk('cfg-alerta-ativo', alertas.ativo);
+      setChk('cfg-alerta-notif', alertas.incluirNotificacoesCriticas);
+      set('cfg-alerta-min', alertas.conformidadeMinima != null ? alertas.conformidadeMinima : '');
+      set('cfg-alerta-emails', (alertas.destinatarios || []).join('\n'));
+
       const wrap = document.getElementById('cfg-metas');
       if (wrap) {
         wrap.innerHTML = (config.metasCaminhadas || []).map(meta => {
@@ -6229,6 +6254,8 @@
         info.innerHTML = partes.length ? partes.join(' ') : 'Ainda sem alterações registradas.';
       }
 
+      atualizarStatusAlertas();
+
       if (!adminPodeEditar) {
         document.querySelectorAll('#admin-form input, #admin-form textarea, #admin-form button').forEach(el => {
           el.setAttribute('disabled', 'disabled');
@@ -6238,7 +6265,9 @@
 
     function coletarConfigAdmin() {
       const num = (id) => { const el = document.getElementById(id); return el ? Number(el.value) : undefined; };
+      const chk = (id) => { const el = document.getElementById(id); return el ? !!el.checked : false; };
       const classifTxt = (document.getElementById('cfg-classificacoes') || {}).value || '';
+      const emailsTxt = (document.getElementById('cfg-alerta-emails') || {}).value || '';
       const metas = Array.from(document.querySelectorAll('#cfg-metas .admin-meta-block')).map(block => {
         const codigo = block.getAttribute('data-meta-block');
         const nomeEl = block.querySelector('.cfg-meta-nome');
@@ -6254,9 +6283,92 @@
         prazoMeta5Dias: num('cfg-prazo5'),
         prazoMeta10Dias: num('cfg-prazo10'),
         classificacoesMeta5Dias: classifTxt.split('\n').map(s => s.trim()).filter(Boolean),
-        metasCaminhadas: metas
+        metasCaminhadas: metas,
+        alertas: {
+          ativo: chk('cfg-alerta-ativo'),
+          incluirNotificacoesCriticas: chk('cfg-alerta-notif'),
+          conformidadeMinima: num('cfg-alerta-min'),
+          destinatarios: emailsTxt.split('\n').map(s => s.trim()).filter(Boolean)
+        }
       };
     }
+
+    /* ════════════ ALERTAS (controle) ════════════ */
+    function alertaRpc(metodo) {
+      return new Promise((resolve, reject) => {
+        if (!(window.google && google.script && google.script.run)) {
+          reject(new Error('Disponível apenas no app publicado.'));
+          return;
+        }
+        const runner = google.script.run.withSuccessHandler(resolve).withFailureHandler(reject);
+        if (metodo === 'teste') runner.enviarAlertaTesteCosep();
+        else if (metodo === 'instalar') runner.instalarGatilhoAlertasCosep();
+        else if (metodo === 'remover') runner.removerGatilhoAlertasCosep();
+        else runner.statusAlertasCosep();
+      });
+    }
+
+    let alertaGatilhoInstalado = false;
+    function pintarBotaoGatilho() {
+      const btn = document.getElementById('btn-alerta-gatilho');
+      if (!btn) return;
+      btn.innerHTML = alertaGatilhoInstalado
+        ? '<i class="fa-solid fa-clock" aria-hidden="true"></i> Desativar envio diário'
+        : '<i class="fa-solid fa-clock" aria-hidden="true"></i> Ativar envio diário';
+    }
+    async function atualizarStatusAlertas() {
+      const status = document.getElementById('alerta-status');
+      try {
+        const resp = await alertaRpc('status');
+        alertaGatilhoInstalado = !!(resp && resp.gatilhoInstalado);
+        pintarBotaoGatilho();
+        if (status) {
+          const quota = resp && resp.quotaEmailRestante;
+          status.innerHTML = (alertaGatilhoInstalado ? '✅ Envio diário ativo (por volta das 7h).' : '⏸️ Envio automático desativado.')
+            + (quota != null ? ' · Cota de e-mails restante hoje: ' + quota : '');
+        }
+      } catch (erro) {
+        if (status) status.textContent = '';
+      }
+    }
+
+    (function configurarAlertas() {
+      const btnTeste = document.getElementById('btn-alerta-teste');
+      const btnGatilho = document.getElementById('btn-alerta-gatilho');
+      if (btnTeste) {
+        btnTeste.addEventListener('click', async () => {
+          if (!adminPodeEditar) return;
+          const original = btnTeste.innerHTML;
+          btnTeste.disabled = true; btnTeste.innerHTML = 'Enviando...';
+          try {
+            await adminSalvarConfig(coletarConfigAdmin());
+            const resp = await alertaRpc('teste');
+            if (typeof mostrarToast === 'function') mostrarToast((resp && resp.mensagem) || 'Solicitação enviada.', resp && resp.success ? 'success' : 'error', 'Alertas');
+          } catch (erro) {
+            if (typeof mostrarToast === 'function') mostrarToast(String((erro && erro.message) || erro), 'error', 'Alertas');
+          } finally {
+            btnTeste.disabled = false; btnTeste.innerHTML = original;
+            atualizarStatusAlertas();
+          }
+        });
+      }
+      if (btnGatilho) {
+        btnGatilho.addEventListener('click', async () => {
+          if (!adminPodeEditar) return;
+          btnGatilho.disabled = true;
+          try {
+            await adminSalvarConfig(coletarConfigAdmin());
+            const resp = await alertaRpc(alertaGatilhoInstalado ? 'remover' : 'instalar');
+            if (typeof mostrarToast === 'function') mostrarToast((resp && resp.mensagem) || 'Feito.', resp && resp.success ? 'success' : 'error', 'Alertas');
+          } catch (erro) {
+            if (typeof mostrarToast === 'function') mostrarToast(String((erro && erro.message) || erro), 'error', 'Alertas');
+          } finally {
+            btnGatilho.disabled = false;
+            atualizarStatusAlertas();
+          }
+        });
+      }
+    })();
 
     (function configurarAcoesAdmin() {
       const form = document.getElementById('admin-form');

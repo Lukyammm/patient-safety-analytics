@@ -184,6 +184,12 @@ function configPadrao() {
       observacaoIdx: meta.observacaoIdx,
       itens: meta.itens.map(item => ({ codigo: item.codigo, nome: item.nome, idx: item.idx }))
     })),
+    alertas: {
+      ativo: false,
+      destinatarios: [],
+      conformidadeMinima: META_INSTITUCIONAL,
+      incluirNotificacoesCriticas: true
+    },
     atualizadoEm: '',
     atualizadoPor: ''
   };
@@ -242,6 +248,17 @@ function mesclarConfig(padrao, salvo) {
         })
       };
     });
+  }
+
+  if (salvo.alertas && typeof salvo.alertas === 'object') {
+    const a = salvo.alertas;
+    if (typeof a.ativo === 'boolean') cfg.alertas.ativo = a.ativo;
+    if (Array.isArray(a.destinatarios)) {
+      cfg.alertas.destinatarios = a.destinatarios.map(e => String(e || '').trim()).filter(Boolean);
+    }
+    const cmin = Number(a.conformidadeMinima);
+    if (!Number.isNaN(cmin) && cmin >= 0 && cmin <= 100) cfg.alertas.conformidadeMinima = cmin;
+    if (typeof a.incluirNotificacoesCriticas === 'boolean') cfg.alertas.incluirNotificacoesCriticas = a.incluirNotificacoesCriticas;
   }
 
   cfg.atualizadoEm = salvo.atualizadoEm || '';
@@ -322,6 +339,207 @@ function registrarLogConfig(usuario, acao) {
   } catch (erro) {
     registrarErro('config-log', erro);
   }
+}
+
+/* ============================================================
+   ALERTAS PROATIVOS (somente leitura + e-mail nativo)
+   Varre os dados, identifica setores abaixo da meta e
+   notificações críticas sem resposta, e envia um e-mail.
+   Pode rodar por gatilho de tempo (diário) ou sob demanda.
+   Não escreve nada na base de notificações/caminhadas.
+   ============================================================ */
+const ALERTAS_TRIGGER_FN = 'executarAlertasCosep';
+
+function escapeHtmlServer(valor) {
+  return String(valor == null ? '' : valor)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function coletarNotificacoesCriticasPendentes(ss, cfg) {
+  const sh = ss.getSheetByName(ABA_NOTIFICA);
+  if (!sh) return [];
+  const linhas = sh.getDataRange().getValues().slice(2);
+  const setClass = new Set((cfg.classificacoesMeta5Dias || []).map(normalizarTexto));
+  const hoje = new Date();
+  const prazo = cfg.prazoMeta5Dias;
+  const pendentes = [];
+
+  linhas.forEach(row => {
+    if (!setClass.has(normalizarTexto(row[8]))) return;
+    const concluida = normalizarTexto(row[13]).indexOf('CONCLU') === 0;
+    const dataResposta = converterEmData(row[16]);
+    if (concluida || dataResposta) return;
+
+    const dataRef = converterEmData(row[14]) || converterEmData(row[5]);
+    const dias = dataRef ? calcularDiferencaDias(dataRef, hoje) : null;
+    pendentes.push({
+      numero: String(row[0] || '').trim(),
+      setor: String(row[6] || '').trim() || 'Não informado',
+      classificacao: String(row[8] || '').trim(),
+      dias: dias,
+      atrasada: dias != null && dias > prazo
+    });
+  });
+
+  pendentes.sort((a, b) => (Number(b.atrasada) - Number(a.atrasada)) || ((b.dias || 0) - (a.dias || 0)));
+  return pendentes.slice(0, 20);
+}
+
+function coletarResumoAlertas(ss, cfg) {
+  const filtrosBase = getFiltros(ss);
+  const cam = filtrosBase.caminhadas || {};
+  const anos = cam.anos || [];
+  const meses = cam.meses || [];
+  const setores = cam.unidades || [];
+
+  let conformidadeGeral = null;
+  let setoresBaixos = [];
+  let periodo = '';
+
+  if (anos.length && meses.length && setores.length) {
+    const ultimoAno = anos[anos.length - 1];
+    const filtros = { anos: [ultimoAno], meses: meses.slice(), unidades: setores.slice() };
+    const resultado = processarCaminhadas(ss, filtros, cfg);
+    conformidadeGeral = resultado.conformidadeGeral;
+    periodo = ultimoAno;
+    const limite = cfg.alertas.conformidadeMinima;
+    setoresBaixos = (resultado.rankingSetoresConformidade || [])
+      .filter(s => s.avaliados > 0 && s.percentual < limite)
+      .map(s => ({ setor: s.setor, percentual: s.percentual }));
+  }
+
+  const notificacoesPendentes = cfg.alertas.incluirNotificacoesCriticas
+    ? coletarNotificacoesCriticasPendentes(ss, cfg)
+    : [];
+
+  return {
+    periodo: periodo,
+    conformidadeGeral: conformidadeGeral,
+    conformidadeMinima: cfg.alertas.conformidadeMinima,
+    setoresBaixos: setoresBaixos,
+    notificacoesPendentes: notificacoesPendentes
+  };
+}
+
+function montarEmailAlertas(resumo, cfg) {
+  const temSetores = resumo.setoresBaixos.length > 0;
+  const temNotif = resumo.notificacoesPendentes.length > 0;
+  const conf = resumo.conformidadeGeral;
+
+  let html = '<div style="font-family:Arial,Helvetica,sans-serif;color:#1f2a30;max-width:680px;margin:0 auto">';
+  html += '<h2 style="color:#0f766e;margin:0 0 4px">Boletim COSEP — Alerta de Segurança do Paciente</h2>';
+  html += '<p style="color:#5f6d75;margin:0 0 18px">Resumo automático' + (resumo.periodo ? ' · período ' + escapeHtmlServer(resumo.periodo) : '') + '</p>';
+
+  if (conf != null) {
+    const cor = conf >= resumo.conformidadeMinima ? '#1f8f5f' : '#c0392b';
+    html += '<p style="font-size:15px">Conformidade geral: <strong style="color:' + cor + '">' + conf + '%</strong> (meta ' + resumo.conformidadeMinima + '%)</p>';
+  }
+
+  if (temSetores) {
+    html += '<h3 style="color:#b7791f;margin:18px 0 8px">&#9888; Setores abaixo da meta (' + resumo.setoresBaixos.length + ')</h3><ul>';
+    resumo.setoresBaixos.forEach(s => { html += '<li>' + escapeHtmlServer(s.setor) + ' — <strong>' + s.percentual + '%</strong></li>'; });
+    html += '</ul>';
+  }
+
+  if (temNotif) {
+    html += '<h3 style="color:#c0392b;margin:18px 0 8px">&#128308; Notificações críticas sem resposta (' + resumo.notificacoesPendentes.length + ')</h3><ul>';
+    resumo.notificacoesPendentes.forEach(n => {
+      const diasTxt = n.dias != null ? n.dias + ' dia(s)' : 'sem data';
+      const flag = n.atrasada ? ' — <strong style="color:#c0392b">ATRASADA</strong>' : '';
+      html += '<li>' + (n.numero ? '#' + escapeHtmlServer(n.numero) + ' · ' : '') + escapeHtmlServer(n.setor) + ' · ' + escapeHtmlServer(n.classificacao) + ' · ' + diasTxt + flag + '</li>';
+    });
+    html += '</ul>';
+  }
+
+  if (!temSetores && !temNotif) {
+    html += '<p style="color:#1f8f5f;font-weight:bold">&#9989; Nenhum ponto crítico identificado neste período.</p>';
+  }
+
+  html += '<hr style="border:none;border-top:1px solid #e2e8f0;margin:20px 0">';
+  html += '<p style="font-size:12px;color:#94a3b8">Enviado automaticamente pelo Boletim COSEP em ' + Utilities.formatDate(new Date(), FUSO_HORARIO, "dd/MM/yyyy 'às' HH:mm") + '.</p></div>';
+
+  const assunto = (temSetores || temNotif)
+    ? '[COSEP] Alerta: '
+        + (temSetores ? resumo.setoresBaixos.length + ' setor(es) abaixo da meta' : '')
+        + (temSetores && temNotif ? ' e ' : '')
+        + (temNotif ? resumo.notificacoesPendentes.length + ' notificação(ões) crítica(s)' : '')
+    : '[COSEP] Resumo de segurança — sem pontos críticos';
+
+  return { assunto: assunto, html: html };
+}
+
+function enviarAlertasCosep(opts) {
+  opts = opts || {};
+  const cfg = obterConfig();
+  const emails = (cfg.alertas.destinatarios || []).filter(Boolean);
+  if (!emails.length) return { success: false, mensagem: 'Nenhum destinatário configurado.' };
+
+  return executarComPlanilha('principal', ss => {
+    const resumo = coletarResumoAlertas(ss, cfg);
+    const temAlgo = resumo.setoresBaixos.length > 0 || resumo.notificacoesPendentes.length > 0;
+    if (opts.somenteSeHouver && !temAlgo) {
+      return { success: true, enviado: false, mensagem: 'Sem pontos críticos; nenhum e-mail enviado.' };
+    }
+    const email = montarEmailAlertas(resumo, cfg);
+    MailApp.sendEmail({ to: emails.join(','), subject: email.assunto, htmlBody: email.html });
+    registrarLogConfig(opts.origem || 'sistema', 'Alerta enviado para ' + emails.length + ' destinatário(s)');
+    return { success: true, enviado: true, mensagem: 'Alerta enviado para: ' + emails.join(', ') };
+  });
+}
+
+function executarAlertasCosep() {
+  const cfg = obterConfig();
+  if (!cfg.alertas || !cfg.alertas.ativo) return;
+  try {
+    enviarAlertasCosep({ somenteSeHouver: true, origem: 'gatilho' });
+  } catch (erro) {
+    registrarErro('alertas-gatilho', erro);
+  }
+}
+
+function gatilhoAlertasInstalado() {
+  try {
+    return ScriptApp.getProjectTriggers().some(t => t.getHandlerFunction() === ALERTAS_TRIGGER_FN);
+  } catch (erro) {
+    return false;
+  }
+}
+
+function statusAlertasCosep() {
+  return executarRota('rpc-alertas-status', () => ({
+    success: true,
+    gatilhoInstalado: gatilhoAlertasInstalado(),
+    quotaEmailRestante: (function () { try { return MailApp.getRemainingDailyQuota(); } catch (e) { return null; } })()
+  }));
+}
+
+function instalarGatilhoAlertasCosep() {
+  return executarRota('rpc-alertas-instalar', () => {
+    if (!usuarioPodeEditarConfig()) return { success: false, mensagem: 'Você não tem permissão.' };
+    if (!gatilhoAlertasInstalado()) {
+      ScriptApp.newTrigger(ALERTAS_TRIGGER_FN).timeBased().everyDays(1).atHour(7).create();
+    }
+    registrarLogConfig(emailUsuarioAtual() || 'desconhecido', 'Gatilho diário de alertas instalado');
+    return { success: true, gatilhoInstalado: true, mensagem: 'Envio automático diário ativado (por volta das 7h).' };
+  });
+}
+
+function removerGatilhoAlertasCosep() {
+  return executarRota('rpc-alertas-remover', () => {
+    if (!usuarioPodeEditarConfig()) return { success: false, mensagem: 'Você não tem permissão.' };
+    ScriptApp.getProjectTriggers().forEach(t => {
+      if (t.getHandlerFunction() === ALERTAS_TRIGGER_FN) ScriptApp.deleteTrigger(t);
+    });
+    registrarLogConfig(emailUsuarioAtual() || 'desconhecido', 'Gatilho diário de alertas removido');
+    return { success: true, gatilhoInstalado: false, mensagem: 'Envio automático desativado.' };
+  });
+}
+
+function enviarAlertaTesteCosep() {
+  return executarRota('rpc-alertas-teste', () => {
+    if (!usuarioPodeEditarConfig()) return { success: false, mensagem: 'Você não tem permissão.' };
+    return enviarAlertasCosep({ somenteSeHouver: false, origem: emailUsuarioAtual() || 'teste' });
+  });
 }
 
 function doGet(e) {
