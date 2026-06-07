@@ -2431,8 +2431,24 @@
     html[data-theme="dark"] .pdf-progress-spinner::after { background: #13242b; }
 
     /* ════════════ PONTOS DE ATENÇÃO (resumo automático por regras) ════════════ */
-    .panel-pontos .pontos-lista {
-      list-style: none; margin: 4px 0 0; padding: 0; display: grid; gap: 6px;
+    /* Card fora do documento A4 (não entra no PDF) — chrome do app, themeável. */
+    .pontos-card {
+      margin: 0 auto 16px;
+      width: min(210mm, 100%);
+      border: 1px solid rgba(196, 211, 218, 0.72);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: var(--shadow);
+      padding: 16px 18px;
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+    }
+    .pontos-card h3 {
+      margin: 0 0 10px; font-size: 16px; display: flex; align-items: center; gap: 8px; color: #1e2f36;
+    }
+    .pontos-card h3 i { color: var(--blue); }
+    .pontos-card .pontos-lista {
+      list-style: none; margin: 0; padding: 0; display: grid; gap: 6px;
     }
     .ponto-item {
       display: flex; gap: 8px; align-items: flex-start;
@@ -2448,6 +2464,9 @@
     .ponto-item.alerta i  { color: var(--amber); }
     .ponto-item.ok i      { color: var(--green); }
     .ponto-item.info i    { color: var(--blue); }
+    html[data-theme="dark"] .pontos-card { background: rgba(20,36,43,.9); border-color: rgba(148,180,190,.16); }
+    html[data-theme="dark"] .pontos-card h3 { color: #eaf2f2; }
+    html[data-theme="dark"] .pontos-card h3 i { color: #5eead4; }
 
     /* ════════════ TELA DE ADMINISTRAÇÃO (Fase 1) ════════════ */
     .admin-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
@@ -2745,6 +2764,10 @@
     <section id="loading" class="loading-box">Preparando filtros do boletim...</section>
 
     <section id="boletim" class="report-stack hidden">
+      <section class="pontos-card" id="pontos-atencao" aria-label="Pontos de atenção">
+        <h3><i class="fa-solid fa-clipboard-check" aria-hidden="true"></i> Pontos de atenção</h3>
+        <ul class="pontos-lista" id="lista-pontos-atencao"></ul>
+      </section>
       <article class="document-page page-break pdf-page-cosep" id="pagina-cosep">
         <header class="page-header">
           <div class="page-header-main">
@@ -2777,11 +2800,6 @@
             <strong id="cosep-diferenca">0%</strong>
             <small id="cosep-meta-note">Meta institucional.</small>
           </div>
-        </section>
-
-        <section class="panel panel-pontos" id="pontos-atencao">
-          <h3><i class="fa-solid fa-clipboard-check" aria-hidden="true"></i> Pontos de atenção</h3>
-          <ul class="pontos-lista" id="lista-pontos-atencao"></ul>
         </section>
 
         <section class="panel">
