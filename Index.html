@@ -1919,14 +1919,7 @@
     }
 
     body.pdf-export .document-page {
-      width: 210mm !important;
-      min-width: 210mm !important;
-      max-width: 210mm !important;
-      height: 297mm !important;
-      min-height: 297mm !important;
-      max-height: 297mm !important;
       margin: 0 auto !important;
-      overflow: hidden !important;
       border: 0 !important;
       break-inside: avoid !important;
       page-break-inside: avoid !important;
@@ -1935,250 +1928,6 @@
     body.pdf-export .document-page:not(:last-child) {
       break-after: page !important;
       page-break-after: always !important;
-    }
-
-    body.pdf-export .pdf-page-fit-wrapper {
-      width: 100% !important;
-      max-width: 100% !important;
-      min-height: 100% !important;
-      display: flex !important;
-      flex-direction: column !important;
-      gap: 8px !important;
-      transform-origin: top left !important;
-      will-change: transform;
-    }
-
-    body.pdf-export .pdf-page-cosep,
-    body.pdf-export #pagina-cosep {
-      width: 210mm !important;
-      height: 297mm !important;
-      min-height: 297mm !important;
-      max-height: 297mm !important;
-      overflow: hidden !important;
-    }
-
-    body.pdf-export .pdf-capture-stage,
-    body.pdf-export .pdf-capture-stage > .report-stack,
-    body.pdf-export .pdf-capture-stage > article,
-    body.pdf-export .pdf-capture-stage > section {
-      width: 210mm !important;
-      min-width: 210mm !important;
-      max-width: 210mm !important;
-    }
-
-    body.pdf-export .document-page {
-      padding: 10mm !important;
-      gap: 8px !important;
-    }
-
-    body.pdf-export .page-header {
-      flex-direction: row !important;
-      align-items: flex-start !important;
-      justify-content: space-between !important;
-    }
-
-    body.pdf-export .page-header-main {
-      flex-direction: row !important;
-      align-items: flex-start !important;
-    }
-
-    body.pdf-export .page-meta {
-      min-width: 205px !important;
-      text-align: right !important;
-    }
-
-    body.pdf-export .metrics {
-      grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
-      gap: 8px !important;
-    }
-
-    body.pdf-export .section-grid-2 {
-      grid-template-columns: 1fr 1fr !important;
-      gap: 10px !important;
-    }
-
-    body.pdf-export .section-grid-3 {
-      grid-template-columns: 1.05fr 0.95fr 0.95fr !important;
-      gap: 10px !important;
-    }
-
-    body.pdf-export .meta-grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-      gap: 6px !important;
-    }
-
-    body.pdf-export .pdf-page-cosep {
-      display: flex !important;
-      flex-direction: column !important;
-      align-content: initial !important;
-      overflow: hidden !important;
-    }
-
-    body.pdf-export .pdf-page-cosep .footer-note {
-      margin-top: auto !important;
-    }
-
-    body.pdf-export .pdf-page-cosep .panel-metas {
-      flex: 0 0 auto !important;
-      min-height: 0 !important;
-      padding: 6px !important;
-      overflow: visible !important;
-    }
-
-    body.pdf-export .pdf-page-cosep .meta-grid {
-      grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
-      gap: 6px !important;
-      align-items: start !important;
-    }
-
-    body.pdf-export .pdf-page-cosep .meta-card {
-      border-radius: 10px !important;
-      border-left-width: 3px !important;
-      overflow: visible !important;
-    }
-
-    body.pdf-export .pdf-page-cosep .meta-card.best-meta {
-      border-width: 1px !important;
-      border-left-width: 3px !important;
-    }
-
-    body.pdf-export .pdf-page-cosep .meta-card-header {
-      gap: 5px !important;
-      padding: 5px 6px !important;
-      font-size: 10.5px !important;
-      line-height: 1.25 !important;
-    }
-
-    body.pdf-export .pdf-page-cosep .meta-card-title {
-      gap: 4px !important;
-    }
-
-    body.pdf-export .pdf-page-cosep .meta-card-title span,
-    body.pdf-export .pdf-page-cosep .meta-item-label {
-      font-size: 10.2px !important;
-      line-height: 1.25 !important;
-      white-space: nowrap !important;
-    }
-
-    body.pdf-export .pdf-page-cosep .meta-card-icon {
-      width: 14px !important;
-      height: 14px !important;
-      min-width: 14px !important;
-    }
-
-    body.pdf-export .pdf-page-cosep .meta-card-icon svg,
-    body.pdf-export .pdf-page-cosep .meta-card-icon i {
-      width: 14px !important;
-      height: 14px !important;
-    }
-
-    body.pdf-export .pdf-page-cosep .meta-card-icon.star-highlight {
-      width: 16px !important;
-      height: 16px !important;
-      min-width: 16px !important;
-    }
-
-    body.pdf-export .pdf-page-cosep .meta-card-icon.star-highlight svg,
-    body.pdf-export .pdf-page-cosep .meta-card-icon.star-highlight i {
-      width: 16px !important;
-      height: 16px !important;
-    }
-
-    body.pdf-export .pdf-page-cosep .meta-card-header strong {
-      font-size: 11.5px !important;
-    }
-
-    body.pdf-export .pdf-page-cosep .meta-card table {
-      overflow: visible !important;
-    }
-
-    body.pdf-export .pdf-page-cosep .meta-card tr {
-      height: 18px !important;
-    }
-
-    body.pdf-export .pdf-page-cosep .meta-card th,
-    body.pdf-export .pdf-page-cosep .meta-card td {
-      padding: 2px 4px !important;
-      font-size: 10.2px !important;
-      line-height: 1.28 !important;
-      vertical-align: middle !important;
-      text-align: left !important;
-    }
-
-    body.pdf-export .pdf-page-cosep .meta-card td:last-child,
-    body.pdf-export .pdf-page-cosep .meta-card th:last-child {
-      text-align: right !important;
-    }
-
-    body.pdf-export .pdf-page-cosep .ranking-setores-box.grid-slot {
-      padding: 6px !important;
-      gap: 4px !important;
-    }
-
-    body.pdf-export .pdf-page-cosep .ranking-setores-lista {
-      max-height: 82px !important;
-      gap: 3px !important;
-    }
-
-    body.pdf-export .pdf-page-cosep .ranking-setor-item {
-      padding: 3px 5px !important;
-      font-size: 9.5px !important;
-      line-height: 1.1 !important;
-    }
-
-    body.pdf-export .chart-box {
-      height: 150px !important;
-    }
-
-    body.pdf-export .chart-box.compact,
-    body.pdf-export .pdf-page-cosep .chart-box.compact {
-      height: 102px !important;
-    }
-
-    body.pdf-export .pie-chart-box {
-      height: 180px !important;
-    }
-
-    body.pdf-export .response-chart-box {
-      height: 112px !important;
-    }
-
-    body.pdf-export .chart-box canvas,
-    body.pdf-export .chart-box img,
-    body.pdf-export .response-chart-box canvas,
-    body.pdf-export .response-chart-box img {
-      width: 100% !important;
-      height: 100% !important;
-      object-fit: contain !important;
-    }
-
-    body.pdf-export .pdf-page-notifica {
-      position: relative !important;
-      padding-bottom: 24mm !important;
-    }
-
-    body.pdf-export .pdf-page-notifica table th,
-    body.pdf-export .pdf-page-notifica table td {
-      font-size: 12px !important;
-    }
-
-    body.pdf-export .pdf-page-notifica .compact-table {
-      table-layout: fixed !important;
-      width: 100% !important;
-      min-width: 0 !important;
-    }
-
-    body.pdf-export .pdf-page-notifica .cell-nowrap-ellipsis {
-      white-space: nowrap !important;
-      overflow: hidden !important;
-      text-overflow: ellipsis !important;
-    }
-
-    body.pdf-export .pdf-page-notifica .footer-note {
-      position: absolute !important;
-      left: 10mm !important;
-      right: 10mm !important;
-      bottom: 10mm !important;
     }
 
     @media print {
@@ -6077,58 +5826,17 @@
       };
     }
 
-    async function exportarPaginasComoPdf(paginas, nomeArquivo, escala = 2.25) {
-      const paginasValidas = Array.from(paginas || []).filter(Boolean);
-      if (!paginasValidas.length) throw new Error('Nenhuma página disponível para exportação.');
-
-      const { html2canvas, jsPDF } = await getBibliotecasPdf();
-      await aguardarFontesPdf();
-      await aguardarImagensPdf(paginasValidas[0] ? paginasValidas[0].closest('.pdf-capture-stage') || document : document);
-      await aguardarEstabilidadeVisual();
-
-      const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
-
-      let paginasPdfGeradas = 0;
-      const larguraMm = 210;
-      const alturaMm = 297;
-
-      for (let indice = 0; indice < paginasValidas.length; indice += 1) {
-        const pagina = paginasValidas[indice];
-        prepararPaginaA4ParaCaptura(pagina);
-
-        atualizarProgressoPdf(`Renderizando página A4 ${indice + 1} de ${paginasValidas.length}...`);
-        await aguardarFrame();
-        prepararPaginaA4ParaCaptura(pagina);
-        const dimensoes = dimensoesPaginaPdf(pagina);
-        const canvas = await html2canvas(pagina, {
-          ...opcoesHtml2CanvasPdf(pagina, escala),
-          width: dimensoes.width,
-          height: dimensoes.height,
-          windowWidth: dimensoes.width,
-          windowHeight: dimensoes.height
-        });
-
-        if (paginasPdfGeradas > 0) pdf.addPage('a4', 'portrait');
-        // Preserva a proporção da captura para não esticar/achatar (gráficos inclusive).
-        const ratioCanvas = (canvas.width || 1) / (canvas.height || 1);
-        const ratioA4 = larguraMm / alturaMm;
-        let desenhoW = larguraMm, desenhoH = alturaMm, deslocX = 0, deslocY = 0;
-        if (ratioCanvas > ratioA4) {
-          desenhoH = larguraMm / ratioCanvas;
-          deslocY = (alturaMm - desenhoH) / 2;
-        } else if (ratioCanvas < ratioA4) {
-          desenhoW = alturaMm * ratioCanvas;
-          deslocX = (larguraMm - desenhoW) / 2;
-        }
-        pdf.addImage(canvas.toDataURL('image/png', 1), 'PNG', deslocX, deslocY, desenhoW, desenhoH, undefined, 'FAST');
-        paginasPdfGeradas += 1;
-      }
-
-      pdf.save(nomeArquivo);
-    }
-
     async function exportarFilaComoPdf(container, nomeArquivo) {
-      await exportarPaginasComoPdf(container.querySelectorAll('.document-page'), nomeArquivo, 2);
+      const html2pdf = await getHtml2Pdf();
+      await aguardarEstabilidadeVisual();
+      await html2pdf().set({
+        margin: [0, 0, 0, 0],
+        filename: nomeArquivo,
+        image: { type: 'png', quality: 1 },
+        html2canvas: { scale: 2, useCORS: true, scrollY: 0, backgroundColor: '#ffffff' },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'] }
+      }).from(container).save();
     }
 
     function criarCloneBoletimComCanvas() {
@@ -6233,24 +5941,27 @@
       const mesNotificaArquivo = filtros.mesesNotifica.length ? filtros.mesesNotifica.join('-') : 'todos';
       const nomeArquivo = `boletim-seguranca-paciente-${mesCosepArquivo}-${anoCosepArquivo}-notifica-${mesNotificaArquivo}-${anoNotificaArquivo}.pdf`;
 
-      const clone = criarCloneBoletimComCanvas();
-      clone.style.width = '210mm';
-      clone.style.maxWidth = '210mm';
-      clone.style.pointerEvents = 'none';
-      const palco = criarPalcoCapturaPdf(clone);
-
+      const elemento = document.getElementById('boletim');
       document.body.classList.add('pdf-export');
       mostrarProgressoPdf('Preparando seu PDF', 'Ajustando páginas, gráficos e imagens para o download...');
       try {
-        await exportarPaginasComoPdf(clone.querySelectorAll('.document-page'), nomeArquivo, 2.35);
-        mostrarToast('PDF baixado com o layout preservado e pronto para uso.', 'success', 'Download iniciado');
+        const html2pdf = await getHtml2Pdf();
+        await aguardarRender();
+        await html2pdf().set({
+          margin: [0, 0, 0, 0],
+          filename: nomeArquivo,
+          image: { type: 'png', quality: 1 },
+          html2canvas: { scale: 3, useCORS: true, scrollY: 0, backgroundColor: '#ffffff' },
+          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+          pagebreak: { mode: ['css', 'legacy'] }
+        }).from(elemento).save();
+        mostrarToast('PDF baixado com sucesso.', 'success', 'Download iniciado');
       } catch (erro) {
         console.error(erro);
         mostrarToast(erro.message || 'Não foi possível baixar o PDF.', 'error', 'Erro no download');
       } finally {
         document.body.classList.remove('pdf-export');
         ocultarProgressoPdf();
-        palco.remove();
       }
     }
 
@@ -6596,10 +6307,10 @@
 
     init();
 
-    /* Pré-carrega html2canvas + jsPDF em segundo plano para que o primeiro
+    /* Pré-carrega html2pdf.js em segundo plano para que o primeiro
        download de PDF seja imediato (sem esperar a CDN na hora do clique). */
     (function preCarregarBibliotecasPdf() {
-      const disparar = () => { try { getBibliotecasPdf().catch(() => {}); } catch (_) {} };
+      const disparar = () => { try { getHtml2Pdf().catch(() => {}); } catch (_) {} };
       if (typeof requestIdleCallback !== 'undefined') {
         requestIdleCallback(disparar, { timeout: 8000 });
       } else {
