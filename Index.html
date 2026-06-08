@@ -2093,14 +2093,14 @@
     }
 
     body.pdf-export .pdf-page-cosep .meta-card tr {
-      height: 22px !important;
+      height: 18px !important;
     }
 
     body.pdf-export .pdf-page-cosep .meta-card th,
     body.pdf-export .pdf-page-cosep .meta-card td {
-      padding: 3px 5px !important;
-      font-size: 10.5px !important;
-      line-height: 1.3 !important;
+      padding: 2px 4px !important;
+      font-size: 10.2px !important;
+      line-height: 1.28 !important;
       vertical-align: middle !important;
       text-align: left !important;
     }
@@ -6015,7 +6015,13 @@
       if (escalaAjuste < 1) {
         wrapper.style.width = `${100 / escalaAjuste}%`;
         wrapper.style.maxWidth = `${100 / escalaAjuste}%`;
+        // transform-origin explícito: o html2canvas tende a usar origem central ao
+        // rasterizar scale(), o que empurra o conteúdo para baixo/direita no PDF.
+        // Fixar top-left mantém o conteúdo ancorado no canto superior esquerdo.
+        wrapper.style.transformOrigin = 'top left';
         wrapper.style.transform = `scale(${escalaAjuste})`;
+      } else {
+        wrapper.style.transform = 'none';
       }
     }
 
