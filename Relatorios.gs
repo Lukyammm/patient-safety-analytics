@@ -74,8 +74,13 @@ function doGet(e) {
 
   if (params.api === 'relatorios' || params.api === '1') {
     return responderJson(executarRota('api-relatorios', () => {
-      return executarComPlanilha('relatorios', ss => montarPayloadRelatorios(ss, extrairFiltrosRelatorios(params)));
+      const cfg = obterConfigRel();
+      return montarPayloadRelatorios(abrirPlanilhaRelatorio(cfg), extrairFiltrosRelatorios(params), cfg);
     }));
+  }
+
+  if (params.api === 'configrel') {
+    return responderJson(obterConfigRelCosep());
   }
 
   try {
@@ -311,6 +316,139 @@ const RELATORIO_ABAS_POR_COMISSAO = {
   CRO: [ABA_RELATORIO_CRO, 'BASE CRO', 'CRO - BASE', 'RELATÓRIO CRO', 'RELATORIO CRO']
 };
 
+/* ============================================================
+   CONFIGURAÇÃO SELF-SERVICE DO RELATÓRIO (autodependência)
+   Mesma ideia da Fase 1 do boletim: a config editável fica em
+   Script Properties, com fallback para os padrões. Sem nada
+   salvo, o comportamento é idêntico (zero regressão).
+   ============================================================ */
+const CONFIG_REL_PROP_KEY = 'COSEP_REL_CONFIG_V1';
+const CONFIG_REL_ADMINS_PROP_KEY = 'COSEP_REL_ADMINS';
+const CONFIG_REL_LOG_SHEET = 'COSEP_REL_CONFIG_LOG';
+
+function configPadraoRel() {
+  return {
+    metaInstitucional: META_INSTITUCIONAL,
+    planilhaId: PLANILHAS.relatorios,
+    abaNome: ABA_RELATORIO_CRP,
+    indicadores: RELATORIO_CRP_INDICADORES.slice(),
+    termosConforme: ['CONFORME'],
+    termosNaoConforme: ['NÃO CONFORME', 'NAO CONFORME'],
+    termosNaoSeAplica: ['NÃO SE APLICA', 'NAO SE APLICA', 'N/A', 'NA'],
+    atualizadoEm: '',
+    atualizadoPor: ''
+  };
+}
+
+function obterConfigRel() {
+  const padrao = configPadraoRel();
+  try {
+    const raw = PropertiesService.getScriptProperties().getProperty(CONFIG_REL_PROP_KEY);
+    if (!raw) return padrao;
+    return mesclarConfigRel(padrao, JSON.parse(raw));
+  } catch (erro) {
+    registrarErro('obter-config-rel', erro);
+    return padrao;
+  }
+}
+
+function mesclarConfigRel(padrao, salvo) {
+  if (!salvo || typeof salvo !== 'object') return padrao;
+  const cfg = JSON.parse(JSON.stringify(padrao));
+  const meta = Number(salvo.metaInstitucional);
+  if (!Number.isNaN(meta) && meta >= 0 && meta <= 100) cfg.metaInstitucional = meta;
+  if (salvo.planilhaId && String(salvo.planilhaId).trim()) cfg.planilhaId = String(salvo.planilhaId).trim();
+  if (salvo.abaNome && String(salvo.abaNome).trim()) cfg.abaNome = String(salvo.abaNome).trim();
+  if (Array.isArray(salvo.indicadores) && salvo.indicadores.length) {
+    // Preserva quantidade/ordem dos padrões; aplica nomes salvos por posição.
+    cfg.indicadores = padrao.indicadores.map((nomePadrao, i) => {
+      const nomeSalvo = salvo.indicadores[i];
+      return nomeSalvo && String(nomeSalvo).trim() ? String(nomeSalvo).trim() : nomePadrao;
+    });
+  }
+  ['termosConforme', 'termosNaoConforme', 'termosNaoSeAplica'].forEach(chave => {
+    if (Array.isArray(salvo[chave])) {
+      const lista = salvo[chave].map(t => String(t || '').trim()).filter(Boolean);
+      if (lista.length) cfg[chave] = lista;
+    }
+  });
+  cfg.atualizadoEm = salvo.atualizadoEm || '';
+  cfg.atualizadoPor = salvo.atualizadoPor || '';
+  return cfg;
+}
+
+function abrirPlanilhaRelatorio(cfg) {
+  cfg = cfg || obterConfigRel();
+  const id = cfg.planilhaId || PLANILHAS.relatorios;
+  try {
+    return SpreadsheetApp.openById(id);
+  } catch (erro) {
+    throw new Error(`Falha ao abrir a planilha do relatório (${id}): ${erro.message || erro}`);
+  }
+}
+
+function emailUsuarioAtualRel() {
+  try {
+    const ativo = Session.getActiveUser() && Session.getActiveUser().getEmail();
+    if (ativo) return ativo;
+    return (Session.getEffectiveUser() && Session.getEffectiveUser().getEmail()) || '';
+  } catch (erro) { return ''; }
+}
+
+function listaAdminsRel() {
+  try {
+    const raw = PropertiesService.getScriptProperties().getProperty(CONFIG_REL_ADMINS_PROP_KEY) || '';
+    return raw.split(/[;,]/).map(s => String(s || '').trim().toLowerCase()).filter(Boolean);
+  } catch (erro) { return []; }
+}
+
+function usuarioPodeEditarRel() {
+  const admins = listaAdminsRel();
+  if (!admins.length) return true;
+  const email = emailUsuarioAtualRel().toLowerCase();
+  return !!email && admins.indexOf(email) !== -1;
+}
+
+function obterConfigRelCosep() {
+  return executarRota('rpc-configrel-get', () => ({
+    success: true,
+    config: obterConfigRel(),
+    podeEditar: usuarioPodeEditarRel(),
+    usuario: emailUsuarioAtualRel(),
+    geradoEm: Utilities.formatDate(new Date(), FUSO_HORARIO, "dd/MM/yyyy 'às' HH:mm")
+  }));
+}
+
+function salvarConfigRelCosep(novaConfig) {
+  return executarRota('rpc-configrel-save', () => {
+    if (!usuarioPodeEditarRel()) return { success: false, mensagem: 'Você não tem permissão para alterar as configurações.' };
+    const merged = mesclarConfigRel(configPadraoRel(), novaConfig || {});
+    merged.atualizadoEm = Utilities.formatDate(new Date(), FUSO_HORARIO, "dd/MM/yyyy 'às' HH:mm");
+    merged.atualizadoPor = emailUsuarioAtualRel() || 'desconhecido';
+    PropertiesService.getScriptProperties().setProperty(CONFIG_REL_PROP_KEY, JSON.stringify(merged));
+    registrarLogRel(merged.atualizadoPor, 'Configuração do relatório atualizada');
+    return { success: true, config: merged, mensagem: 'Configurações salvas com sucesso.' };
+  });
+}
+
+function restaurarConfigRelCosep() {
+  return executarRota('rpc-configrel-reset', () => {
+    if (!usuarioPodeEditarRel()) return { success: false, mensagem: 'Você não tem permissão para alterar as configurações.' };
+    PropertiesService.getScriptProperties().deleteProperty(CONFIG_REL_PROP_KEY);
+    registrarLogRel(emailUsuarioAtualRel() || 'desconhecido', 'Configuração do relatório restaurada para o padrão');
+    return { success: true, config: obterConfigRel(), mensagem: 'Configurações restauradas para o padrão.' };
+  });
+}
+
+function registrarLogRel(usuario, acao) {
+  try {
+    const ss = abrirPlanilhaRelatorio(obterConfigRel());
+    let sh = ss.getSheetByName(CONFIG_REL_LOG_SHEET);
+    if (!sh) { sh = ss.insertSheet(CONFIG_REL_LOG_SHEET); sh.appendRow(['Data/Hora', 'Usuário', 'Ação']); }
+    sh.appendRow([Utilities.formatDate(new Date(), FUSO_HORARIO, 'dd/MM/yyyy HH:mm:ss'), usuario || '', acao || '']);
+  } catch (erro) { registrarErro('config-rel-log', erro); }
+}
+
 function extrairFiltrosRelatorios(params) {
   const bruto = params || {};
   return {
@@ -331,8 +469,10 @@ function normalizarComissaoRelatorio(valor) {
   return 'CRP';
 }
 
-function obterAbaRelatorio(ss, comissao) {
-  const nomes = RELATORIO_ABAS_POR_COMISSAO[normalizarComissaoRelatorio(comissao)] || RELATORIO_ABAS_POR_COMISSAO.CRP;
+function obterAbaRelatorio(ss, comissao, cfg) {
+  const comNorm = normalizarComissaoRelatorio(comissao);
+  let nomes = RELATORIO_ABAS_POR_COMISSAO[comNorm] || RELATORIO_ABAS_POR_COMISSAO.CRP;
+  if (comNorm === 'CRP' && cfg && cfg.abaNome) nomes = [cfg.abaNome].concat(nomes);
   for (let i = 0; i < nomes.length; i++) {
     const sh = ss.getSheetByName(nomes[i]);
     if (sh) return sh;
@@ -340,8 +480,8 @@ function obterAbaRelatorio(ss, comissao) {
   return null;
 }
 
-function obterLinhasRelatorio(ss, comissao) {
-  const sh = obterAbaRelatorio(ss, comissao);
+function obterLinhasRelatorio(ss, comissao, cfg) {
+  const sh = obterAbaRelatorio(ss, comissao, cfg);
   if (!sh) {
     return { abaEncontrada: '', headers: [], linhas: [], estrutura: RELATORIO_CRP_ESTRUTURA, alertasEstrutura: ['Aba da CRP não encontrada.'] };
   }
@@ -436,26 +576,28 @@ function coletarFiltrosRelatorio(linhas, abaEncontrada) {
   };
 }
 
-function montarPayloadRelatorios(ss, filtros) {
+function montarPayloadRelatorios(ss, filtros, cfg) {
+  cfg = cfg || obterConfigRel();
   const filtrosAplicados = extrairFiltrosRelatorios(filtros || {});
   // Lê a base uma única vez (os filtros vêm sempre da CRP). Evita reler o
   // getDataRange() duas vezes por requisição.
-  const baseCRP = obterLinhasRelatorio(ss, 'CRP');
+  const baseCRP = obterLinhasRelatorio(ss, 'CRP', cfg);
   const baseProcessamento = filtrosAplicados.comissao === 'CRP'
     ? baseCRP
-    : obterLinhasRelatorio(ss, filtrosAplicados.comissao);
+    : obterLinhasRelatorio(ss, filtrosAplicados.comissao, cfg);
   return {
     success: true,
     geradoEm: Utilities.formatDate(new Date(), FUSO_HORARIO, "dd/MM/yyyy 'às' HH:mm"),
     filtros: coletarFiltrosRelatorio(baseCRP.linhas, baseCRP.abaEncontrada),
     aplicado: filtrosAplicados,
-    relatorio: processarRelatorioCRP(ss, filtrosAplicados, baseProcessamento)
+    relatorio: processarRelatorioCRP(ss, filtrosAplicados, baseProcessamento, cfg)
   };
 }
 
 function obterPayloadRelatorios(filtros) {
   return executarRota('rpc-relatorios', () => {
-    return executarComPlanilha('relatorios', ss => montarPayloadRelatorios(ss, extrairFiltrosRelatorios(filtros || {})));
+    const cfg = obterConfigRel();
+    return montarPayloadRelatorios(abrirPlanilhaRelatorio(cfg), extrairFiltrosRelatorios(filtros || {}), cfg);
   });
 }
 
@@ -465,9 +607,15 @@ function atendeFiltroRelatorio(valor, setFiltro, normalizerFn) {
   return setFiltro.has(valorNormalizado);
 }
 
-function classificarValorIndicador(valor) {
+function classificarValorIndicador(valor, termos) {
   const texto = normalizarTexto(valor);
   if (!texto || texto === '-') return 'vazio';
+  if (termos) {
+    if (termos.conforme.has(texto)) return 'conforme';
+    if (termos.naoConforme.has(texto)) return 'naoConforme';
+    if (termos.naoSeAplica.has(texto)) return 'naoSeAplica';
+    return 'outro';
+  }
   if (texto === 'CONFORME') return 'conforme';
   if (texto === 'NÃO CONFORME' || texto === 'NAO CONFORME') return 'naoConforme';
   if (texto === 'NÃO SE APLICA' || texto === 'NAO SE APLICA' || texto === 'N/A' || texto === 'NA') return 'naoSeAplica';
@@ -485,9 +633,17 @@ function percentualRelatorio(conformes, naoConformes) {
   return denominador ? Number(((Number(conformes || 0) / denominador) * 100).toFixed(1)) : null;
 }
 
-function processarRelatorioCRP(ss, filtros, base) {
-  base = base || obterLinhasRelatorio(ss, filtros.comissao || 'CRP');
+function processarRelatorioCRP(ss, filtros, base, cfg) {
+  cfg = cfg || obterConfigRel();
+  base = base || obterLinhasRelatorio(ss, filtros.comissao || 'CRP', cfg);
   const col = RELATORIO_CRP_COLUNAS;
+  const termos = {
+    conforme: new Set((cfg.termosConforme || []).map(normalizarTexto)),
+    naoConforme: new Set((cfg.termosNaoConforme || []).map(normalizarTexto)),
+    naoSeAplica: new Set((cfg.termosNaoSeAplica || []).map(normalizarTexto))
+  };
+  const classifica = valor => classificarValorIndicador(valor, termos);
+  const nomesIndicadores = cfg.indicadores || [];
   const anosFiltro = new Set((filtros.anos || []).map(normalizarAno).filter(Boolean));
   const mesesFiltro = new Set((filtros.meses || []).map(normalizarMes).filter(Boolean));
   const unidadesFiltro = new Set((filtros.unidades || []).map(item => String(item || '').trim()).filter(Boolean));
@@ -510,10 +666,11 @@ function processarRelatorioCRP(ss, filtros, base) {
   const indicadores = [];
   for (let idx = col.inicioIndicadores; idx <= col.fimIndicadores; idx++) {
     const campo = obterCampoCRPPorIndice(idx);
+    const nomeCfg = nomesIndicadores[idx - col.inicioIndicadores];
     indicadores.push({
       idx: idx,
       coluna: campo ? campo.letra : colunaParaLetra(idx),
-      nome: campo ? campo.nome : nomeIndicadorRelatorio(base.headers[idx], `Indicador ${idx + 1}`),
+      nome: (nomeCfg && String(nomeCfg).trim()) || (campo ? campo.nome : nomeIndicadorRelatorio(base.headers[idx], `Indicador ${idx + 1}`)),
       cabecalhoPlanilha: nomeIndicadorRelatorio(base.headers[idx], campo ? campo.nome : `Indicador ${idx + 1}`),
       conformes: 0,
       naoConformes: 0,
@@ -567,7 +724,7 @@ function processarRelatorioCRP(ss, filtros, base) {
     }
 
     indicadores.forEach(indicador => {
-      const classe = classificarValorIndicador(row[indicador.idx]);
+      const classe = classifica(row[indicador.idx]);
       if (classe === 'conforme') {
         indicador.conformes++;
         indicador.avaliados++;
@@ -613,7 +770,7 @@ function processarRelatorioCRP(ss, filtros, base) {
   const rankingSetores = Object.keys(porUnidade).sort((a, b) => a.localeCompare(b, 'pt-BR')).map(setor => {
     const resumo = linhasFiltradas.filter(row => (String(row[col.unidade] || '').trim() || 'Não informado') === setor).reduce((acc, row) => {
       indicadores.forEach(ind => {
-        const classe = classificarValorIndicador(row[ind.idx]);
+        const classe = classifica(row[ind.idx]);
         if (classe === 'conforme') acc.conformes++;
         if (classe === 'naoConforme') acc.naoConformes++;
       });
@@ -650,8 +807,8 @@ function processarRelatorioCRP(ss, filtros, base) {
     vazios: vazios,
     outros: outros,
     conformidadeGeral: conformidadeGeral,
-    metaInstitucional: META_INSTITUCIONAL,
-    diferencaMeta: Number((conformidadeGeral - META_INSTITUCIONAL).toFixed(1)),
+    metaInstitucional: cfg.metaInstitucional,
+    diferencaMeta: Number((conformidadeGeral - cfg.metaInstitucional).toFixed(1)),
     numeradorPlanilha: numeradorPlanilha,
     denominadorPlanilha: denominadorPlanilha,
     resultadoPlanilha: denominadorPlanilha ? Number(((numeradorPlanilha / denominadorPlanilha) * 100).toFixed(1)) : (totalResultadoPlanilha ? Number((somaResultadoPlanilha / totalResultadoPlanilha).toFixed(1)) : null),
