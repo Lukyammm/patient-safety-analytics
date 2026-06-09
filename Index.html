@@ -1940,16 +1940,46 @@
       min-height: 0 !important;
     }
 
+    /* Esconde no PDF tudo que é só de tela (igual ao @media print) */
+    body.pdf-export .hero-card,
+    body.pdf-export .loading-box,
+    body.pdf-export #toast-root,
+    body.pdf-export .pdf-progress-modal,
+    body.pdf-export .pontos-card,
+    body.pdf-export #relatorios-app,
+    body.pdf-export #admin-app {
+      display: none !important;
+    }
+
+    /* Cada página vira um A4 fixo, sem vazar para outras páginas */
     body.pdf-export .document-page {
+      width: 210mm !important;
+      height: 297mm !important;
+      min-height: 297mm !important;
+      max-height: 297mm !important;
       margin: 0 auto !important;
+      padding: 10mm !important;
       border: 0 !important;
+      background: #fff !important;
+      overflow: hidden !important;
+      display: flex !important;
+      flex-direction: column !important;
       break-inside: avoid !important;
       page-break-inside: avoid !important;
     }
 
-    body.pdf-export .document-page:not(:last-child) {
-      break-after: page !important;
-      page-break-after: always !important;
+    /* A quebra entre páginas é controlada pelo html2pdf (pagebreak.before),
+       evitando página em branco por dupla quebra (CSS + fatiamento automático). */
+
+    body.pdf-export #pagina-cosep {
+      display: flex !important;
+      flex-direction: column !important;
+      align-content: normal !important;
+      overflow: hidden !important;
+    }
+    body.pdf-export #pagina-cosep .footer-note,
+    body.pdf-export .footer-note {
+      margin-top: auto !important;
     }
 
     @media print {
@@ -5848,17 +5878,42 @@
       };
     }
 
-    async function exportarFilaComoPdf(container, nomeArquivo) {
-      const html2pdf = await getHtml2Pdf();
+    // Exporta cada .document-page como UMA página A4 inteira (sem fatiar e sem
+    // escala). Cada página já tem exatamente 210x297mm via CSS pdf-export, então
+    // a captura preenche a folha sem deslocamento vertical nem página em branco.
+    async function exportarPaginasComoPdf(paginas, nomeArquivo, escala = 2.5) {
+      const lista = Array.from(paginas || []).filter(Boolean);
+      if (!lista.length) throw new Error('Nenhuma página disponível para exportação.');
+
+      const { html2canvas, jsPDF } = await getBibliotecasPdf();
+      await aguardarFontesPdf();
+      await aguardarImagensPdf(document);
       await aguardarEstabilidadeVisual();
-      await html2pdf().set({
-        margin: [0, 0, 0, 0],
-        filename: nomeArquivo,
-        image: { type: 'png', quality: 1 },
-        html2canvas: { scale: 2, useCORS: true, scrollY: 0, backgroundColor: '#ffffff' },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-        pagebreak: { mode: ['css', 'legacy'] }
-      }).from(container).save();
+
+      const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait', compress: true });
+
+      for (let i = 0; i < lista.length; i += 1) {
+        atualizarProgressoPdf(`Renderizando página ${i + 1} de ${lista.length}...`);
+        await aguardarFrame();
+        const canvas = await html2canvas(lista[i], {
+          scale: escala,
+          useCORS: true,
+          allowTaint: false,
+          scrollX: 0,
+          scrollY: 0,
+          backgroundColor: '#ffffff',
+          imageTimeout: 15000,
+          logging: false
+        });
+        if (i > 0) pdf.addPage('a4', 'portrait');
+        pdf.addImage(canvas.toDataURL('image/png', 1), 'PNG', 0, 0, 210, 297, undefined, 'FAST');
+      }
+
+      pdf.save(nomeArquivo);
+    }
+
+    async function exportarFilaComoPdf(container, nomeArquivo) {
+      await exportarPaginasComoPdf(container.querySelectorAll('.document-page'), nomeArquivo, 2.2);
     }
 
     function criarCloneBoletimComCanvas() {
@@ -5963,20 +6018,12 @@
       const mesNotificaArquivo = filtros.mesesNotifica.length ? filtros.mesesNotifica.join('-') : 'todos';
       const nomeArquivo = `boletim-seguranca-paciente-${mesCosepArquivo}-${anoCosepArquivo}-notifica-${mesNotificaArquivo}-${anoNotificaArquivo}.pdf`;
 
-      const elemento = document.getElementById('boletim');
+      const boletim = document.getElementById('boletim');
       document.body.classList.add('pdf-export');
       mostrarProgressoPdf('Preparando seu PDF', 'Ajustando páginas, gráficos e imagens para o download...');
       try {
-        const html2pdf = await getHtml2Pdf();
         await aguardarRender();
-        await html2pdf().set({
-          margin: [0, 0, 0, 0],
-          filename: nomeArquivo,
-          image: { type: 'png', quality: 1 },
-          html2canvas: { scale: 3, useCORS: true, scrollY: 0, backgroundColor: '#ffffff' },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-          pagebreak: { mode: ['css', 'legacy'] }
-        }).from(elemento).save();
+        await exportarPaginasComoPdf(boletim.querySelectorAll('.document-page'), nomeArquivo, 2.6);
         mostrarToast('PDF baixado com sucesso.', 'success', 'Download iniciado');
       } catch (erro) {
         console.error(erro);
@@ -6329,10 +6376,10 @@
 
     init();
 
-    /* Pré-carrega html2pdf.js em segundo plano para que o primeiro
+    /* Pré-carrega html2canvas + jsPDF em segundo plano para que o primeiro
        download de PDF seja imediato (sem esperar a CDN na hora do clique). */
     (function preCarregarBibliotecasPdf() {
-      const disparar = () => { try { getHtml2Pdf().catch(() => {}); } catch (_) {} };
+      const disparar = () => { try { getBibliotecasPdf().catch(() => {}); } catch (_) {} };
       if (typeof requestIdleCallback !== 'undefined') {
         requestIdleCallback(disparar, { timeout: 8000 });
       } else {
