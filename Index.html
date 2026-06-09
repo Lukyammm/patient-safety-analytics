@@ -1782,6 +1782,34 @@
       .meta-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
       }
+      /* A 794px a media query de tela pequena troca os rótulos das metas para
+         white-space: normal, fazendo o texto QUEBRAR em várias linhas e ocupar
+         espaço (empurrando o rodapé para fora). Restaura 1 linha + reticências. */
+      .meta-card-title span,
+      .meta-card-title span:last-child,
+      .meta-item-label {
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+      }
+      /* Gráficos Chart.js usam maintainAspectRatio:false (preenchem o container).
+         No print o container fica largo e baixo, esticando a rosca numa elipse.
+         Damos containers com proporção sensata e centralizados; os próprios
+         gráficos são redesenhados no evento beforeprint (resize). */
+      .chart-box { height: 150px !important; }
+      #pagina-cosep .chart-box.compact { height: 110px !important; }
+      .chart-box.pie-chart-box {
+        height: 180px !important;
+        max-width: 240px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+      }
+      .response-chart-box {
+        height: 120px !important;
+        max-width: 200px !important;
+        margin-left: auto !important;
+        margin-right: auto !important;
+      }
       #pagina-cosep .footer-note,
       .footer-note { margin-top: auto !important; }
     }
@@ -4130,6 +4158,19 @@
     let chartRespostaMeta10 = null;
     let boletimGerado = false;
     let filaBoletins = [];
+
+    // Os gráficos (Chart.js, maintainAspectRatio:false) desenham o bitmap no
+    // tamanho que tinham na TELA. Ao imprimir, o navegador aplica o CSS de print
+    // (containers menores/proporção diferente) ANTES de disparar 'beforeprint';
+    // resize() força o Chart.js a redesenhar nesse tamanho, sem esticar a rosca.
+    // 'afterprint' redesenha de volta para a tela.
+    function redimensionarGraficosImpressao() {
+      [chartEvolucao, chartAfetou, chartRespostaMeta5, chartRespostaMeta10].forEach((c) => {
+        try { if (c && typeof c.resize === 'function') c.resize(); } catch (_) {}
+      });
+    }
+    window.addEventListener('beforeprint', redimensionarGraficosImpressao);
+    window.addEventListener('afterprint', redimensionarGraficosImpressao);
     let html2pdfLoader = null;
     const pdfLibraryLoaders = {};
     let buscaFiltrosConfigurada = false;
