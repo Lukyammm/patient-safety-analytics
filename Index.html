@@ -1892,14 +1892,45 @@
       line-height: 1 !important;
     }
 
-    /* PDF: o html2canvas empurra o texto para o RODAPÉ da célula quando há
-       leading extra (line-height > 1) — era o que fazia os rótulos "descerem"
-       e sumirem no corte. Zera o leading e centraliza a linha na célula via
-       vertical-align, mantendo as linhas compactas. */
+    /* PDF: html2canvas não renderiza vertical-align:middle em <td> de tabela.
+       Converter para flexbox é a única forma confiável de centralizar o texto
+       verticalmente — align-items:center funciona em todas as versões e não
+       sofre com o bug de line-height do html2canvas. */
+    body.pdf-export .meta-card table,
+    body.pdf-export .meta-card thead,
+    body.pdf-export .meta-card tbody {
+      display: block !important;
+      width: 100% !important;
+    }
+    body.pdf-export .meta-card tr {
+      display: flex !important;
+      width: 100% !important;
+    }
     body.pdf-export .meta-card th,
     body.pdf-export .meta-card td {
+      display: flex !important;
+      align-items: center !important;
       line-height: 1 !important;
-      vertical-align: middle !important;
+      border: none !important;
+      border-bottom: 1px solid #dce7f5 !important;
+      padding: 2px 4px !important;
+      color: #1f2933 !important;
+    }
+    body.pdf-export .meta-card th:first-child,
+    body.pdf-export .meta-card td:first-child {
+      flex: 1 1 0 !important;
+      min-width: 0 !important;
+      overflow: hidden !important;
+      border-right: 1px solid #dce7f5 !important;
+    }
+    body.pdf-export .meta-card th:last-child,
+    body.pdf-export .meta-card td:last-child {
+      flex: 0 0 28% !important;
+      justify-content: flex-end !important;
+      white-space: nowrap !important;
+    }
+    body.pdf-export .meta-card tbody tr:last-child td {
+      border-bottom: none !important;
     }
 
     /* Título do card: largura ESTÁVEL (independe do texto) para o "…" não
@@ -1931,16 +1962,9 @@
       line-height: 1.15 !important;
     }
 
-    /* PDF: texto das tabelas das metas em cor sólida (sem aparência apagada) */
-    body.pdf-export .meta-card th,
-    body.pdf-export .meta-card td,
-    body.pdf-export .meta-item-label,
+    /* cor sólida no título */
     body.pdf-export .meta-card-title span {
       color: #1f2933 !important;
-    }
-    body.pdf-export .meta-card th:last-child,
-    body.pdf-export .meta-card td:last-child {
-      white-space: nowrap !important;
     }
 
     body.pdf-export .document-page,
