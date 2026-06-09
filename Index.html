@@ -1889,7 +1889,17 @@
       white-space: nowrap !important;
       overflow: hidden !important;
       text-overflow: ellipsis !important;
-      line-height: 1.2 !important;
+      line-height: 1 !important;
+    }
+
+    /* PDF: o html2canvas empurra o texto para o RODAPÉ da célula quando há
+       leading extra (line-height > 1) — era o que fazia os rótulos "descerem"
+       e sumirem no corte. Zera o leading e centraliza a linha na célula via
+       vertical-align, mantendo as linhas compactas. */
+    body.pdf-export .meta-card th,
+    body.pdf-export .meta-card td {
+      line-height: 1 !important;
+      vertical-align: middle !important;
     }
 
     /* Título do card: largura ESTÁVEL (independe do texto) para o "…" não
@@ -1918,7 +1928,7 @@
       white-space: nowrap !important;
       overflow: hidden !important;
       text-overflow: ellipsis !important;
-      line-height: 1.2 !important;
+      line-height: 1.15 !important;
     }
 
     /* PDF: texto das tabelas das metas em cor sólida (sem aparência apagada) */
