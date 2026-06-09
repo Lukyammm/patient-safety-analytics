@@ -1892,14 +1892,27 @@
       line-height: 1.2 !important;
     }
 
-    /* Título do card: o nome da meta encolhe e corta com "…", a % fica fixa */
-    body.pdf-export .meta-card-header-text,
+    /* Título do card: largura ESTÁVEL (independe do texto) para o "…" não
+       entrar em loop de medição. O bloco de texto ocupa todo o espaço livre
+       (flex:1 1 0), a % fica fixa à direita, e o nome encolhe e corta com "…". */
+    body.pdf-export .meta-card-header {
+      display: flex !important;
+      align-items: center !important;
+    }
+    body.pdf-export .meta-card-header-text {
+      flex: 1 1 0 !important;
+      min-width: 0 !important;
+      overflow: hidden !important;
+    }
+    body.pdf-export .meta-card-header strong {
+      flex: 0 0 auto !important;
+    }
     body.pdf-export .meta-card-title {
       min-width: 0 !important;
       overflow: hidden !important;
     }
     body.pdf-export .meta-card-title span:last-child {
-      flex: 1 1 auto !important;
+      flex: 1 1 0 !important;
       min-width: 0 !important;
       display: block !important;
       white-space: nowrap !important;
@@ -5897,23 +5910,51 @@
 
     // O html2canvas não desenha o "…" de text-overflow: ellipsis. Para o texto
     // das metas não cortar no meio da palavra, truncamos via JS antes da captura
-    // (medindo o overflow real) e restauramos o texto original logo depois.
+    // e restauramos o texto original logo depois.
+    //
+    // Robustez (determinístico em qualquer navegador):
+    //  1) Mede a largura disponível de cada alvo UMA vez, com o texto completo e
+    //     o layout já assentado (separa leitura de escrita — sem loop de medição).
+    //  2) Calcula o corte com um CANVAS 2D (measureText), que mede a largura do
+    //     TEXTO diretamente, sem depender de reflow do DOM (que pode realimentar
+    //     a medição em contêineres flex e colapsar para um "…" solto).
+    const LARGURA_MINIMA_RETICENCIAS = 24; // px — abaixo disso, medição não confiável
     function aplicarReticenciasMetasPdf(raiz) {
+      const FOLGA = 2; // px de margem para nunca encostar na borda da coluna
+      void raiz.offsetHeight; // garante layout assentado antes de medir
+      const alvos = Array.from(raiz.querySelectorAll('.meta-item-label, .meta-card-title span:last-child'));
+
+      // PASSO 1 — medir tudo (somente leitura, texto ainda completo)
+      const medidas = alvos.map((el) => {
+        const cs = window.getComputedStyle(el);
+        return {
+          el,
+          avail: el.clientWidth - FOLGA,
+          font: `${cs.fontStyle} ${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`,
+          text: el.textContent
+        };
+      });
+
+      const cv = aplicarReticenciasMetasPdf._cv || (aplicarReticenciasMetasPdf._cv = document.createElement('canvas'));
+      const ctx = cv.getContext('2d');
       const restauros = [];
-      const alvos = raiz.querySelectorAll('.meta-item-label, .meta-card-title span:last-child');
-      alvos.forEach((el) => {
-        if (!el || el.scrollWidth <= el.clientWidth + 1) return;
-        const original = el.textContent;
-        restauros.push([el, original]);
-        let baixo = 0, alto = original.length, melhor = '';
+
+      // PASSO 2 — truncar via medição de TEXTO no canvas (sem mexer no layout)
+      medidas.forEach((m) => {
+        if (!m.text || m.avail < LARGURA_MINIMA_RETICENCIAS) return;
+        ctx.font = m.font;
+        if (ctx.measureText(m.text).width <= m.avail) return; // já cabe
+        restauros.push([m.el, m.text]);
+        let baixo = 0, alto = m.text.length, melhor = '…';
         while (baixo <= alto) {
           const meio = (baixo + alto) >> 1;
-          el.textContent = original.slice(0, meio).trimEnd() + '…';
-          if (el.scrollWidth <= el.clientWidth + 1) { melhor = el.textContent; baixo = meio + 1; }
+          const cand = m.text.slice(0, meio).trimEnd() + '…';
+          if (ctx.measureText(cand).width <= m.avail) { melhor = cand; baixo = meio + 1; }
           else { alto = meio - 1; }
         }
-        el.textContent = melhor || ('…');
+        m.el.textContent = melhor;
       });
+
       return () => restauros.forEach(([el, txt]) => { el.textContent = txt; });
     }
 
