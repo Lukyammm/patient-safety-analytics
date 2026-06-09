@@ -1877,8 +1877,30 @@
     body.pdf-export * {
       font-family: Arial, Helvetica, sans-serif !important;
       text-rendering: geometricPrecision !important;
-      -webkit-font-smoothing: antialiased !important;
+      -webkit-font-smoothing: auto !important;
       font-kerning: normal !important;
+    }
+
+    /* PDF: rótulos das metas quebram em até 2 linhas em vez de cortar com "..." */
+    body.pdf-export .meta-card-title span,
+    body.pdf-export .meta-item-label {
+      white-space: normal !important;
+      overflow: visible !important;
+      text-overflow: clip !important;
+      word-break: break-word !important;
+      line-height: 1.2 !important;
+    }
+
+    /* PDF: texto das tabelas das metas em cor sólida (sem aparência apagada) */
+    body.pdf-export .meta-card th,
+    body.pdf-export .meta-card td,
+    body.pdf-export .meta-item-label,
+    body.pdf-export .meta-card-title span {
+      color: #1f2933 !important;
+    }
+    body.pdf-export .meta-card th:last-child,
+    body.pdf-export .meta-card td:last-child {
+      white-space: nowrap !important;
     }
 
     body.pdf-export .document-page,
