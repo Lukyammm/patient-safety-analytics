@@ -1765,6 +1765,23 @@
         align-content: normal !important;
         overflow: hidden !important;
       }
+      /* As páginas viram colunas flex de altura fixa (297mm). O `.panel` tem
+         min-height:100% (para preencher a tela), o que, dentro do flex, força
+         CADA painel a ocupar a página inteira — empurrando as 7 metas para fora
+         da folha. No print os painéis tomam a altura natural do conteúdo. */
+      .document-page .panel {
+        min-height: 0 !important;
+        flex: 0 0 auto !important;
+      }
+      /* O PDF é renderizado a 210mm (~794px), o que dispara as media queries
+         de tela pequena (max-width:1240px) e colapsa os grids para 1 coluna —
+         fazendo as 7 metas empilharem e não caberem. Restaura o layout cheio. */
+      .metrics {
+        grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+      }
+      .meta-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+      }
       #pagina-cosep .footer-note,
       .footer-note { margin-top: auto !important; }
     }
@@ -6136,21 +6153,29 @@
       const mesCosepArquivo = filtros.mesesCosep.length ? filtros.mesesCosep.join('-') : 'todos';
       const anoNotificaArquivo = filtros.anosNotifica.length ? filtros.anosNotifica.join('-') : 'todos';
       const mesNotificaArquivo = filtros.mesesNotifica.length ? filtros.mesesNotifica.join('-') : 'todos';
-      const nomeArquivo = `boletim-seguranca-paciente-${mesCosepArquivo}-${anoCosepArquivo}-notifica-${mesNotificaArquivo}-${anoNotificaArquivo}.pdf`;
+      const nomeBase = `boletim-seguranca-paciente-${mesCosepArquivo}-${anoCosepArquivo}-notifica-${mesNotificaArquivo}-${anoNotificaArquivo}`;
 
-      const boletim = document.getElementById('boletim');
-      document.body.classList.add('pdf-export');
-      mostrarProgressoPdf('Preparando seu PDF', 'Ajustando páginas, gráficos e imagens para o download...');
+      // Impressão NATIVA do navegador: o próprio Chrome renderiza o boletim com
+      // seu motor de layout real (idêntico à tela). Assim o "…" (text-overflow)
+      // funciona de verdade e o texto das metas não "desce"/some — bugs que o
+      // html2canvas introduzia ao rasterizar por conta própria. O usuário escolhe
+      // "Salvar como PDF" no diálogo; usamos document.title como nome sugerido.
       try {
         await aguardarRender();
-        await exportarPaginasComoPdf(boletim.querySelectorAll('.document-page'), nomeArquivo, 2.6);
-        mostrarToast('PDF baixado com sucesso.', 'success', 'Download iniciado');
+        const tituloAnterior = document.title;
+        document.title = nomeBase;
+        let restaurado = false;
+        const restaurar = () => {
+          if (restaurado) return;
+          restaurado = true;
+          document.title = tituloAnterior;
+        };
+        window.addEventListener('afterprint', restaurar, { once: true });
+        setTimeout(restaurar, 60000); // fallback se afterprint não disparar
+        window.print();
       } catch (erro) {
         console.error(erro);
-        mostrarToast(erro.message || 'Não foi possível baixar o PDF.', 'error', 'Erro no download');
-      } finally {
-        document.body.classList.remove('pdf-export');
-        ocultarProgressoPdf();
+        mostrarToast(erro.message || 'Não foi possível abrir a impressão do PDF.', 'error', 'Erro no PDF');
       }
     }
 
