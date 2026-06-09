@@ -1881,13 +1881,30 @@
       font-kerning: normal !important;
     }
 
-    /* PDF: rótulos das metas quebram em até 2 linhas em vez de cortar com "..." */
-    body.pdf-export .meta-card-title span,
+    /* PDF: rótulos das metas em uma linha só — o que passar é cortado com "…"
+       (mantém os cards compactos em vez de quebrar e ocupar muito espaço) */
     body.pdf-export .meta-item-label {
-      white-space: normal !important;
-      overflow: visible !important;
-      text-overflow: clip !important;
-      word-break: break-word !important;
+      display: block !important;
+      width: 100% !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
+      line-height: 1.2 !important;
+    }
+
+    /* Título do card: o nome da meta encolhe e corta com "…", a % fica fixa */
+    body.pdf-export .meta-card-header-text,
+    body.pdf-export .meta-card-title {
+      min-width: 0 !important;
+      overflow: hidden !important;
+    }
+    body.pdf-export .meta-card-title span:last-child {
+      flex: 1 1 auto !important;
+      min-width: 0 !important;
+      display: block !important;
+      white-space: nowrap !important;
+      overflow: hidden !important;
+      text-overflow: ellipsis !important;
       line-height: 1.2 !important;
     }
 
@@ -5878,6 +5895,28 @@
       };
     }
 
+    // O html2canvas não desenha o "…" de text-overflow: ellipsis. Para o texto
+    // das metas não cortar no meio da palavra, truncamos via JS antes da captura
+    // (medindo o overflow real) e restauramos o texto original logo depois.
+    function aplicarReticenciasMetasPdf(raiz) {
+      const restauros = [];
+      const alvos = raiz.querySelectorAll('.meta-item-label, .meta-card-title span:last-child');
+      alvos.forEach((el) => {
+        if (!el || el.scrollWidth <= el.clientWidth + 1) return;
+        const original = el.textContent;
+        restauros.push([el, original]);
+        let baixo = 0, alto = original.length, melhor = '';
+        while (baixo <= alto) {
+          const meio = (baixo + alto) >> 1;
+          el.textContent = original.slice(0, meio).trimEnd() + '…';
+          if (el.scrollWidth <= el.clientWidth + 1) { melhor = el.textContent; baixo = meio + 1; }
+          else { alto = meio - 1; }
+        }
+        el.textContent = melhor || ('…');
+      });
+      return () => restauros.forEach(([el, txt]) => { el.textContent = txt; });
+    }
+
     // Exporta cada .document-page como UMA página A4 inteira (sem fatiar e sem
     // escala). Cada página já tem exatamente 210x297mm via CSS pdf-export, então
     // a captura preenche a folha sem deslocamento vertical nem página em branco.
@@ -5895,16 +5934,22 @@
       for (let i = 0; i < lista.length; i += 1) {
         atualizarProgressoPdf(`Renderizando página ${i + 1} de ${lista.length}...`);
         await aguardarFrame();
-        const canvas = await html2canvas(lista[i], {
-          scale: escala,
-          useCORS: true,
-          allowTaint: false,
-          scrollX: 0,
-          scrollY: 0,
-          backgroundColor: '#ffffff',
-          imageTimeout: 15000,
-          logging: false
-        });
+        const restaurarReticencias = aplicarReticenciasMetasPdf(lista[i]);
+        let canvas;
+        try {
+          canvas = await html2canvas(lista[i], {
+            scale: escala,
+            useCORS: true,
+            allowTaint: false,
+            scrollX: 0,
+            scrollY: 0,
+            backgroundColor: '#ffffff',
+            imageTimeout: 15000,
+            logging: false
+          });
+        } finally {
+          restaurarReticencias();
+        }
         if (i > 0) pdf.addPage('a4', 'portrait');
         pdf.addImage(canvas.toDataURL('image/png', 1), 'PNG', 0, 0, 210, 297, undefined, 'FAST');
       }
