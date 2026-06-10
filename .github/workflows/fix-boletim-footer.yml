@@ -21,15 +21,41 @@ jobs:
 
           path = Path('Index.html')
           text = path.read_text(encoding='utf-8')
-          old = """    #pagina-cosep {\n      display: grid;\n      align-content: start;\n      overflow: visible;\n    }\n\n    #pagina-cosep .footer-note {\n      margin-top: 0;\n    }\n"""
-          new = """    #pagina-cosep {\n      display: grid;\n      align-content: start;\n      position: relative;\n      padding-bottom: 24mm;\n      overflow: visible;\n    }\n\n    #pagina-cosep .footer-note {\n      position: absolute;\n      left: 10mm;\n      right: 10mm;\n      bottom: 10mm;\n      margin-top: 0;\n    }\n"""
-          if new in text:
-              changed = False
-          elif old in text:
+          old = (
+              "    #pagina-cosep {\n"
+              "      display: grid;\n"
+              "      align-content: start;\n"
+              "      overflow: visible;\n"
+              "    }\n"
+              "\n"
+              "    #pagina-cosep .footer-note {\n"
+              "      margin-top: 0;\n"
+              "    }\n"
+          )
+          new = (
+              "    #pagina-cosep {\n"
+              "      display: grid;\n"
+              "      align-content: start;\n"
+              "      position: relative;\n"
+              "      padding-bottom: 24mm;\n"
+              "      overflow: visible;\n"
+              "    }\n"
+              "\n"
+              "    #pagina-cosep .footer-note {\n"
+              "      position: absolute;\n"
+              "      left: 10mm;\n"
+              "      right: 10mm;\n"
+              "      bottom: 10mm;\n"
+              "      margin-top: 0;\n"
+              "    }\n"
+          )
+
+          changed = False
+          if new not in text:
+              if old not in text:
+                  raise SystemExit('Target CSS block not found')
               text = text.replace(old, new, 1)
               changed = True
-          else:
-              raise SystemExit('Target CSS block not found')
 
           workflow = Path('.github/workflows/fix-boletim-footer.yml')
           if workflow.exists():
