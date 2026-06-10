@@ -900,6 +900,12 @@
       font-size: 20px;
     }
 
+    /* O título tem a marca + a seção separadas por "·". Na tela ficam na mesma
+       linha; no PDF a seção quebra para a linha de baixo (ver @media print). */
+    .page-header h2 .ph-sub::before {
+      content: " · ";
+    }
+
     .page-header p,
     .page-meta {
       margin: 0;
@@ -1812,6 +1818,15 @@
       }
       #pagina-cosep .footer-note,
       .footer-note { margin-top: auto !important; }
+      /* Cabeçalho: logo + título à esquerda, metadados à direita na mesma altura */
+      .page-header { flex-direction: row !important; justify-content: space-between !important; align-items: flex-start !important; }
+      .page-meta { text-align: right !important; min-width: 180px !important; }
+      /* Subtítulo em linha própria abaixo de "Boletim da Segurança do Paciente" */
+      .page-header h2 .ph-sub::before { content: "" !important; }
+      .page-header h2 .ph-sub { display: block !important; font-weight: 400 !important; font-size: 0.85em !important; }
+      /* Restaura grids de 2 e 3 colunas na página 2 (colapsam a 794px/210mm) */
+      .section-grid-2 { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
+      .section-grid-3 { display: grid !important; grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
     }
 
     @media (max-width: 1024px) {
@@ -2734,7 +2749,7 @@
           <div class="page-header-main">
             <img class="page-logo" src="https://i.ibb.co/ccny4xx5/NGQS-Caminhada-Pela-Seguran-a-Mascote-Toten-Mandala-24-x-25cm-final-1.png" alt="Logo">
             <div>
-              <h2>Boletim da Segurança do Paciente · Caminhadas de Segurança</h2>
+              <h2><span class="ph-title">Boletim da Segurança do Paciente</span><span class="ph-sub">Caminhadas de Segurança</span></h2>
             </div>
           </div>
           <div class="page-meta" id="periodo-cosep"></div>
@@ -2790,7 +2805,7 @@
           <div class="page-header-main">
             <img class="page-logo" src="https://i.ibb.co/7xnQsN29/Design-sem-nome-9.png" alt="Ícone de notificações">
             <div>
-              <h2>Boletim da Segurança do Paciente · Notificações</h2>
+              <h2><span class="ph-title">Boletim da Segurança do Paciente</span><span class="ph-sub">Notificações</span></h2>
             </div>
           </div>
           <div class="page-meta" id="periodo-notifica"></div>
