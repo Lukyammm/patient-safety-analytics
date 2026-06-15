@@ -936,6 +936,10 @@ function montarSetoresExcecaoMeta4(setoresSelecionados) {
     setoresExcecao.push('Hemodinâmica');
   }
 
+  if (setoresSelecionados.some(setor => ehMesmoSetor(setor, 'Hemodinâmica'))) {
+    setoresExcecao.push('B6 - Clínica Cirúrgica Vascular');
+  }
+
   if (setoresSelecionados.some(setor => ehMesmoSetor(setor, 'C3 - Centro Cirúrgico Obstétrico'))) {
     setoresExcecao.push(
       'C6 - Clínica Ginecológica',
