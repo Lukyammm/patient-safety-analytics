@@ -184,11 +184,20 @@ function configPadrao() {
       observacaoIdx: meta.observacaoIdx,
       itens: meta.itens.map(item => ({ codigo: item.codigo, nome: item.nome, idx: item.idx }))
     })),
+    excecoesSetores: EXCECOES_SETORES_PADRAO.map(regra => ({
+      metaCodigo: regra.metaCodigo,
+      setorOrigem: regra.setorOrigem,
+      setoresPuxados: regra.setoresPuxados.slice(),
+      bidirecional: !!regra.bidirecional,
+      ativa: regra.ativa !== false
+    })),
+    metasAlvo: [],
     alertas: {
       ativo: false,
       destinatarios: [],
       conformidadeMinima: META_INSTITUCIONAL,
-      incluirNotificacoesCriticas: true
+      incluirNotificacoesCriticas: true,
+      horaEnvio: 7
     },
     atualizadoEm: '',
     atualizadoPor: ''
@@ -250,6 +259,45 @@ function mesclarConfig(padrao, salvo) {
     });
   }
 
+  if (Array.isArray(salvo.excecoesSetores)) {
+    cfg.excecoesSetores = salvo.excecoesSetores.map(regra => {
+      if (!regra || typeof regra !== 'object') return null;
+      const metaCodigo = String(regra.metaCodigo || '').trim();
+      const setorOrigem = String(regra.setorOrigem || '').trim();
+      const setoresPuxados = (Array.isArray(regra.setoresPuxados) ? regra.setoresPuxados : [])
+        .map(s => String(s || '').trim()).filter(Boolean);
+      if (!metaCodigo || !setorOrigem || !setoresPuxados.length) return null;
+      return {
+        metaCodigo: metaCodigo,
+        setorOrigem: setorOrigem,
+        setoresPuxados: setoresPuxados,
+        bidirecional: regra.bidirecional === true,
+        ativa: regra.ativa !== false
+      };
+    }).filter(Boolean);
+  }
+
+  if (Array.isArray(salvo.metasAlvo)) {
+    cfg.metasAlvo = salvo.metasAlvo.map(regra => {
+      if (!regra || typeof regra !== 'object') return null;
+      const valor = Number(regra.valor);
+      if (Number.isNaN(valor) || valor < 0 || valor > 100) return null;
+      const ano = regra.ano != null && String(regra.ano).trim() ? normalizarAno(regra.ano) : null;
+      const mesNum = Number(regra.mes);
+      const mes = (!Number.isNaN(mesNum) && mesNum >= 1 && mesNum <= 12) ? Math.round(mesNum) : null;
+      const metaCodigo = String(regra.metaCodigo || '').trim() || null;
+      const setor = String(regra.setor || '').trim() || null;
+      return {
+        ano: ano || null,
+        mes: mes,
+        metaCodigo: metaCodigo,
+        setor: setor,
+        valor: valor,
+        ativa: regra.ativa !== false
+      };
+    }).filter(Boolean);
+  }
+
   if (salvo.alertas && typeof salvo.alertas === 'object') {
     const a = salvo.alertas;
     if (typeof a.ativo === 'boolean') cfg.alertas.ativo = a.ativo;
@@ -259,6 +307,8 @@ function mesclarConfig(padrao, salvo) {
     const cmin = Number(a.conformidadeMinima);
     if (!Number.isNaN(cmin) && cmin >= 0 && cmin <= 100) cfg.alertas.conformidadeMinima = cmin;
     if (typeof a.incluirNotificacoesCriticas === 'boolean') cfg.alertas.incluirNotificacoesCriticas = a.incluirNotificacoesCriticas;
+    const hora = Number(a.horaEnvio);
+    if (!Number.isNaN(hora) && hora >= 0 && hora <= 23) cfg.alertas.horaEnvio = Math.round(hora);
   }
 
   cfg.atualizadoEm = salvo.atualizadoEm || '';
@@ -293,13 +343,65 @@ function usuarioPodeEditarConfig() {
 }
 
 function obterConfigCosep() {
-  return executarRota('rpc-config-get', () => ({
-    success: true,
-    config: obterConfig(),
-    podeEditar: usuarioPodeEditarConfig(),
-    usuario: emailUsuarioAtual(),
-    geradoEm: Utilities.formatDate(new Date(), FUSO_HORARIO, "dd/MM/yyyy 'às' HH:mm")
-  }));
+  return executarRota('rpc-config-get', () => {
+    const podeEditar = usuarioPodeEditarConfig();
+    let setores = [];
+    let anos = [];
+    try {
+      const filtros = getFiltros(abrirPlanilhaLeitura('principal'));
+      setores = (filtros.caminhadas && filtros.caminhadas.unidades) || [];
+      anos = (filtros.caminhadas && filtros.caminhadas.anos) || [];
+    } catch (erro) {
+      registrarErro('config-setores', erro);
+    }
+    return {
+      success: true,
+      config: obterConfig(),
+      podeEditar: podeEditar,
+      usuario: emailUsuarioAtual(),
+      admins: podeEditar ? listaAdmins() : [],
+      historico: podeEditar ? lerLogConfig(10) : [],
+      setores: setores,
+      anos: anos,
+      geradoEm: Utilities.formatDate(new Date(), FUSO_HORARIO, "dd/MM/yyyy 'às' HH:mm")
+    };
+  });
+}
+
+function salvarAdminsCosep(lista) {
+  return executarRota('rpc-admins-save', () => {
+    if (!usuarioPodeEditarConfig()) {
+      return { success: false, mensagem: 'Você não tem permissão para alterar os administradores.' };
+    }
+    const emails = (Array.isArray(lista) ? lista : String(lista || '').split(/[;,\n]/))
+      .map(e => String(e || '').trim().toLowerCase())
+      .filter(Boolean);
+    const unicos = [];
+    emails.forEach(e => { if (unicos.indexOf(e) === -1) unicos.push(e); });
+    PropertiesService.getScriptProperties().setProperty(CONFIG_ADMINS_PROP_KEY, unicos.join(';'));
+    registrarLogConfig(emailUsuarioAtual() || 'desconhecido', 'Lista de administradores atualizada (' + unicos.length + ')');
+    return { success: true, admins: unicos, mensagem: 'Administradores atualizados.' };
+  });
+}
+
+function lerLogConfig(limite) {
+  try {
+    const ss = abrirPlanilhaLeitura('principal');
+    const sh = ss.getSheetByName(CONFIG_LOG_SHEET);
+    if (!sh) return [];
+    const ultimaLinha = sh.getLastRow();
+    if (ultimaLinha < 2) return [];
+    const total = ultimaLinha - 1;
+    const qtd = Math.min(Math.max(Number(limite) || 10, 1), total);
+    const inicio = ultimaLinha - qtd + 1;
+    const valores = sh.getRange(inicio, 1, qtd, 3).getValues();
+    return valores
+      .map(linha => ({ quando: String(linha[0] || ''), usuario: String(linha[1] || ''), acao: String(linha[2] || '') }))
+      .reverse();
+  } catch (erro) {
+    registrarErro('ler-log-config', erro);
+    return [];
+  }
 }
 
 function salvarConfigCosep(novaConfig) {
@@ -516,11 +618,15 @@ function statusAlertasCosep() {
 function instalarGatilhoAlertasCosep() {
   return executarRota('rpc-alertas-instalar', () => {
     if (!usuarioPodeEditarConfig()) return { success: false, mensagem: 'Você não tem permissão.' };
-    if (!gatilhoAlertasInstalado()) {
-      ScriptApp.newTrigger(ALERTAS_TRIGGER_FN).timeBased().everyDays(1).atHour(7).create();
-    }
-    registrarLogConfig(emailUsuarioAtual() || 'desconhecido', 'Gatilho diário de alertas instalado');
-    return { success: true, gatilhoInstalado: true, mensagem: 'Envio automático diário ativado (por volta das 7h).' };
+    const hora = obterConfig().alertas.horaEnvio;
+    const horaValida = (!Number.isNaN(Number(hora)) && hora >= 0 && hora <= 23) ? Math.round(hora) : 7;
+    // Recria o gatilho para refletir a hora configurada.
+    ScriptApp.getProjectTriggers().forEach(t => {
+      if (t.getHandlerFunction() === ALERTAS_TRIGGER_FN) ScriptApp.deleteTrigger(t);
+    });
+    ScriptApp.newTrigger(ALERTAS_TRIGGER_FN).timeBased().everyDays(1).atHour(horaValida).create();
+    registrarLogConfig(emailUsuarioAtual() || 'desconhecido', 'Gatilho diário de alertas instalado (' + horaValida + 'h)');
+    return { success: true, gatilhoInstalado: true, mensagem: 'Envio automático diário ativado (por volta das ' + horaValida + 'h).' };
   });
 }
 
@@ -919,33 +1025,119 @@ function ehMesmoSetor(nomeSetor, referencia) {
   return normalizarTexto(nomeSetor) === normalizarTexto(referencia);
 }
 
-function montarSetoresExcecaoMeta4(setoresSelecionados) {
-  const setoresExcecao = [];
+/* Resolve a meta-alvo (%) para um contexto, escolhendo a regra ativa mais
+   específica de cfg.metasAlvo. Precedência: setor > meta/indicador > mês > ano.
+   Sem regra aplicável, devolve a meta institucional global (cfg.metaInstitucional). */
+function resolverMeta(contexto, cfg) {
+  cfg = cfg || obterConfig();
+  const padrao = Number(cfg.metaInstitucional);
+  const regras = Array.isArray(cfg.metasAlvo) ? cfg.metasAlvo : [];
+  contexto = contexto || {};
 
-  if (setoresSelecionados.some(setor => ehMesmoSetor(setor, 'B2 - Centro Cirúrgico'))) {
-    setoresExcecao.push(
+  const ctxAno = (contexto.ano != null && String(contexto.ano).trim()) ? normalizarAno(contexto.ano) : null;
+  let ctxMes = null;
+  if (contexto.mes != null && String(contexto.mes).trim()) {
+    const ordem = mesParaOrdem(contexto.mes);
+    ctxMes = (ordem >= 1 && ordem <= 12) ? ordem : null;
+  }
+  const ctxMeta = (contexto.metaCodigo != null && String(contexto.metaCodigo).trim()) ? String(contexto.metaCodigo).trim() : null;
+  const ctxSetor = (contexto.setor != null && String(contexto.setor).trim()) ? String(contexto.setor).trim() : null;
+
+  const PESOS = { setor: 8, metaCodigo: 4, mes: 2, ano: 1 };
+  let melhor = null;
+  let melhorPeso = -1;
+
+  regras.forEach(regra => {
+    if (!regra || regra.ativa === false) return;
+    let peso = 0;
+
+    if (regra.ano != null) {
+      if (ctxAno == null || normalizarAno(regra.ano) !== ctxAno) return;
+      peso += PESOS.ano;
+    }
+    if (regra.mes != null) {
+      if (ctxMes == null || Math.round(Number(regra.mes)) !== ctxMes) return;
+      peso += PESOS.mes;
+    }
+    if (regra.metaCodigo != null) {
+      if (ctxMeta == null || String(regra.metaCodigo).trim() !== ctxMeta) return;
+      peso += PESOS.metaCodigo;
+    }
+    if (regra.setor != null) {
+      if (ctxSetor == null || !ehMesmoSetor(regra.setor, ctxSetor)) return;
+      peso += PESOS.setor;
+    }
+
+    if (peso > melhorPeso) {
+      melhorPeso = peso;
+      melhor = regra;
+    }
+  });
+
+  return melhor ? Number(melhor.valor) : padrao;
+}
+
+/* Regras padrão de exceção de setor (replicam o comportamento histórico).
+   Usadas como fallback quando nada foi configurado na tela de Administração,
+   garantindo zero regressão. Cada regra: ao selecionar `setorOrigem`, o cálculo
+   da meta `metaCodigo` passa a considerar os `setoresPuxados`. Se `bidirecional`,
+   selecionar qualquer um dos puxados também puxa o setor de origem. */
+const EXCECOES_SETORES_PADRAO = [
+  {
+    metaCodigo: '4',
+    setorOrigem: 'B2 - Centro Cirúrgico',
+    setoresPuxados: [
       'A6 - Clínica Cirúrgica (Geral/Digestiva)',
       'B5 - Clínica Cirúrgica Oncológica',
       'B6 - Cabeça e Pescoço',
       'B6 - Urologia',
       'C7 - Clínica Ortopédica'
-    );
+    ],
+    bidirecional: false,
+    ativa: true
+  },
+  {
+    metaCodigo: '4',
+    setorOrigem: 'B6 - Clínica Cirúrgica Vascular',
+    setoresPuxados: ['Hemodinâmica'],
+    bidirecional: true,
+    ativa: true
+  },
+  {
+    metaCodigo: '4',
+    setorOrigem: 'C3 - Centro Cirúrgico Obstétrico',
+    setoresPuxados: ['C6 - Clínica Ginecológica', 'C6 - Clínica Obstétrica'],
+    bidirecional: false,
+    ativa: true
   }
+];
 
-  if (setoresSelecionados.some(setor => ehMesmoSetor(setor, 'B6 - Clínica Cirúrgica Vascular'))) {
-    setoresExcecao.push('Hemodinâmica');
-  }
+function regrasExcecaoConfiguradas(cfg) {
+  const regras = (cfg && Array.isArray(cfg.excecoesSetores)) ? cfg.excecoesSetores : EXCECOES_SETORES_PADRAO;
+  return regras.filter(regra => regra && regra.ativa !== false);
+}
 
-  if (setoresSelecionados.some(setor => ehMesmoSetor(setor, 'Hemodinâmica'))) {
-    setoresExcecao.push('B6 - Clínica Cirúrgica Vascular');
-  }
+function montarSetoresExcecao(setoresSelecionados, metaCodigo, cfg) {
+  const regras = regrasExcecaoConfiguradas(cfg)
+    .filter(regra => String(regra.metaCodigo) === String(metaCodigo));
+  const setoresExcecao = [];
 
-  if (setoresSelecionados.some(setor => ehMesmoSetor(setor, 'C3 - Centro Cirúrgico Obstétrico'))) {
-    setoresExcecao.push(
-      'C6 - Clínica Ginecológica',
-      'C6 - Clínica Obstétrica'
-    );
-  }
+  regras.forEach(regra => {
+    const origem = regra.setorOrigem;
+    const puxados = Array.isArray(regra.setoresPuxados) ? regra.setoresPuxados : [];
+    if (!origem || !puxados.length) return;
+
+    // Sentido direto: setor de origem selecionado → puxa os demais.
+    if (setoresSelecionados.some(setor => ehMesmoSetor(setor, origem))) {
+      puxados.forEach(setor => setoresExcecao.push(setor));
+    }
+
+    // Sentido inverso (regra bidirecional): algum puxado selecionado → puxa a origem.
+    if (regra.bidirecional &&
+        puxados.some(puxado => setoresSelecionados.some(setor => ehMesmoSetor(setor, puxado)))) {
+      setoresExcecao.push(origem);
+    }
+  });
 
   const mapaSetores = {};
   setoresExcecao.forEach(setor => {
@@ -955,64 +1147,75 @@ function montarSetoresExcecaoMeta4(setoresSelecionados) {
   return mapaSetores;
 }
 
-function aplicarExcecaoMeta4CentroCirurgico(metas, linhas, filtros, metaDefs) {
+function aplicarExcecaoMetas(metas, linhas, filtros, metaDefs, cfg) {
   metaDefs = metaDefs || METAS_CAMINHADAS;
+  cfg = cfg || obterConfig();
   const setoresSelecionados = (filtros.unidades || []).map(item => String(item || '').trim()).filter(Boolean);
-  const setoresExcecao = montarSetoresExcecaoMeta4(setoresSelecionados);
-  const chavesSetoresExcecao = Object.keys(setoresExcecao);
-  if (!chavesSetoresExcecao.length) return;
 
-  const meta4 = metas.find(meta => meta.codigo === '4');
-  if (!meta4) return;
-
-  const meta4Def = metaDefs.find(metaDef => String(metaDef.codigo) === '4');
-  if (!meta4Def) return;
+  // Códigos de meta que possuem ao menos uma regra de exceção ativa.
+  const codigosComRegra = [];
+  regrasExcecaoConfiguradas(cfg).forEach(regra => {
+    const codigo = String(regra.metaCodigo);
+    if (codigo && codigosComRegra.indexOf(codigo) === -1) codigosComRegra.push(codigo);
+  });
+  if (!codigosComRegra.length) return;
 
   const anoFiltro = new Set((filtros.anos || []).map(normalizarAno).filter(Boolean));
   const mesFiltro = new Set((filtros.meses || []).map(normalizarMes).filter(Boolean));
 
-  meta4.avaliados = 0;
-  meta4.conformes = 0;
-  meta4.naoConformes = 0;
-  meta4.itens.forEach(item => {
-    item.avaliados = 0;
-    item.conformes = 0;
-    item.naoConformes = 0;
-  });
+  codigosComRegra.forEach(metaCodigo => {
+    const setoresExcecao = montarSetoresExcecao(setoresSelecionados, metaCodigo, cfg);
+    const chavesSetoresExcecao = Object.keys(setoresExcecao);
+    if (!chavesSetoresExcecao.length) return;
 
-  linhas
-    .filter(row => !anoFiltro.size || anoFiltro.has(normalizarAno(row[3])))
-    .filter(row => !mesFiltro.size || mesFiltro.has(normalizarMes(row[2])))
-    .filter(row => chavesSetoresExcecao.includes(normalizarTexto(getUnidade(row))))
-    .forEach(row => {
-      meta4Def.itens.forEach((itemDef, itemIndex) => {
-        const valor = row[itemDef.idx];
-        const item = meta4.itens[itemIndex];
+    const meta = metas.find(m => String(m.codigo) === metaCodigo);
+    if (!meta) return;
 
-        if (ehSim(valor)) {
-          item.conformes++;
-          item.avaliados++;
-          meta4.conformes++;
-          meta4.avaliados++;
-        } else if (ehNao(valor)) {
-          item.naoConformes++;
-          item.avaliados++;
-          meta4.naoConformes++;
-          meta4.avaliados++;
-        }
-      });
+    const metaDef = metaDefs.find(md => String(md.codigo) === metaCodigo);
+    if (!metaDef) return;
+
+    meta.avaliados = 0;
+    meta.conformes = 0;
+    meta.naoConformes = 0;
+    meta.itens.forEach(item => {
+      item.avaliados = 0;
+      item.conformes = 0;
+      item.naoConformes = 0;
     });
 
-  meta4.percentual = meta4.avaliados ? Number(((meta4.conformes / meta4.avaliados) * 100).toFixed(1)) : null;
-  meta4.itens.forEach(item => {
-    item.percentual = item.avaliados ? Number(((item.conformes / item.avaliados) * 100).toFixed(1)) : null;
+    linhas
+      .filter(row => !anoFiltro.size || anoFiltro.has(normalizarAno(row[3])))
+      .filter(row => !mesFiltro.size || mesFiltro.has(normalizarMes(row[2])))
+      .filter(row => chavesSetoresExcecao.includes(normalizarTexto(getUnidade(row))))
+      .forEach(row => {
+        metaDef.itens.forEach((itemDef, itemIndex) => {
+          const valor = row[itemDef.idx];
+          const item = meta.itens[itemIndex];
+
+          if (ehSim(valor)) {
+            item.conformes++;
+            item.avaliados++;
+            meta.conformes++;
+            meta.avaliados++;
+          } else if (ehNao(valor)) {
+            item.naoConformes++;
+            item.avaliados++;
+            meta.naoConformes++;
+            meta.avaliados++;
+          }
+        });
+      });
+
+    meta.percentual = meta.avaliados ? Number(((meta.conformes / meta.avaliados) * 100).toFixed(1)) : null;
+    meta.itens.forEach(item => {
+      item.percentual = item.avaliados ? Number(((item.conformes / item.avaliados) * 100).toFixed(1)) : null;
+    });
   });
 }
 
 function processarCaminhadas(ss, filtros, cfg) {
   cfg = cfg || obterConfig();
   const META_DEF = (cfg.metasCaminhadas || METAS_CAMINHADAS).filter(meta => meta && meta.ativa !== false);
-  const metaInstitucional = cfg.metaInstitucional;
 
   const sh = ss.getSheetByName(ABA_CAMINHADAS);
   const linhas = sh.getDataRange().getValues().slice(1);
@@ -1050,6 +1253,12 @@ function processarCaminhadas(ss, filtros, cfg) {
   const anosFiltro = new Set((filtros.anos || []).map(normalizarAno).filter(Boolean));
   const mesesFiltro = new Set((filtros.meses || []).map(normalizarMes).filter(Boolean));
   const unidadesFiltro = new Set((filtros.unidades || []).map(item => String(item || '').trim()).filter(Boolean));
+
+  // Contexto de período para resolver metas por ano/mês. Só é específico quando
+  // um único ano/mês está selecionado; caso contrário usa a meta global.
+  const anoContexto = anosFiltro.size === 1 ? Array.from(anosFiltro)[0] : null;
+  const mesContexto = mesesFiltro.size === 1 ? Array.from(mesesFiltro)[0] : null;
+  const metaInstitucionalResolvida = resolverMeta({ ano: anoContexto, mes: mesContexto }, cfg);
 
   const linhasFiltradas = linhas.filter(row => {
     const ano = normalizarAno(row[3]);
@@ -1164,13 +1373,18 @@ function processarCaminhadas(ss, filtros, cfg) {
     .sort((a, b) => b[1] - a[1])
     .map(([nome, quantidade]) => ({ nome, quantidade }));
 
-  aplicarExcecaoMeta4CentroCirurgico(metas, linhas, filtros, META_DEF);
+  aplicarExcecaoMetas(metas, linhas, filtros, META_DEF, cfg);
+
+  // Meta-alvo resolvida por meta (considera período e regra por meta/indicador).
+  metas.forEach(meta => {
+    meta.metaAlvo = resolverMeta({ ano: anoContexto, mes: mesContexto, metaCodigo: meta.codigo }, cfg);
+  });
 
   const metasCriticas = metas
     .slice()
     .sort((a, b) => a.percentual - b.percentual)
     .slice(0, 3)
-    .map(meta => ({ codigo: meta.codigo, nome: meta.nome, percentual: meta.percentual }));
+    .map(meta => ({ codigo: meta.codigo, nome: meta.nome, percentual: meta.percentual, metaAlvo: meta.metaAlvo }));
 
   const rankingSetoresConformidade = Object.values(linhasFiltradas.reduce((acc, row) => {
     const unidade = getUnidade(row);
@@ -1204,7 +1418,8 @@ function processarCaminhadas(ss, filtros, cfg) {
       conformes: item.conformes,
       naoConformes: item.naoConformes,
       avaliados: item.avaliados,
-      percentual: item.avaliados ? Number(((item.conformes / item.avaliados) * 100).toFixed(1)) : 0
+      percentual: item.avaliados ? Number(((item.conformes / item.avaliados) * 100).toFixed(1)) : 0,
+      metaAlvo: resolverMeta({ ano: anoContexto, mes: mesContexto, setor: item.setor }, cfg)
     }))
     .sort((a, b) => b.percentual - a.percentual || a.setor.localeCompare(b.setor, 'pt-BR'));
 
@@ -1272,8 +1487,8 @@ function processarCaminhadas(ss, filtros, cfg) {
     geralConformes: geralConformes,
     geralNaoConformes: geralNaoConformes,
     conformidadeGeral: conformidadeGeral,
-    metaInstitucional: metaInstitucional,
-    diferencaMeta: Number((conformidadeGeral - metaInstitucional).toFixed(1)),
+    metaInstitucional: metaInstitucionalResolvida,
+    diferencaMeta: Number((conformidadeGeral - metaInstitucionalResolvida).toFixed(1)),
     metas: metas,
     porUnidade: unidadesOrdenadas,
     rankingSetoresConformidade: rankingSetoresConformidade,
