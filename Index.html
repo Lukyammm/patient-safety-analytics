@@ -2989,6 +2989,7 @@
           <div class="reg-fields">
             <label class="admin-toggle admin-field"><input type="checkbox" id="cfg-alerta-ativo"> Ativar alertas</label>
             <label class="admin-field">Conformidade mínima (%)<input type="number" id="cfg-alerta-min" class="admin-input" min="0" max="100" step="1"></label>
+            <label class="admin-field">Hora do envio diário <small>(0–23h)</small><input type="number" id="cfg-alerta-hora" class="admin-input" min="0" max="23" step="1" inputmode="numeric"></label>
             <label class="admin-toggle admin-field"><input type="checkbox" id="cfg-alerta-notif"> Incluir notificações críticas pendentes</label>
           </div>
           <label class="admin-field" style="margin-top:12px">Destinatários <small>(um e-mail por linha)</small>
@@ -3006,6 +3007,41 @@
           <p>Renomeie metas e itens, ou desative uma meta para ocultá-la do boletim. A estrutura de cálculo (colunas) é preservada.</p>
           <div id="cfg-metas" class="admin-metas"></div>
         </section>
+
+        <section class="admin-card admin-card-wide">
+          <h3><i class="fa-solid fa-bullseye" aria-hidden="true"></i> Metas por período</h3>
+          <p>Defina metas específicas por ano, ano+mês, por meta/indicador e/ou por setor. A regra mais específica vale (precedência: <strong>setor &gt; meta &gt; mês &gt; ano</strong>). Sem regra aplicável, vale a meta institucional.</p>
+          <div id="cfg-metas-alvo" class="admin-metas"></div>
+          <div class="admin-buttons" style="margin-top:12px">
+            <button type="button" class="btn" id="btn-add-meta-alvo"><i class="fa-solid fa-plus" aria-hidden="true"></i> Adicionar meta por período</button>
+          </div>
+        </section>
+
+        <section class="admin-card admin-card-wide">
+          <h3><i class="fa-solid fa-diagram-project" aria-hidden="true"></i> Exceções de setor por meta</h3>
+          <p>Quando um setor de origem é filtrado, o cálculo da meta escolhida passa a considerar os setores puxados. Marque <strong>bidirecional</strong> para valer nos dois sentidos. Cobre as regras atuais e futuras sem mexer no código.</p>
+          <div id="cfg-excecoes" class="admin-metas"></div>
+          <div class="admin-buttons" style="margin-top:12px">
+            <button type="button" class="btn" id="btn-add-excecao"><i class="fa-solid fa-plus" aria-hidden="true"></i> Adicionar exceção</button>
+          </div>
+        </section>
+
+        <section class="admin-card admin-card-wide">
+          <h3><i class="fa-solid fa-user-shield" aria-hidden="true"></i> Administradores</h3>
+          <p>E-mails que podem editar estas configurações (um por linha). Se ficar vazio, qualquer editor da planilha pode alterar.</p>
+          <textarea id="cfg-admins" class="admin-input admin-textarea" rows="3" spellcheck="false" placeholder="fulano@hospital.org"></textarea>
+          <div class="admin-buttons" style="margin-top:12px">
+            <button type="button" class="btn" id="btn-salvar-admins"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Salvar administradores</button>
+          </div>
+        </section>
+
+        <section class="admin-card admin-card-wide">
+          <h3><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Histórico de alterações</h3>
+          <p>Últimas alterações registradas nas configurações.</p>
+          <div id="cfg-historico" class="admin-updated">Sem registros.</div>
+        </section>
+
+        <datalist id="cfg-setores-lista"></datalist>
 
         <section class="admin-actions admin-card-wide">
           <div id="admin-meta-info" class="admin-updated"></div>
@@ -6314,6 +6350,65 @@
     /* ════════════ ADMINISTRAÇÃO / CONFIG (Fase 1) ════════════ */
     let adminConfigCarregada = false;
     let adminPodeEditar = true;
+    let adminSetores = [];
+    let adminMetasRef = [];
+
+    function adminMetasOptions(selecionado) {
+      const sel = selecionado != null ? String(selecionado) : '';
+      return adminMetasRef.map(m => {
+        const cod = String(m.codigo);
+        return `<option value="${escapeHtml(cod)}" ${cod === sel ? 'selected' : ''}>${escapeHtml(cod + ' - ' + (m.nome || ''))}</option>`;
+      }).join('');
+    }
+
+    function adminMesesOptions(selecionado) {
+      const nomes = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+      const sel = selecionado != null && selecionado !== '' ? String(Number(selecionado)) : '';
+      return ['<option value="">(todos)</option>'].concat(nomes.map((nome, i) => {
+        const v = String(i + 1);
+        return `<option value="${v}" ${v === sel ? 'selected' : ''}>${nome}</option>`;
+      })).join('');
+    }
+
+    function adminCriarLinhaMetaAlvo(regra) {
+      regra = regra || {};
+      const div = document.createElement('div');
+      div.className = 'admin-meta-block';
+      div.setAttribute('data-metaalvo-row', '');
+      div.innerHTML = `
+        <div class="admin-meta-head">
+          <label class="admin-field">Ano <input type="text" class="admin-input ma-ano" inputmode="numeric" placeholder="(todos)" value="${escapeHtml(regra.ano != null ? String(regra.ano) : '')}"></label>
+          <label class="admin-field">Mês <select class="admin-input ma-mes">${adminMesesOptions(regra.mes)}</select></label>
+          <label class="admin-field">Meta <select class="admin-input ma-meta"><option value="">(todas)</option>${adminMetasOptions(regra.metaCodigo)}</select></label>
+          <label class="admin-field">Setor <input type="text" class="admin-input ma-setor" list="cfg-setores-lista" placeholder="(todos)" value="${escapeHtml(regra.setor != null ? String(regra.setor) : '')}"></label>
+          <label class="admin-field">Meta % <input type="number" class="admin-input ma-valor" min="0" max="100" step="1" value="${escapeHtml(regra.valor != null ? String(regra.valor) : '')}"></label>
+          <label class="admin-toggle"><input type="checkbox" class="ma-ativa" ${regra.ativa === false ? '' : 'checked'}> Ativa</label>
+          <button type="button" class="btn ma-remover" title="Remover regra"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+        </div>`;
+      div.querySelector('.ma-remover').addEventListener('click', () => div.remove());
+      return div;
+    }
+
+    function adminCriarLinhaExcecao(regra) {
+      regra = regra || {};
+      const puxados = Array.isArray(regra.setoresPuxados) ? regra.setoresPuxados.join('\n') : '';
+      const div = document.createElement('div');
+      div.className = 'admin-meta-block';
+      div.setAttribute('data-excecao-row', '');
+      div.innerHTML = `
+        <div class="admin-meta-head">
+          <label class="admin-field">Meta <select class="admin-input ex-meta">${adminMetasOptions(regra.metaCodigo)}</select></label>
+          <label class="admin-field">Setor de origem <input type="text" class="admin-input ex-origem" list="cfg-setores-lista" value="${escapeHtml(regra.setorOrigem != null ? String(regra.setorOrigem) : '')}"></label>
+          <label class="admin-toggle"><input type="checkbox" class="ex-bidir" ${regra.bidirecional ? 'checked' : ''}> Bidirecional</label>
+          <label class="admin-toggle"><input type="checkbox" class="ex-ativa" ${regra.ativa === false ? '' : 'checked'}> Ativa</label>
+          <button type="button" class="btn ex-remover" title="Remover regra"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+        </div>
+        <label class="admin-field" style="margin-top:8px">Setores puxados <small>(um por linha)</small>
+          <textarea class="admin-input admin-textarea ex-puxados" rows="3" spellcheck="false">${escapeHtml(puxados)}</textarea>
+        </label>`;
+      div.querySelector('.ex-remover').addEventListener('click', () => div.remove());
+      return div;
+    }
 
     function adminFetchConfig() {
       return new Promise((resolve, reject) => {
@@ -6347,6 +6442,24 @@
       });
     }
 
+    function adminSalvarAdmins(lista) {
+      return new Promise((resolve, reject) => {
+        if (window.google && google.script && google.script.run) {
+          google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).salvarAdminsCosep(lista);
+          return;
+        }
+        reject(new Error('Salvar exige o app publicado (google.script.run indisponível).'));
+      });
+    }
+
+    async function recarregarConfigAdmin() {
+      const resp = await adminFetchConfig();
+      if (!resp || !resp.config) return;
+      adminPodeEditar = resp.podeEditar !== false;
+      adminSetores = Array.isArray(resp.setores) ? resp.setores : adminSetores;
+      renderConfigAdmin(resp.config, resp);
+    }
+
     async function carregarConfigAdmin() {
       if (adminConfigCarregada) return;
       adminConfigCarregada = true;
@@ -6358,7 +6471,8 @@
           throw new Error((resp && resp.mensagem) || 'Configuração indisponível.');
         }
         adminPodeEditar = resp.podeEditar !== false;
-        renderConfigAdmin(resp.config);
+        adminSetores = Array.isArray(resp.setores) ? resp.setores : [];
+        renderConfigAdmin(resp.config, resp);
         if (loading) loading.classList.add('hidden');
         if (form) form.hidden = false;
         const bloqueio = document.getElementById('admin-bloqueio');
@@ -6370,7 +6484,9 @@
       }
     }
 
-    function renderConfigAdmin(config) {
+    function renderConfigAdmin(config, resp) {
+      resp = resp || {};
+      adminMetasRef = (config.metasCaminhadas || []).map(m => ({ codigo: m.codigo, nome: m.nome }));
       const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
       set('cfg-meta', config.metaInstitucional);
       set('cfg-prazo5', config.prazoMeta5Dias);
@@ -6382,7 +6498,40 @@
       setChk('cfg-alerta-ativo', alertas.ativo);
       setChk('cfg-alerta-notif', alertas.incluirNotificacoesCriticas);
       set('cfg-alerta-min', alertas.conformidadeMinima != null ? alertas.conformidadeMinima : '');
+      set('cfg-alerta-hora', alertas.horaEnvio != null ? alertas.horaEnvio : 7);
       set('cfg-alerta-emails', (alertas.destinatarios || []).join('\n'));
+
+      // Datalist de setores (reusado pelas exceções e metas por período).
+      const datalist = document.getElementById('cfg-setores-lista');
+      if (datalist) {
+        datalist.innerHTML = adminSetores.map(s => `<option value="${escapeHtml(String(s))}"></option>`).join('');
+      }
+
+      // Metas por período.
+      const wrapAlvo = document.getElementById('cfg-metas-alvo');
+      if (wrapAlvo) {
+        wrapAlvo.innerHTML = '';
+        (config.metasAlvo || []).forEach(regra => wrapAlvo.appendChild(adminCriarLinhaMetaAlvo(regra)));
+      }
+
+      // Exceções de setor.
+      const wrapExc = document.getElementById('cfg-excecoes');
+      if (wrapExc) {
+        wrapExc.innerHTML = '';
+        (config.excecoesSetores || []).forEach(regra => wrapExc.appendChild(adminCriarLinhaExcecao(regra)));
+      }
+
+      // Administradores.
+      set('cfg-admins', (resp.admins || []).join('\n'));
+
+      // Histórico de alterações.
+      const hist = document.getElementById('cfg-historico');
+      if (hist) {
+        const linhas = resp.historico || [];
+        hist.innerHTML = linhas.length
+          ? linhas.map(l => `<div>${escapeHtml(l.quando)} — <strong>${escapeHtml(l.usuario)}</strong>: ${escapeHtml(l.acao)}</div>`).join('')
+          : 'Sem registros.';
+      }
 
       const wrap = document.getElementById('cfg-metas');
       if (wrap) {
@@ -6443,16 +6592,50 @@
         }));
         return { codigo, nome: nomeEl ? nomeEl.value : '', ativa: ativaEl ? ativaEl.checked : true, itens };
       });
+      const metasAlvo = Array.from(document.querySelectorAll('#cfg-metas-alvo [data-metaalvo-row]')).map(row => {
+        const v = (sel) => { const el = row.querySelector(sel); return el ? el.value.trim() : ''; };
+        const valorStr = v('.ma-valor');
+        const ativaEl = row.querySelector('.ma-ativa');
+        return {
+          ano: v('.ma-ano') || null,
+          mes: v('.ma-mes') ? Number(v('.ma-mes')) : null,
+          metaCodigo: v('.ma-meta') || null,
+          setor: v('.ma-setor') || null,
+          valorStr: valorStr,
+          valor: Number(valorStr),
+          ativa: ativaEl ? ativaEl.checked : true
+        };
+      }).filter(r => r.valorStr !== '' && !Number.isNaN(r.valor))
+        .map(r => ({ ano: r.ano, mes: r.mes, metaCodigo: r.metaCodigo, setor: r.setor, valor: r.valor, ativa: r.ativa }));
+
+      const excecoesSetores = Array.from(document.querySelectorAll('#cfg-excecoes [data-excecao-row]')).map(row => {
+        const metaEl = row.querySelector('.ex-meta');
+        const origemEl = row.querySelector('.ex-origem');
+        const bidirEl = row.querySelector('.ex-bidir');
+        const ativaEl = row.querySelector('.ex-ativa');
+        const puxadosEl = row.querySelector('.ex-puxados');
+        return {
+          metaCodigo: metaEl ? metaEl.value.trim() : '',
+          setorOrigem: origemEl ? origemEl.value.trim() : '',
+          setoresPuxados: (puxadosEl ? puxadosEl.value : '').split('\n').map(s => s.trim()).filter(Boolean),
+          bidirecional: bidirEl ? bidirEl.checked : false,
+          ativa: ativaEl ? ativaEl.checked : true
+        };
+      }).filter(r => r.setorOrigem && r.setoresPuxados.length && r.metaCodigo);
+
       return {
         metaInstitucional: num('cfg-meta'),
         prazoMeta5Dias: num('cfg-prazo5'),
         prazoMeta10Dias: num('cfg-prazo10'),
         classificacoesMeta5Dias: classifTxt.split('\n').map(s => s.trim()).filter(Boolean),
         metasCaminhadas: metas,
+        metasAlvo: metasAlvo,
+        excecoesSetores: excecoesSetores,
         alertas: {
           ativo: chk('cfg-alerta-ativo'),
           incluirNotificacoesCriticas: chk('cfg-alerta-notif'),
           conformidadeMinima: num('cfg-alerta-min'),
+          horaEnvio: num('cfg-alerta-hora'),
           destinatarios: emailsTxt.split('\n').map(s => s.trim()).filter(Boolean)
         }
       };
@@ -6489,7 +6672,9 @@
         pintarBotaoGatilho();
         if (status) {
           const quota = resp && resp.quotaEmailRestante;
-          status.innerHTML = (alertaGatilhoInstalado ? '✅ Envio diário ativo (por volta das 7h).' : '⏸️ Envio automático desativado.')
+          const horaEl = document.getElementById('cfg-alerta-hora');
+          const hora = horaEl && horaEl.value !== '' ? horaEl.value : '7';
+          status.innerHTML = (alertaGatilhoInstalado ? ('✅ Envio diário ativo (por volta das ' + hora + 'h).') : '⏸️ Envio automático desativado.')
             + (quota != null ? ' · Cota de e-mails restante hoje: ' + quota : '');
         }
       } catch (erro) {
@@ -6538,6 +6723,44 @@
     (function configurarAcoesAdmin() {
       const form = document.getElementById('admin-form');
       const btnReset = document.getElementById('btn-config-reset');
+
+      const btnAddMetaAlvo = document.getElementById('btn-add-meta-alvo');
+      if (btnAddMetaAlvo) {
+        btnAddMetaAlvo.addEventListener('click', () => {
+          if (!adminPodeEditar) return;
+          const wrap = document.getElementById('cfg-metas-alvo');
+          if (wrap) wrap.appendChild(adminCriarLinhaMetaAlvo({}));
+        });
+      }
+
+      const btnAddExcecao = document.getElementById('btn-add-excecao');
+      if (btnAddExcecao) {
+        btnAddExcecao.addEventListener('click', () => {
+          if (!adminPodeEditar) return;
+          const wrap = document.getElementById('cfg-excecoes');
+          if (wrap) wrap.appendChild(adminCriarLinhaExcecao({}));
+        });
+      }
+
+      const btnSalvarAdmins = document.getElementById('btn-salvar-admins');
+      if (btnSalvarAdmins) {
+        btnSalvarAdmins.addEventListener('click', async () => {
+          if (!adminPodeEditar) return;
+          const ta = document.getElementById('cfg-admins');
+          const lista = (ta ? ta.value : '').split('\n').map(s => s.trim()).filter(Boolean);
+          const original = btnSalvarAdmins.innerHTML;
+          btnSalvarAdmins.disabled = true; btnSalvarAdmins.innerHTML = 'Salvando...';
+          try {
+            const resp = await adminSalvarAdmins(lista);
+            if (typeof mostrarToast === 'function') mostrarToast((resp && resp.mensagem) || 'Feito.', resp && resp.success ? 'success' : 'error', 'Administração');
+          } catch (erro) {
+            if (typeof mostrarToast === 'function') mostrarToast(String((erro && erro.message) || erro), 'error', 'Administração');
+          } finally {
+            btnSalvarAdmins.disabled = false; btnSalvarAdmins.innerHTML = original;
+          }
+        });
+      }
+
       if (form) {
         form.addEventListener('submit', async (ev) => {
           ev.preventDefault();
@@ -6548,7 +6771,7 @@
           try {
             const resp = await adminSalvarConfig(coletarConfigAdmin());
             if (resp && resp.success) {
-              if (resp.config) renderConfigAdmin(resp.config);
+              await recarregarConfigAdmin();
               if (typeof mostrarToast === 'function') mostrarToast(resp.mensagem || 'Configurações salvas.', 'success', 'Administração');
             } else if (typeof mostrarToast === 'function') {
               mostrarToast((resp && resp.mensagem) || 'Não foi possível salvar.', 'error', 'Administração');
@@ -6568,7 +6791,7 @@
           try {
             const resp = await adminRestaurarConfig();
             if (resp && resp.success) {
-              if (resp.config) renderConfigAdmin(resp.config);
+              await recarregarConfigAdmin();
               if (typeof mostrarToast === 'function') mostrarToast(resp.mensagem || 'Configurações restauradas.', 'success', 'Administração');
             } else if (typeof mostrarToast === 'function') {
               mostrarToast((resp && resp.mensagem) || 'Não foi possível restaurar.', 'error', 'Administração');
