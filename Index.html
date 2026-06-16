@@ -2530,6 +2530,121 @@
     html[data-theme="dark"] .admin-actions { background: transparent; }
     html[data-theme="dark"] .admin-field small { color: #567a83; }
 
+    /* ════════ Admin — shell com navegação por seções ════════ */
+    .admin-shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); gap: 22px; align-items: start; }
+    .admin-nav {
+      position: sticky; top: 16px;
+      display: flex; flex-direction: column; gap: 6px;
+      padding: 10px; border-radius: 18px;
+      border: 1px solid rgba(196, 211, 218, 0.72);
+      background: rgba(255,255,255,0.86);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    }
+    .admin-nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 11px 14px; border-radius: 12px;
+      border: 1px solid transparent; background: transparent;
+      color: #46606a; font-weight: 700; font-size: 14px; text-align: left;
+      cursor: pointer; white-space: nowrap;
+      transition: background-color .16s ease, color .16s ease, transform .16s ease;
+    }
+    .admin-nav-item i { width: 18px; text-align: center; color: var(--muted); transition: color .16s ease; }
+    .admin-nav-item:hover { background: rgba(15,118,110,.07); color: var(--blue); transform: translateX(1px); }
+    .admin-nav-item:hover i { color: var(--blue); }
+    .admin-nav-item.active { background: linear-gradient(135deg, #14b8a6, #0f766e); color: #fff; box-shadow: 0 12px 24px rgba(15,118,110,.22); }
+    .admin-nav-item.active i { color: #fff; }
+    .admin-panels { display: grid; gap: 18px; min-width: 0; }
+    .admin-panel { display: none; }
+    .admin-panel.ativo { display: grid; gap: 16px; animation: riseIn .4s cubic-bezier(.16,.84,.44,1) both; }
+    .admin-panel-head { display: grid; gap: 6px; margin-bottom: 2px; }
+    .admin-panel-head .eyebrow {
+      display: inline-flex; align-items: center; gap: 7px; width: fit-content;
+      padding: 6px 10px; border-radius: 999px;
+      background: var(--blue-soft); color: var(--blue);
+      font-size: 11px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase;
+    }
+    .admin-panel-head h2 { margin: 0; font-size: 24px; font-weight: 800; color: #1e2f36; letter-spacing: -.02em; }
+    .admin-panel-head p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.55; max-width: 70ch; }
+
+    /* Barra de ações fixa do rodapé */
+    .admin-actionbar {
+      position: sticky; bottom: 0; z-index: 5;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+      margin-top: 4px; padding: 14px 16px; border-radius: 16px;
+      border: 1px solid rgba(196, 211, 218, 0.72);
+      background: rgba(255,255,255,0.94);
+      box-shadow: 0 -6px 24px rgba(16,40,52,.08);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    }
+    .admin-actionbar .admin-updated { margin: 0; }
+    .btn-danger { color: #b54721; border-color: rgba(181,71,33,.35); background: rgba(255,240,235,.7); }
+    .btn-danger:hover:not(:disabled) { border-color: rgba(181,71,33,.6); color: #9a3a1c; }
+    .btn-ghost-danger { border: 0; background: transparent; color: #b54721; cursor: pointer; padding: 6px 10px; border-radius: 10px; font: inherit; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; transition: background-color .16s ease; }
+    .btn-ghost-danger:hover { background: rgba(181,71,33,.1); }
+
+    /* ════════ Admin — tag input (chips) ════════ */
+    .tag-input {
+      display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
+      min-height: 48px; padding: 8px 10px; border-radius: 12px;
+      border: 1.5px solid rgba(193, 208, 214, 0.95); background: #fff;
+      cursor: text; transition: border-color .16s ease, box-shadow .16s ease;
+    }
+    .tag-input.focado { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(15,118,110,.14); }
+    .tag-input .chip { animation: chipIn .18s ease; }
+    .tag-input .chip.invalido { background: var(--red-soft); border-color: rgba(192,86,33,.4); color: #9a3a1c; }
+    .tag-input-field { flex: 1 1 120px; min-width: 120px; border: 0; outline: none; background: transparent; font: inherit; font-size: 14px; color: #2b3b43; padding: 4px 2px; }
+    .tag-input-hint { margin: 6px 2px 0; font-size: 12px; color: var(--muted); }
+
+    /* ════════ Admin — cartões de regra ════════ */
+    .rule-list { display: grid; gap: 14px; }
+    .rule-card {
+      border: 1px solid rgba(196, 211, 218, 0.72); border-radius: 16px;
+      background: rgba(248, 251, 252, 0.85); padding: 16px;
+      transition: opacity .2s ease, border-color .16s ease;
+    }
+    .rule-card.inativa { opacity: .55; }
+    .rule-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+    .rule-card-title { display: flex; align-items: center; gap: 10px; min-width: 0; font-weight: 800; color: #1e2f36; font-size: 15px; }
+    .rule-card-title .rule-badge { flex: 0 0 auto; padding: 4px 10px; border-radius: 999px; background: var(--blue-soft); color: var(--blue); font-size: 12px; font-weight: 800; }
+    .rule-card-tools { display: flex; align-items: center; gap: 12px; flex: 0 0 auto; }
+    .rule-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+    .rule-grid.dois { grid-template-columns: minmax(160px, 240px) minmax(0, 1fr); }
+    .rule-empty {
+      padding: 26px 18px; text-align: center; color: var(--muted);
+      border: 1px dashed rgba(150, 170, 178, 0.6); border-radius: 14px;
+      background: rgba(248, 251, 252, 0.5); font-size: 14px;
+    }
+
+    @media (max-width: 900px) {
+      .admin-shell { grid-template-columns: 1fr; }
+      .admin-nav { position: static; flex-direction: row; flex-wrap: nowrap; gap: 6px; overflow-x: auto; padding: 8px; }
+      .admin-nav-item { flex: 0 0 auto; font-size: 13px; padding: 9px 12px; }
+      .admin-nav-item span { display: inline; }
+    }
+    @media (max-width: 620px) {
+      .rule-grid, .rule-grid.dois { grid-template-columns: 1fr; }
+      .rule-card-head { flex-wrap: wrap; }
+    }
+
+    /* ════════ Admin — shell/cartões/tags no tema escuro ════════ */
+    html[data-theme="dark"] .admin-nav,
+    html[data-theme="dark"] .admin-actionbar { background: rgba(20,36,43,.9); border-color: rgba(148,180,190,.16); }
+    html[data-theme="dark"] .admin-nav-item { color: #b4c6cc; }
+    html[data-theme="dark"] .admin-nav-item i { color: #7fa8b0; }
+    html[data-theme="dark"] .admin-nav-item:hover { background: rgba(45,212,191,.1); color: #7ff0e2; }
+    html[data-theme="dark"] .admin-nav-item:hover i { color: #7ff0e2; }
+    html[data-theme="dark"] .admin-panel-head h2 { color: #f1f7f7; }
+    html[data-theme="dark"] .admin-panel-head p { color: #9fb2b8; }
+    html[data-theme="dark"] .admin-panel-head .eyebrow { background: rgba(45,212,191,.14); color: #7ee8dc; }
+    html[data-theme="dark"] .tag-input { background: rgba(10,20,24,.9); border-color: rgba(100,150,162,.28); }
+    html[data-theme="dark"] .tag-input.focado { border-color: #14b8a6; box-shadow: 0 0 0 3px rgba(20,184,166,.18); }
+    html[data-theme="dark"] .tag-input-field { color: #dde9eb; }
+    html[data-theme="dark"] .rule-card { background: rgba(12,24,29,.75); border-color: rgba(100,150,162,.16); }
+    html[data-theme="dark"] .rule-card-title { color: #e4f0f1; }
+    html[data-theme="dark"] .rule-card-title .rule-badge { background: rgba(45,212,191,.14); color: #7ee8dc; }
+    html[data-theme="dark"] .rule-empty { color: #7fa8b0; border-color: rgba(100,150,162,.3); background: rgba(12,24,29,.4); }
+
   </style>
   <script>
     /* Tema claro/escuro — define antes da pintura para evitar "flash" (FOUC). */
@@ -2954,102 +3069,157 @@
         <div>Você está no modo <strong>somente leitura</strong>. Para editar, peça para um administrador incluir seu e-mail na lista de administradores.</div>
       </div>
 
-      <form id="admin-form" class="admin-grid" hidden>
-        <section class="admin-card">
-          <h3><i class="fa-solid fa-bullseye" aria-hidden="true"></i> Meta institucional</h3>
-          <p>Percentual de conformidade considerado como meta do hospital.</p>
-          <div class="admin-inline">
-            <input type="number" id="cfg-meta" class="admin-input" min="0" max="100" step="1" inputmode="numeric">
-            <span class="admin-suffix">%</span>
+      <form id="admin-form" hidden>
+        <div class="admin-shell">
+          <nav class="admin-nav" id="admin-nav" aria-label="Seções da administração">
+            <button type="button" class="admin-nav-item active" data-admin-sec="geral"><i class="fa-solid fa-sliders" aria-hidden="true"></i><span>Geral</span></button>
+            <button type="button" class="admin-nav-item" data-admin-sec="metas"><i class="fa-solid fa-shoe-prints" aria-hidden="true"></i><span>Metas</span></button>
+            <button type="button" class="admin-nav-item" data-admin-sec="periodo"><i class="fa-solid fa-bullseye" aria-hidden="true"></i><span>Metas por período</span></button>
+            <button type="button" class="admin-nav-item" data-admin-sec="excecoes"><i class="fa-solid fa-diagram-project" aria-hidden="true"></i><span>Exceções</span></button>
+            <button type="button" class="admin-nav-item" data-admin-sec="alertas"><i class="fa-solid fa-bell" aria-hidden="true"></i><span>Alertas</span></button>
+            <button type="button" class="admin-nav-item" data-admin-sec="admins"><i class="fa-solid fa-user-shield" aria-hidden="true"></i><span>Administradores</span></button>
+            <button type="button" class="admin-nav-item" data-admin-sec="historico"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><span>Histórico</span></button>
+          </nav>
+
+          <div class="admin-panels">
+            <!-- ░░ GERAL ░░ -->
+            <section class="admin-panel ativo" data-admin-panel="geral">
+              <div class="admin-panel-head">
+                <span class="eyebrow"><i class="fa-solid fa-sliders" aria-hidden="true"></i> Geral</span>
+                <h2>Configurações gerais</h2>
+                <p>Meta do hospital, prazos de resposta e quais classificações são tratadas como críticas.</p>
+              </div>
+
+              <div class="admin-grid">
+                <section class="admin-card">
+                  <h3><i class="fa-solid fa-bullseye" aria-hidden="true"></i> Meta institucional</h3>
+                  <p>Percentual de conformidade considerado como meta do hospital.</p>
+                  <div class="admin-inline">
+                    <input type="number" id="cfg-meta" class="admin-input" min="0" max="100" step="1" inputmode="numeric">
+                    <span class="admin-suffix">%</span>
+                  </div>
+                </section>
+
+                <section class="admin-card">
+                  <h3><i class="fa-solid fa-clock" aria-hidden="true"></i> Prazos de resposta (dias)</h3>
+                  <p>Prazo para responder às notificações conforme a criticidade.</p>
+                  <div class="admin-two">
+                    <label class="admin-field">Crítica <small>(evento grave / óbito / never event)</small>
+                      <input type="number" id="cfg-prazo5" class="admin-input" min="1" step="1" inputmode="numeric">
+                    </label>
+                    <label class="admin-field">Geral <small>(demais notificações)</small>
+                      <input type="number" id="cfg-prazo10" class="admin-input" min="1" step="1" inputmode="numeric">
+                    </label>
+                  </div>
+                </section>
+
+                <section class="admin-card admin-card-wide">
+                  <h3><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Classificações críticas</h3>
+                  <p>Notificações com essas classificações usam o prazo crítico. Digite e pressione Enter para adicionar.</p>
+                  <div class="tag-input-wrap" id="cfg-classificacoes"></div>
+                </section>
+              </div>
+            </section>
+
+            <!-- ░░ METAS ░░ -->
+            <section class="admin-panel" data-admin-panel="metas">
+              <div class="admin-panel-head">
+                <span class="eyebrow"><i class="fa-solid fa-shoe-prints" aria-hidden="true"></i> Metas</span>
+                <h2>Metas das Caminhadas de Segurança</h2>
+                <p>Renomeie metas e itens, ou desative uma meta para ocultá-la do boletim. A estrutura de cálculo (colunas) é preservada.</p>
+              </div>
+              <div id="cfg-metas" class="rule-list"></div>
+            </section>
+
+            <!-- ░░ METAS POR PERÍODO ░░ -->
+            <section class="admin-panel" data-admin-panel="periodo">
+              <div class="admin-panel-head">
+                <span class="eyebrow"><i class="fa-solid fa-bullseye" aria-hidden="true"></i> Metas por período</span>
+                <h2>Metas por período</h2>
+                <p>Defina metas específicas por ano, ano+mês, por meta/indicador e/ou por setor. A regra mais específica vale (precedência: <strong>setor &gt; meta &gt; mês &gt; ano</strong>). Sem regra aplicável, vale a meta institucional.</p>
+              </div>
+              <div id="cfg-metas-alvo" class="rule-list"></div>
+              <div class="admin-buttons">
+                <button type="button" class="btn" id="btn-add-meta-alvo"><i class="fa-solid fa-plus" aria-hidden="true"></i> Adicionar meta por período</button>
+              </div>
+            </section>
+
+            <!-- ░░ EXCEÇÕES ░░ -->
+            <section class="admin-panel" data-admin-panel="excecoes">
+              <div class="admin-panel-head">
+                <span class="eyebrow"><i class="fa-solid fa-diagram-project" aria-hidden="true"></i> Exceções</span>
+                <h2>Exceções de setor por meta</h2>
+                <p>Quando um setor de origem é filtrado, o cálculo da meta escolhida passa a considerar os setores puxados. Marque <strong>bidirecional</strong> para valer nos dois sentidos.</p>
+              </div>
+              <div id="cfg-excecoes" class="rule-list"></div>
+              <div class="admin-buttons">
+                <button type="button" class="btn" id="btn-add-excecao"><i class="fa-solid fa-plus" aria-hidden="true"></i> Adicionar exceção</button>
+              </div>
+            </section>
+
+            <!-- ░░ ALERTAS ░░ -->
+            <section class="admin-panel" data-admin-panel="alertas">
+              <div class="admin-panel-head">
+                <span class="eyebrow"><i class="fa-solid fa-bell" aria-hidden="true"></i> Alertas</span>
+                <h2>Alertas proativos por e-mail</h2>
+                <p>O sistema verifica os dados e avisa quando há setores abaixo da meta ou notificações críticas sem resposta. Apenas <strong>lê</strong> os dados — nada é gravado na base.</p>
+              </div>
+              <section class="admin-card">
+                <div class="admin-two">
+                  <label class="admin-toggle admin-field"><input type="checkbox" id="cfg-alerta-ativo"> Ativar alertas</label>
+                  <label class="admin-toggle admin-field"><input type="checkbox" id="cfg-alerta-notif"> Incluir notificações críticas pendentes</label>
+                  <label class="admin-field">Conformidade mínima (%)<input type="number" id="cfg-alerta-min" class="admin-input" min="0" max="100" step="1"></label>
+                  <label class="admin-field">Hora do envio diário <small>(0–23h)</small><input type="number" id="cfg-alerta-hora" class="admin-input" min="0" max="23" step="1" inputmode="numeric"></label>
+                </div>
+                <div class="admin-field" style="margin-top:14px">Destinatários <small>(digite o e-mail e pressione Enter)</small>
+                  <div class="tag-input-wrap" id="cfg-alerta-emails"></div>
+                </div>
+                <div class="admin-buttons" style="margin-top:14px">
+                  <button type="button" class="btn" id="btn-alerta-teste"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Salvar e enviar teste</button>
+                  <button type="button" class="btn" id="btn-alerta-gatilho"><i class="fa-solid fa-clock" aria-hidden="true"></i> Ativar envio diário</button>
+                </div>
+                <div id="alerta-status" class="admin-updated" style="margin-top:10px"></div>
+              </section>
+            </section>
+
+            <!-- ░░ ADMINISTRADORES ░░ -->
+            <section class="admin-panel" data-admin-panel="admins">
+              <div class="admin-panel-head">
+                <span class="eyebrow"><i class="fa-solid fa-user-shield" aria-hidden="true"></i> Administradores</span>
+                <h2>Administradores</h2>
+                <p>E-mails que podem editar estas configurações. Se ficar vazio, qualquer editor da planilha pode alterar.</p>
+              </div>
+              <section class="admin-card">
+                <div class="tag-input-wrap" id="cfg-admins"></div>
+                <div class="admin-buttons" style="margin-top:14px">
+                  <button type="button" class="btn btn-primary" id="btn-salvar-admins"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Salvar administradores</button>
+                </div>
+              </section>
+            </section>
+
+            <!-- ░░ HISTÓRICO ░░ -->
+            <section class="admin-panel" data-admin-panel="historico">
+              <div class="admin-panel-head">
+                <span class="eyebrow"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Histórico</span>
+                <h2>Histórico de alterações</h2>
+                <p>Últimas alterações registradas nas configurações.</p>
+              </div>
+              <section class="admin-card">
+                <div id="cfg-historico" class="admin-updated">Sem registros.</div>
+              </section>
+            </section>
+
+            <div class="admin-actionbar">
+              <div id="admin-meta-info" class="admin-updated"></div>
+              <div class="admin-buttons">
+                <button type="button" class="btn btn-danger" id="btn-config-reset"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Restaurar padrão</button>
+                <button type="submit" class="btn btn-primary" id="btn-config-salvar"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Salvar configurações</button>
+              </div>
+            </div>
           </div>
-        </section>
-
-        <section class="admin-card">
-          <h3><i class="fa-solid fa-clock" aria-hidden="true"></i> Prazos de resposta (dias)</h3>
-          <p>Prazo para responder às notificações conforme a criticidade.</p>
-          <div class="admin-two">
-            <label class="admin-field">Crítica <small>(evento grave / óbito / never event)</small>
-              <input type="number" id="cfg-prazo5" class="admin-input" min="1" step="1" inputmode="numeric">
-            </label>
-            <label class="admin-field">Geral <small>(demais notificações)</small>
-              <input type="number" id="cfg-prazo10" class="admin-input" min="1" step="1" inputmode="numeric">
-            </label>
-          </div>
-        </section>
-
-        <section class="admin-card admin-card-wide">
-          <h3><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Classificações críticas</h3>
-          <p>Uma por linha. Notificações com essas classificações usam o prazo crítico.</p>
-          <textarea id="cfg-classificacoes" class="admin-input admin-textarea" rows="4" spellcheck="false"></textarea>
-        </section>
-
-        <section class="admin-card admin-card-wide">
-          <h3><i class="fa-solid fa-bell" aria-hidden="true"></i> Alertas proativos por e-mail</h3>
-          <p>O sistema verifica os dados e avisa quando há setores abaixo da meta ou notificações críticas sem resposta. Apenas <strong>lê</strong> os dados — nada é gravado na base.</p>
-          <div class="reg-fields">
-            <label class="admin-toggle admin-field"><input type="checkbox" id="cfg-alerta-ativo"> Ativar alertas</label>
-            <label class="admin-field">Conformidade mínima (%)<input type="number" id="cfg-alerta-min" class="admin-input" min="0" max="100" step="1"></label>
-            <label class="admin-field">Hora do envio diário <small>(0–23h)</small><input type="number" id="cfg-alerta-hora" class="admin-input" min="0" max="23" step="1" inputmode="numeric"></label>
-            <label class="admin-toggle admin-field"><input type="checkbox" id="cfg-alerta-notif"> Incluir notificações críticas pendentes</label>
-          </div>
-          <label class="admin-field" style="margin-top:12px">Destinatários <small>(um e-mail por linha)</small>
-            <textarea id="cfg-alerta-emails" class="admin-input admin-textarea" rows="3" spellcheck="false" placeholder="fulano@hospital.org"></textarea>
-          </label>
-          <div class="admin-buttons" style="margin-top:12px">
-            <button type="button" class="btn" id="btn-alerta-teste"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Salvar e enviar teste</button>
-            <button type="button" class="btn" id="btn-alerta-gatilho"><i class="fa-solid fa-clock" aria-hidden="true"></i> Ativar envio diário</button>
-          </div>
-          <div id="alerta-status" class="admin-updated" style="margin-top:10px"></div>
-        </section>
-
-        <section class="admin-card admin-card-wide">
-          <h3><i class="fa-solid fa-shoe-prints" aria-hidden="true"></i> Metas das Caminhadas de Segurança</h3>
-          <p>Renomeie metas e itens, ou desative uma meta para ocultá-la do boletim. A estrutura de cálculo (colunas) é preservada.</p>
-          <div id="cfg-metas" class="admin-metas"></div>
-        </section>
-
-        <section class="admin-card admin-card-wide">
-          <h3><i class="fa-solid fa-bullseye" aria-hidden="true"></i> Metas por período</h3>
-          <p>Defina metas específicas por ano, ano+mês, por meta/indicador e/ou por setor. A regra mais específica vale (precedência: <strong>setor &gt; meta &gt; mês &gt; ano</strong>). Sem regra aplicável, vale a meta institucional.</p>
-          <div id="cfg-metas-alvo" class="admin-metas"></div>
-          <div class="admin-buttons" style="margin-top:12px">
-            <button type="button" class="btn" id="btn-add-meta-alvo"><i class="fa-solid fa-plus" aria-hidden="true"></i> Adicionar meta por período</button>
-          </div>
-        </section>
-
-        <section class="admin-card admin-card-wide">
-          <h3><i class="fa-solid fa-diagram-project" aria-hidden="true"></i> Exceções de setor por meta</h3>
-          <p>Quando um setor de origem é filtrado, o cálculo da meta escolhida passa a considerar os setores puxados. Marque <strong>bidirecional</strong> para valer nos dois sentidos. Cobre as regras atuais e futuras sem mexer no código.</p>
-          <div id="cfg-excecoes" class="admin-metas"></div>
-          <div class="admin-buttons" style="margin-top:12px">
-            <button type="button" class="btn" id="btn-add-excecao"><i class="fa-solid fa-plus" aria-hidden="true"></i> Adicionar exceção</button>
-          </div>
-        </section>
-
-        <section class="admin-card admin-card-wide">
-          <h3><i class="fa-solid fa-user-shield" aria-hidden="true"></i> Administradores</h3>
-          <p>E-mails que podem editar estas configurações (um por linha). Se ficar vazio, qualquer editor da planilha pode alterar.</p>
-          <textarea id="cfg-admins" class="admin-input admin-textarea" rows="3" spellcheck="false" placeholder="fulano@hospital.org"></textarea>
-          <div class="admin-buttons" style="margin-top:12px">
-            <button type="button" class="btn" id="btn-salvar-admins"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Salvar administradores</button>
-          </div>
-        </section>
-
-        <section class="admin-card admin-card-wide">
-          <h3><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Histórico de alterações</h3>
-          <p>Últimas alterações registradas nas configurações.</p>
-          <div id="cfg-historico" class="admin-updated">Sem registros.</div>
-        </section>
+        </div>
 
         <datalist id="cfg-setores-lista"></datalist>
-
-        <section class="admin-actions admin-card-wide">
-          <div id="admin-meta-info" class="admin-updated"></div>
-          <div class="admin-buttons">
-            <button type="button" class="btn" id="btn-config-reset"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Restaurar padrão</button>
-            <button type="submit" class="btn btn-primary" id="btn-config-salvar"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Salvar configurações</button>
-          </div>
-        </section>
       </form>
     </section>
   </main>
@@ -6352,6 +6522,100 @@
     let adminPodeEditar = true;
     let adminSetores = [];
     let adminMetasRef = [];
+    const adminTagInputs = {};
+    const ADMIN_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    /* Componente leve de chips: digite + Enter/vírgula adiciona, × remove.
+       Reaproveita os estilos .chip/.chip-remove. Retorna { obterValores }. */
+    function criarTagInput(ref, opcoes) {
+      opcoes = opcoes || {};
+      let container = typeof ref === 'string' ? document.getElementById(ref) : ref;
+      if (!container) return { obterValores: () => [] };
+      // Recria o nó para descartar chips/listeners de uma renderização anterior.
+      const fresh = container.cloneNode(false);
+      if (container.parentNode) container.parentNode.replaceChild(fresh, container);
+      container = fresh;
+      const chaveRegistro = container.id || ('tag-' + Math.random().toString(36).slice(2, 9));
+      let valores = (opcoes.valores || []).map(v => String(v || '').trim()).filter(Boolean);
+      const validar = typeof opcoes.validar === 'function' ? opcoes.validar : null;
+
+      const campo = document.createElement('input');
+      campo.type = 'text';
+      campo.className = 'tag-input-field';
+      campo.placeholder = opcoes.placeholder || 'Digite e pressione Enter...';
+      if (opcoes.datalistId) campo.setAttribute('list', opcoes.datalistId);
+
+      function render() {
+        container.querySelectorAll('.chip').forEach(c => c.remove());
+        valores.forEach((valor, idx) => {
+          const chip = document.createElement('span');
+          chip.className = 'chip' + (validar && !validar(valor) ? ' invalido' : '');
+          chip.innerHTML = `${escapeHtml(valor)} <button type="button" class="chip-remove" aria-label="Remover" title="Remover">×</button>`;
+          chip.querySelector('.chip-remove').addEventListener('click', () => {
+            valores.splice(idx, 1);
+            render();
+          });
+          container.insertBefore(chip, campo);
+        });
+      }
+
+      function adicionar(texto) {
+        const partes = String(texto || '').split(/[,;\n]/).map(s => s.trim()).filter(Boolean);
+        let mudou = false;
+        partes.forEach(p => {
+          if (valores.some(v => v.toLowerCase() === p.toLowerCase())) return;
+          if (validar && !validar(p)) {
+            if (typeof mostrarToast === 'function') mostrarToast('"' + p + '" não parece válido.', 'error', 'Administração');
+            return;
+          }
+          valores.push(p);
+          mudou = true;
+        });
+        if (mudou) render();
+      }
+
+      container.className = 'tag-input';
+      container.appendChild(campo);
+      render();
+
+      container.addEventListener('click', () => campo.focus());
+      campo.addEventListener('focus', () => container.classList.add('focado'));
+      campo.addEventListener('blur', () => { container.classList.remove('focado'); if (campo.value.trim()) { adicionar(campo.value); campo.value = ''; } });
+      campo.addEventListener('keydown', (ev) => {
+        if (ev.key === 'Enter' || ev.key === ',' || ev.key === ';') {
+          ev.preventDefault();
+          adicionar(campo.value);
+          campo.value = '';
+        } else if (ev.key === 'Backspace' && !campo.value && valores.length) {
+          valores.pop();
+          render();
+        }
+      });
+
+      const api = {
+        obterValores: () => valores.slice(),
+        definir: (novos) => { valores = (novos || []).map(v => String(v || '').trim()).filter(Boolean); render(); },
+        setDisabled: (d) => { campo.disabled = d; container.style.pointerEvents = d ? 'none' : ''; container.style.opacity = d ? '.6' : ''; }
+      };
+      adminTagInputs[chaveRegistro] = api;
+      return api;
+    }
+
+    /* Navegação entre as seções da Admin (sem rolão). */
+    function configurarNavAdmin() {
+      const nav = document.getElementById('admin-nav');
+      if (!nav || nav.dataset.ligado === '1') return;
+      nav.dataset.ligado = '1';
+      nav.addEventListener('click', (ev) => {
+        const item = ev.target.closest('.admin-nav-item');
+        if (!item) return;
+        const sec = item.getAttribute('data-admin-sec');
+        nav.querySelectorAll('.admin-nav-item').forEach(b => b.classList.toggle('active', b === item));
+        document.querySelectorAll('#admin-form .admin-panel').forEach(p => {
+          p.classList.toggle('ativo', p.getAttribute('data-admin-panel') === sec);
+        });
+      });
+    }
 
     function adminMetasOptions(selecionado) {
       const sel = selecionado != null ? String(selecionado) : '';
@@ -6373,40 +6637,61 @@
     function adminCriarLinhaMetaAlvo(regra) {
       regra = regra || {};
       const div = document.createElement('div');
-      div.className = 'admin-meta-block';
+      div.className = 'rule-card' + (regra.ativa === false ? ' inativa' : '');
       div.setAttribute('data-metaalvo-row', '');
       div.innerHTML = `
-        <div class="admin-meta-head">
+        <div class="rule-card-head">
+          <div class="rule-card-title"><span class="rule-badge">Meta-alvo</span></div>
+          <div class="rule-card-tools">
+            <label class="admin-toggle"><input type="checkbox" class="ma-ativa" ${regra.ativa === false ? '' : 'checked'}> Ativa</label>
+            <button type="button" class="btn-ghost-danger ma-remover" title="Remover regra"><i class="fa-solid fa-trash" aria-hidden="true"></i> Remover</button>
+          </div>
+        </div>
+        <div class="rule-grid">
           <label class="admin-field">Ano <input type="text" class="admin-input ma-ano" inputmode="numeric" placeholder="(todos)" value="${escapeHtml(regra.ano != null ? String(regra.ano) : '')}"></label>
           <label class="admin-field">Mês <select class="admin-input ma-mes">${adminMesesOptions(regra.mes)}</select></label>
           <label class="admin-field">Meta <select class="admin-input ma-meta"><option value="">(todas)</option>${adminMetasOptions(regra.metaCodigo)}</select></label>
           <label class="admin-field">Setor <input type="text" class="admin-input ma-setor" list="cfg-setores-lista" placeholder="(todos)" value="${escapeHtml(regra.setor != null ? String(regra.setor) : '')}"></label>
           <label class="admin-field">Meta % <input type="number" class="admin-input ma-valor" min="0" max="100" step="1" value="${escapeHtml(regra.valor != null ? String(regra.valor) : '')}"></label>
-          <label class="admin-toggle"><input type="checkbox" class="ma-ativa" ${regra.ativa === false ? '' : 'checked'}> Ativa</label>
-          <button type="button" class="btn ma-remover" title="Remover regra"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
         </div>`;
+      const ativaEl = div.querySelector('.ma-ativa');
+      ativaEl.addEventListener('change', () => div.classList.toggle('inativa', !ativaEl.checked));
       div.querySelector('.ma-remover').addEventListener('click', () => div.remove());
       return div;
     }
 
     function adminCriarLinhaExcecao(regra) {
       regra = regra || {};
-      const puxados = Array.isArray(regra.setoresPuxados) ? regra.setoresPuxados.join('\n') : '';
       const div = document.createElement('div');
-      div.className = 'admin-meta-block';
+      div.className = 'rule-card' + (regra.ativa === false ? ' inativa' : '');
       div.setAttribute('data-excecao-row', '');
       div.innerHTML = `
-        <div class="admin-meta-head">
-          <label class="admin-field">Meta <select class="admin-input ex-meta">${adminMetasOptions(regra.metaCodigo)}</select></label>
-          <label class="admin-field">Setor de origem <input type="text" class="admin-input ex-origem" list="cfg-setores-lista" value="${escapeHtml(regra.setorOrigem != null ? String(regra.setorOrigem) : '')}"></label>
-          <label class="admin-toggle"><input type="checkbox" class="ex-bidir" ${regra.bidirecional ? 'checked' : ''}> Bidirecional</label>
-          <label class="admin-toggle"><input type="checkbox" class="ex-ativa" ${regra.ativa === false ? '' : 'checked'}> Ativa</label>
-          <button type="button" class="btn ex-remover" title="Remover regra"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
+        <div class="rule-card-head">
+          <div class="rule-card-title"><span class="rule-badge">Exceção</span></div>
+          <div class="rule-card-tools">
+            <label class="admin-toggle"><input type="checkbox" class="ex-bidir" ${regra.bidirecional ? 'checked' : ''}> Bidirecional</label>
+            <label class="admin-toggle"><input type="checkbox" class="ex-ativa" ${regra.ativa === false ? '' : 'checked'}> Ativa</label>
+            <button type="button" class="btn-ghost-danger ex-remover" title="Remover regra"><i class="fa-solid fa-trash" aria-hidden="true"></i> Remover</button>
+          </div>
         </div>
-        <label class="admin-field" style="margin-top:8px">Setores puxados <small>(um por linha)</small>
-          <textarea class="admin-input admin-textarea ex-puxados" rows="3" spellcheck="false">${escapeHtml(puxados)}</textarea>
-        </label>`;
+        <div class="rule-grid dois">
+          <label class="admin-field">Meta <select class="admin-input ex-meta">${adminMetasOptions(regra.metaCodigo)}</select></label>
+          <label class="admin-field">Setor de origem <input type="text" class="admin-input ex-origem" list="cfg-setores-lista" placeholder="Ex.: B2 - Centro Cirúrgico" value="${escapeHtml(regra.setorOrigem != null ? String(regra.setorOrigem) : '')}"></label>
+        </div>
+        <div class="admin-field" style="margin-top:12px">Setores puxados <small>(digite e pressione Enter)</small>
+          <div class="tag-input-wrap ex-puxados"></div>
+        </div>`;
+      const ativaEl = div.querySelector('.ex-ativa');
+      ativaEl.addEventListener('change', () => div.classList.toggle('inativa', !ativaEl.checked));
       div.querySelector('.ex-remover').addEventListener('click', () => div.remove());
+      // Tag-input local para os setores puxados (escopo deste card).
+      // O cartão ainda está destacado do DOM aqui, por isso passamos o elemento.
+      const wrap = div.querySelector('.ex-puxados');
+      div._puxadosApi = criarTagInput(wrap, {
+        valores: Array.isArray(regra.setoresPuxados) ? regra.setoresPuxados : [],
+        placeholder: 'Setor puxado...',
+        datalistId: 'cfg-setores-lista'
+      });
       return div;
     }
 
@@ -6486,12 +6771,12 @@
 
     function renderConfigAdmin(config, resp) {
       resp = resp || {};
+      Object.keys(adminTagInputs).forEach(k => delete adminTagInputs[k]);
       adminMetasRef = (config.metasCaminhadas || []).map(m => ({ codigo: m.codigo, nome: m.nome }));
       const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
       set('cfg-meta', config.metaInstitucional);
       set('cfg-prazo5', config.prazoMeta5Dias);
       set('cfg-prazo10', config.prazoMeta10Dias);
-      set('cfg-classificacoes', (config.classificacoesMeta5Dias || []).join('\n'));
 
       const alertas = config.alertas || {};
       const setChk = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
@@ -6499,7 +6784,6 @@
       setChk('cfg-alerta-notif', alertas.incluirNotificacoesCriticas);
       set('cfg-alerta-min', alertas.conformidadeMinima != null ? alertas.conformidadeMinima : '');
       set('cfg-alerta-hora', alertas.horaEnvio != null ? alertas.horaEnvio : 7);
-      set('cfg-alerta-emails', (alertas.destinatarios || []).join('\n'));
 
       // Datalist de setores (reusado pelas exceções e metas por período).
       const datalist = document.getElementById('cfg-setores-lista');
@@ -6507,22 +6791,28 @@
         datalist.innerHTML = adminSetores.map(s => `<option value="${escapeHtml(String(s))}"></option>`).join('');
       }
 
-      // Metas por período.
+      // Listas como chips/tags.
+      criarTagInput('cfg-classificacoes', { valores: config.classificacoesMeta5Dias || [], placeholder: 'Ex.: NEVER EVENT' });
+      criarTagInput('cfg-alerta-emails', { valores: alertas.destinatarios || [], placeholder: 'fulano@hospital.org', validar: v => ADMIN_EMAIL_RE.test(v) });
+      criarTagInput('cfg-admins', { valores: resp.admins || [], placeholder: 'fulano@hospital.org', validar: v => ADMIN_EMAIL_RE.test(v) });
+
+      // Metas por período (cartões + empty state).
       const wrapAlvo = document.getElementById('cfg-metas-alvo');
       if (wrapAlvo) {
         wrapAlvo.innerHTML = '';
-        (config.metasAlvo || []).forEach(regra => wrapAlvo.appendChild(adminCriarLinhaMetaAlvo(regra)));
+        const regras = config.metasAlvo || [];
+        if (!regras.length) wrapAlvo.innerHTML = '<div class="rule-empty">Nenhuma meta por período ainda. Clique em “Adicionar meta por período”.</div>';
+        else regras.forEach(regra => wrapAlvo.appendChild(adminCriarLinhaMetaAlvo(regra)));
       }
 
-      // Exceções de setor.
+      // Exceções de setor (cartões + empty state).
       const wrapExc = document.getElementById('cfg-excecoes');
       if (wrapExc) {
         wrapExc.innerHTML = '';
-        (config.excecoesSetores || []).forEach(regra => wrapExc.appendChild(adminCriarLinhaExcecao(regra)));
+        const regras = config.excecoesSetores || [];
+        if (!regras.length) wrapExc.innerHTML = '<div class="rule-empty">Nenhuma exceção cadastrada. Clique em “Adicionar exceção”.</div>';
+        else regras.forEach(regra => wrapExc.appendChild(adminCriarLinhaExcecao(regra)));
       }
-
-      // Administradores.
-      set('cfg-admins', (resp.admins || []).join('\n'));
 
       // Histórico de alterações.
       const hist = document.getElementById('cfg-historico');
@@ -6533,6 +6823,7 @@
           : 'Sem registros.';
       }
 
+      // Metas das Caminhadas como cartões.
       const wrap = document.getElementById('cfg-metas');
       if (wrap) {
         wrap.innerHTML = (config.metasCaminhadas || []).map(meta => {
@@ -6542,11 +6833,13 @@
               <input type="text" class="admin-input cfg-item-nome" data-codigo="${escapeHtml(String(item.codigo))}" value="${escapeHtml(String(item.nome || ''))}">
             </div>`).join('');
           return `
-            <div class="admin-meta-block ${meta.ativa === false ? 'inativa' : ''}" data-meta-block="${escapeHtml(String(meta.codigo))}">
-              <div class="admin-meta-head">
-                <span class="admin-meta-codigo">${escapeHtml(String(meta.codigo))}</span>
-                <input type="text" class="admin-input admin-meta-nome cfg-meta-nome" value="${escapeHtml(String(meta.nome || ''))}">
-                <label class="admin-toggle"><input type="checkbox" class="cfg-meta-ativa" ${meta.ativa === false ? '' : 'checked'}> Ativa</label>
+            <div class="rule-card ${meta.ativa === false ? 'inativa' : ''}" data-meta-block="${escapeHtml(String(meta.codigo))}">
+              <div class="rule-card-head">
+                <div class="rule-card-title"><span class="rule-badge">Meta ${escapeHtml(String(meta.codigo))}</span>
+                  <input type="text" class="admin-input cfg-meta-nome" value="${escapeHtml(String(meta.nome || ''))}"></div>
+                <div class="rule-card-tools">
+                  <label class="admin-toggle"><input type="checkbox" class="cfg-meta-ativa" ${meta.ativa === false ? '' : 'checked'}> Ativa</label>
+                </div>
               </div>
               <div class="admin-itens">${itens}</div>
             </div>`;
@@ -6554,7 +6847,7 @@
 
         wrap.querySelectorAll('.cfg-meta-ativa').forEach(chk => {
           chk.addEventListener('change', () => {
-            const block = chk.closest('.admin-meta-block');
+            const block = chk.closest('.rule-card');
             if (block) block.classList.toggle('inativa', !chk.checked);
           });
         });
@@ -6568,21 +6861,22 @@
         info.innerHTML = partes.length ? partes.join(' ') : 'Ainda sem alterações registradas.';
       }
 
+      configurarNavAdmin();
       atualizarStatusAlertas();
 
       if (!adminPodeEditar) {
-        document.querySelectorAll('#admin-form input, #admin-form textarea, #admin-form button').forEach(el => {
-          el.setAttribute('disabled', 'disabled');
+        document.querySelectorAll('#admin-form input, #admin-form textarea, #admin-form button, #admin-form select').forEach(el => {
+          if (!el.closest('.admin-nav')) el.setAttribute('disabled', 'disabled');
         });
+        Object.keys(adminTagInputs).forEach(id => adminTagInputs[id].setDisabled(true));
       }
     }
 
     function coletarConfigAdmin() {
       const num = (id) => { const el = document.getElementById(id); return el ? Number(el.value) : undefined; };
       const chk = (id) => { const el = document.getElementById(id); return el ? !!el.checked : false; };
-      const classifTxt = (document.getElementById('cfg-classificacoes') || {}).value || '';
-      const emailsTxt = (document.getElementById('cfg-alerta-emails') || {}).value || '';
-      const metas = Array.from(document.querySelectorAll('#cfg-metas .admin-meta-block')).map(block => {
+      const tagVals = (id) => adminTagInputs[id] ? adminTagInputs[id].obterValores() : [];
+      const metas = Array.from(document.querySelectorAll('#cfg-metas [data-meta-block]')).map(block => {
         const codigo = block.getAttribute('data-meta-block');
         const nomeEl = block.querySelector('.cfg-meta-nome');
         const ativaEl = block.querySelector('.cfg-meta-ativa');
@@ -6613,11 +6907,10 @@
         const origemEl = row.querySelector('.ex-origem');
         const bidirEl = row.querySelector('.ex-bidir');
         const ativaEl = row.querySelector('.ex-ativa');
-        const puxadosEl = row.querySelector('.ex-puxados');
         return {
           metaCodigo: metaEl ? metaEl.value.trim() : '',
           setorOrigem: origemEl ? origemEl.value.trim() : '',
-          setoresPuxados: (puxadosEl ? puxadosEl.value : '').split('\n').map(s => s.trim()).filter(Boolean),
+          setoresPuxados: row._puxadosApi ? row._puxadosApi.obterValores() : [],
           bidirecional: bidirEl ? bidirEl.checked : false,
           ativa: ativaEl ? ativaEl.checked : true
         };
@@ -6627,7 +6920,7 @@
         metaInstitucional: num('cfg-meta'),
         prazoMeta5Dias: num('cfg-prazo5'),
         prazoMeta10Dias: num('cfg-prazo10'),
-        classificacoesMeta5Dias: classifTxt.split('\n').map(s => s.trim()).filter(Boolean),
+        classificacoesMeta5Dias: tagVals('cfg-classificacoes'),
         metasCaminhadas: metas,
         metasAlvo: metasAlvo,
         excecoesSetores: excecoesSetores,
@@ -6636,7 +6929,7 @@
           incluirNotificacoesCriticas: chk('cfg-alerta-notif'),
           conformidadeMinima: num('cfg-alerta-min'),
           horaEnvio: num('cfg-alerta-hora'),
-          destinatarios: emailsTxt.split('\n').map(s => s.trim()).filter(Boolean)
+          destinatarios: tagVals('cfg-alerta-emails')
         }
       };
     }
@@ -6729,7 +7022,10 @@
         btnAddMetaAlvo.addEventListener('click', () => {
           if (!adminPodeEditar) return;
           const wrap = document.getElementById('cfg-metas-alvo');
-          if (wrap) wrap.appendChild(adminCriarLinhaMetaAlvo({}));
+          if (!wrap) return;
+          const vazio = wrap.querySelector('.rule-empty');
+          if (vazio) vazio.remove();
+          wrap.appendChild(adminCriarLinhaMetaAlvo({}));
         });
       }
 
@@ -6738,7 +7034,10 @@
         btnAddExcecao.addEventListener('click', () => {
           if (!adminPodeEditar) return;
           const wrap = document.getElementById('cfg-excecoes');
-          if (wrap) wrap.appendChild(adminCriarLinhaExcecao({}));
+          if (!wrap) return;
+          const vazio = wrap.querySelector('.rule-empty');
+          if (vazio) vazio.remove();
+          wrap.appendChild(adminCriarLinhaExcecao({}));
         });
       }
 
@@ -6746,8 +7045,7 @@
       if (btnSalvarAdmins) {
         btnSalvarAdmins.addEventListener('click', async () => {
           if (!adminPodeEditar) return;
-          const ta = document.getElementById('cfg-admins');
-          const lista = (ta ? ta.value : '').split('\n').map(s => s.trim()).filter(Boolean);
+          const lista = adminTagInputs['cfg-admins'] ? adminTagInputs['cfg-admins'].obterValores() : [];
           const original = btnSalvarAdmins.innerHTML;
           btnSalvarAdmins.disabled = true; btnSalvarAdmins.innerHTML = 'Salvando...';
           try {
