@@ -13,20 +13,14 @@ function doGet(e) {
     }));
   }
 
-  if (params.api === 'relatorios') {
-    return responderJson(executarRota('api-relatorios', () => {
-      return executarComPlanilha('relatorios', ss => montarPayloadRelatorios(ss, extrairFiltrosRelatorios(params)));
-    }));
-  }
 
   if (params.api === 'config') {
     return responderJson(obterConfigCosep());
   }
 
   try {
-    const pagina = normalizarTexto(params.page || params.pagina || '');
-    const telaInicial = pagina === 'RELATORIOS' || pagina === 'RELATORIOS' ? 'relatorios' : 'boletim';
-    const titulo = telaInicial === 'relatorios' ? 'Relatorios COSEP' : 'Boletim COSEP';
+    const telaInicial = 'boletim';
+    const titulo = 'Boletim COSEP';
 
     const template = HtmlService.createTemplateFromFile('Index');
     template.appUrl = ScriptApp.getService().getUrl();
