@@ -1742,7 +1742,7 @@
       body::before, body::after { display: none !important; }
       /* Imprime apenas o boletim (cada página = uma folha A4 exata) */
       .hero-card, .loading-box, #toast-root, .pdf-progress-modal, .pontos-card,
-      #relatorios-app, #admin-app { display: none !important; }
+      #admin-app { display: none !important; }
       .app-shell { padding: 0 !important; margin: 0 !important; max-width: none !important; width: 210mm !important; }
       .report-stack { display: block !important; gap: 0 !important; }
       .document-page {
@@ -2079,7 +2079,6 @@
     body.pdf-export #toast-root,
     body.pdf-export .pdf-progress-modal,
     body.pdf-export .pontos-card,
-    body.pdf-export #relatorios-app,
     body.pdf-export #admin-app {
       display: none !important;
     }
@@ -2138,30 +2137,6 @@
 
     .app-view[hidden] { display: none !important; }
 
-    .relatorios-shell {
-      position: relative;
-      z-index: 1;
-      max-width: 1400px;
-      width: 100%;
-      min-height: 100vh;
-      margin: 0 auto;
-      padding: 24px 16px 40px;
-      background: transparent;
-    }
-
-    .relatorios-shell .top-menu-wrap {
-      margin-bottom: 22px;
-    }
-
-    .relatorios-frame {
-      display: block;
-      width: 100%;
-      min-height: calc(100vh - 100px);
-      height: calc(100vh - 100px);
-      border: 0;
-      border-radius: 28px;
-      background: transparent;
-    }
 
     .filter-tabs .tab-btn {
       background: rgba(255, 255, 255, 0.86) !important;
@@ -2530,301 +2505,240 @@
     html[data-theme="dark"] .admin-actions { background: transparent; }
     html[data-theme="dark"] .admin-field small { color: #567a83; }
 
-    /* ════════ Admin — shell com navegação por seções ════════ */
-    .admin-shell { display: grid; grid-template-columns: 248px minmax(0, 1fr); gap: 22px; align-items: start; }
-    .admin-nav {
-      position: sticky; top: 16px;
-      display: flex; flex-direction: column; gap: 6px;
-      padding: 10px; border-radius: 18px;
-      border: 1px solid rgba(196, 211, 218, 0.72);
-      background: rgba(255,255,255,0.86);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    /* ═══════════════════════════════════════════════════════════
+       REDESIGN UI/UX PRINCIPAL — topbar + main-shell + sidebar
+       ═══════════════════════════════════════════════════════════ */
+
+    /* ── Topbar sticky ── */
+    .topbar {
+      position: sticky; top: 0; z-index: 40;
+      background: rgba(255,255,255,.92);
+      border-bottom: 1px solid rgba(196,211,218,.6);
+      box-shadow: 0 2px 12px rgba(16,40,52,.07);
+      backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
     }
-    .admin-nav-item {
+    .topbar-inner {
+      max-width: 1640px; margin: 0 auto;
+      display: flex; align-items: center; gap: 16px;
+      padding: 0 20px; height: 60px;
+    }
+    .topbar-brand {
+      display: flex; align-items: center; gap: 11px; text-decoration: none;
+      font-weight: 800; font-size: 15px; color: var(--blue); white-space: nowrap;
+      flex-shrink: 0;
+    }
+    .topbar-brand i { font-size: 20px; }
+    .topbar-brand strong { font-weight: 900; }
+    .topbar-sub { font-weight: 500; color: var(--muted); font-size: 13px; }
+    .topbar-nav { display: flex; align-items: center; gap: 4px; flex: 1; justify-content: center; }
+    .topbar-link {
+      display: inline-flex; align-items: center; gap: 7px;
+      padding: 8px 14px; border-radius: 10px;
+      font-weight: 700; font-size: 13.5px; color: #46606a; text-decoration: none;
+      transition: background-color .16s, color .16s;
+    }
+    .topbar-link:hover { background: rgba(15,118,110,.08); color: var(--blue); }
+    .topbar-link.active { background: rgba(15,118,110,.1); color: var(--blue); }
+    .topbar-ext .topbar-ext-label { font-size: 12px; opacity: .8; }
+    .topbar-end { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+    /* ── Main shell: sidebar + content ── */
+    .main-shell {
+      display: grid; grid-template-columns: 300px minmax(0,1fr);
+      min-height: calc(100vh - 60px); align-items: start;
+      max-width: 1640px; margin: 0 auto;
+    }
+
+    /* ── Painel lateral de controles ── */
+    .control-panel {
+      position: sticky; top: 60px;
+      height: calc(100vh - 60px); overflow-y: auto;
+      border-right: 1px solid rgba(196,211,218,.55);
+      background: linear-gradient(180deg, rgba(247,250,251,.98), rgba(243,247,248,.97));
+    }
+    .panel-inner {
+      display: flex; flex-direction: column; gap: 0;
+      padding: 18px 16px 32px;
+    }
+    .panel-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 16px; padding-bottom: 14px;
+      border-bottom: 1px solid rgba(196,211,218,.5);
+    }
+    .panel-title { font-weight: 900; font-size: 14px; color: #1e2f36; display: flex; align-items: center; gap: 8px; }
+    .panel-title i { color: var(--blue); }
+
+    /* Filtros dobráveis */
+    .panel-filters { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
+    .filter-details {
+      border: 1px solid rgba(196,211,218,.6); border-radius: 14px;
+      background: rgba(255,255,255,.85); overflow: hidden;
+    }
+    .filter-details-summary {
       display: flex; align-items: center; gap: 10px;
-      padding: 11px 14px; border-radius: 12px;
-      border: 1px solid transparent; background: transparent;
-      color: #46606a; font-weight: 700; font-size: 14px; text-align: left;
-      cursor: pointer; white-space: nowrap;
-      transition: background-color .16s ease, color .16s ease, transform .16s ease;
+      padding: 12px 14px; cursor: pointer; list-style: none;
+      font-weight: 800; font-size: 13.5px; color: #1e2f36;
+      user-select: none; transition: background-color .14s;
     }
-    .admin-nav-item i { width: 18px; text-align: center; color: var(--muted); transition: color .16s ease; }
-    .admin-nav-item:hover { background: rgba(15,118,110,.07); color: var(--blue); transform: translateX(1px); }
-    .admin-nav-item:hover i { color: var(--blue); }
-    .admin-nav-item.active { background: linear-gradient(135deg, #14b8a6, #0f766e); color: #fff; box-shadow: 0 12px 24px rgba(15,118,110,.22); }
-    .admin-nav-item.active i { color: #fff; }
-    .admin-panels { display: grid; gap: 18px; min-width: 0; }
-    .admin-panel { display: none; }
-    .admin-panel.ativo { display: grid; gap: 16px; animation: riseIn .4s cubic-bezier(.16,.84,.44,1) both; }
-    .admin-panel-head { display: grid; gap: 6px; margin-bottom: 2px; }
-    .admin-panel-head .eyebrow {
-      display: inline-flex; align-items: center; gap: 7px; width: fit-content;
-      padding: 6px 10px; border-radius: 999px;
-      background: var(--blue-soft); color: var(--blue);
-      font-size: 11px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase;
+    .filter-details-summary::-webkit-details-marker { display: none; }
+    .filter-details-summary:hover { background: rgba(15,118,110,.04); }
+    .fds-chev { margin-left: auto; font-size: 11px; color: var(--muted); transition: transform .2s ease; }
+    .filter-details[open] .fds-chev { transform: rotate(180deg); }
+    .filter-fields { padding: 0 14px 14px; display: flex; flex-direction: column; gap: 10px; }
+    .filter-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .panel-filters .field label { font-size: 12px; font-weight: 700; color: #4b5f67; margin-bottom: 4px; display: block; }
+    .panel-filters .filter-search {
+      width: 100%; border-radius: 10px; border: 1.5px solid rgba(193,208,214,.9);
+      background: #fff; padding: 9px 11px; font: inherit; font-size: 13px; color: #2b3b43;
+      transition: border-color .16s, box-shadow .16s; outline: none;
     }
-    .admin-panel-head h2 { margin: 0; font-size: 24px; font-weight: 800; color: #1e2f36; letter-spacing: -.02em; }
-    .admin-panel-head p { margin: 0; color: var(--muted); font-size: 14px; line-height: 1.55; max-width: 70ch; }
+    .panel-filters .filter-search:focus { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(15,118,110,.12); }
 
-    /* Barra de ações fixa do rodapé */
-    .admin-actionbar {
-      position: sticky; bottom: 0; z-index: 5;
-      display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
-      margin-top: 4px; padding: 14px 16px; border-radius: 16px;
-      border: 1px solid rgba(196, 211, 218, 0.72);
-      background: rgba(255,255,255,0.94);
-      box-shadow: 0 -6px 24px rgba(16,40,52,.08);
-      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-    }
-    .admin-actionbar .admin-updated { margin: 0; }
-    .btn-danger { color: #b54721; border-color: rgba(181,71,33,.35); background: rgba(255,240,235,.7); }
-    .btn-danger:hover:not(:disabled) { border-color: rgba(181,71,33,.6); color: #9a3a1c; }
-    .btn-ghost-danger { border: 0; background: transparent; color: #b54721; cursor: pointer; padding: 6px 10px; border-radius: 10px; font: inherit; font-weight: 700; display: inline-flex; align-items: center; gap: 6px; transition: background-color .16s ease; }
-    .btn-ghost-danger:hover { background: rgba(181,71,33,.1); }
+    /* Resumo da seleção no painel */
+    .panel-summary { margin-bottom: 14px; padding: 12px; border-radius: 14px; background: rgba(255,255,255,.8); border: 1px solid rgba(196,211,218,.5); }
+    .panel-summary-head { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); margin-bottom: 10px; }
+    .panel-summary .summary-rows { display: flex; flex-direction: column; gap: 8px; }
+    .panel-summary .summary-row { display: flex; flex-wrap: wrap; gap: 5px; }
+    .panel-summary .summary-pill { font-size: 11.5px; padding: 4px 10px; border-radius: 999px; background: rgba(196,211,218,.3); color: #46606a; font-weight: 700; }
+    .panel-summary .summary-pill.primary { background: #dfeafd; color: #0f4cad; }
+    .panel-summary .summary-pill.page-caminhadas { background: #dce9ff; }
+    .panel-summary .summary-pill.page-notificacoes { background: #ffe6cf; color: #7c4200; }
 
-    /* ════════ Admin — tag input (chips) ════════ */
-    .tag-input {
-      display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
-      min-height: 48px; padding: 8px 10px; border-radius: 12px;
-      border: 1.5px solid rgba(193, 208, 214, 0.95); background: #fff;
-      cursor: text; transition: border-color .16s ease, box-shadow .16s ease;
+    /* CTA Gerar boletim */
+    .panel-cta { margin-bottom: 10px; }
+    .btn-gerar-main {
+      width: 100%; min-height: 52px; border-radius: 14px;
+      background: linear-gradient(180deg, #14b8a6 0%, #0f766e 100%);
+      color: #fff; font: inherit; font-weight: 900; font-size: 15px;
+      border: 0; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+      box-shadow: 0 8px 22px rgba(15,118,110,.32);
+      transition: transform .18s ease, box-shadow .18s ease, opacity .16s;
     }
-    .tag-input.focado { border-color: var(--blue); box-shadow: 0 0 0 3px rgba(15,118,110,.14); }
-    .tag-input .chip { animation: chipIn .18s ease; }
-    .tag-input .chip.invalido { background: var(--red-soft); border-color: rgba(192,86,33,.4); color: #9a3a1c; }
-    .tag-input-field { flex: 1 1 120px; min-width: 120px; border: 0; outline: none; background: transparent; font: inherit; font-size: 14px; color: #2b3b43; padding: 4px 2px; }
-    .tag-input-hint { margin: 6px 2px 0; font-size: 12px; color: var(--muted); }
+    .btn-gerar-main:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 14px 30px rgba(15,118,110,.38); }
+    .btn-gerar-main:disabled { opacity: .55; cursor: not-allowed; transform: none; }
 
-    /* ════════ Admin — cartões de regra ════════ */
-    .rule-list { display: grid; gap: 14px; }
-    .rule-card {
-      border: 1px solid rgba(196, 211, 218, 0.72); border-radius: 16px;
-      background: rgba(248, 251, 252, 0.85); padding: 16px;
-      transition: opacity .2s ease, border-color .16s ease;
-    }
-    .rule-card.inativa { opacity: .55; }
-    .rule-card-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
-    .rule-card-title { display: flex; align-items: center; gap: 10px; min-width: 0; font-weight: 800; color: #1e2f36; font-size: 15px; }
-    .rule-card-title .rule-badge { flex: 0 0 auto; padding: 4px 10px; border-radius: 999px; background: var(--blue-soft); color: var(--blue); font-size: 12px; font-weight: 800; }
-    .rule-card-tools { display: flex; align-items: center; gap: 12px; flex: 0 0 auto; }
-    .rule-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
-    .rule-grid.dois { grid-template-columns: minmax(160px, 240px) minmax(0, 1fr); }
-    .rule-empty {
-      padding: 26px 18px; text-align: center; color: var(--muted);
-      border: 1px dashed rgba(150, 170, 178, 0.6); border-radius: 14px;
-      background: rgba(248, 251, 252, 0.5); font-size: 14px;
-    }
+    /* Ações secundárias */
+    .panel-secondary { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+    .panel-secondary .btn-secondary { flex: 1 1 auto; min-height: 40px; font-size: 13px; padding: 0 12px; }
 
-    @media (max-width: 900px) {
-      .admin-shell { grid-template-columns: 1fr; }
-      .admin-nav { position: static; flex-direction: row; flex-wrap: nowrap; gap: 6px; overflow-x: auto; padding: 8px; }
-      .admin-nav-item { flex: 0 0 auto; font-size: 13px; padding: 9px 12px; }
-      .admin-nav-item span { display: inline; }
-    }
-    @media (max-width: 620px) {
-      .rule-grid, .rule-grid.dois { grid-template-columns: 1fr; }
-      .rule-card-head { flex-wrap: wrap; }
-    }
-
-    /* ════════ Admin — shell/cartões/tags no tema escuro ════════ */
-    html[data-theme="dark"] .admin-nav,
-    html[data-theme="dark"] .admin-actionbar { background: rgba(20,36,43,.9); border-color: rgba(148,180,190,.16); }
-    html[data-theme="dark"] .admin-nav-item { color: #b4c6cc; }
-    html[data-theme="dark"] .admin-nav-item i { color: #7fa8b0; }
-    html[data-theme="dark"] .admin-nav-item:hover { background: rgba(45,212,191,.1); color: #7ff0e2; }
-    html[data-theme="dark"] .admin-nav-item:hover i { color: #7ff0e2; }
-    html[data-theme="dark"] .admin-panel-head h2 { color: #f1f7f7; }
-    html[data-theme="dark"] .admin-panel-head p { color: #9fb2b8; }
-    html[data-theme="dark"] .admin-panel-head .eyebrow { background: rgba(45,212,191,.14); color: #7ee8dc; }
-    html[data-theme="dark"] .tag-input { background: rgba(10,20,24,.9); border-color: rgba(100,150,162,.28); }
-    html[data-theme="dark"] .tag-input.focado { border-color: #14b8a6; box-shadow: 0 0 0 3px rgba(20,184,166,.18); }
-    html[data-theme="dark"] .tag-input-field { color: #dde9eb; }
-    html[data-theme="dark"] .rule-card { background: rgba(12,24,29,.75); border-color: rgba(100,150,162,.16); }
-    html[data-theme="dark"] .rule-card-title { color: #e4f0f1; }
-    html[data-theme="dark"] .rule-card-title .rule-badge { background: rgba(45,212,191,.14); color: #7ee8dc; }
-    html[data-theme="dark"] .rule-empty { color: #7fa8b0; border-color: rgba(100,150,162,.3); background: rgba(12,24,29,.4); }
-
-    /* ════════════════════════════════════════════════════════════
-       ADMIN — Redesign (sidebar agrupada, visão geral, save-bar)
-       ════════════════════════════════════════════════════════════ */
-    .admin-sidebar {
-      position: sticky; top: 16px; align-self: start;
-      display: flex; flex-direction: column; gap: 14px;
-      padding: 14px; border-radius: 20px;
-      border: 1px solid rgba(196, 211, 218, 0.66);
-      background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(245,250,251,.92));
-      box-shadow: 0 18px 44px rgba(16,40,52,.10);
-      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-    }
-    .admin-search { position: relative; }
-    .admin-search i { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 13px; pointer-events: none; }
-    .admin-search input {
-      width: 100%; border-radius: 12px; border: 1.5px solid rgba(193,208,214,.9);
-      background: rgba(255,255,255,.9); color: #2b3b43; font: inherit; font-size: 14px;
-      padding: 11px 12px 11px 36px; transition: border-color .16s ease, box-shadow .16s ease;
-    }
-    .admin-search input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(15,118,110,.14); }
-
-    /* navegação agrupada */
-    .admin-nav { position: static; padding: 0; border: 0; background: transparent; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; gap: 14px; }
-    .admin-nav-group { display: flex; flex-direction: column; gap: 4px; }
-    .admin-nav-group-label {
-      padding: 2px 8px; font-size: 10.5px; font-weight: 900; letter-spacing: .12em;
-      text-transform: uppercase; color: #8aa0a8;
-    }
-    .admin-nav-item { position: relative; gap: 11px; }
-    .admin-nav-item .nav-count {
-      margin-left: auto; flex: 0 0 auto; min-width: 20px; height: 20px; padding: 0 6px;
-      display: inline-flex; align-items: center; justify-content: center;
-      border-radius: 999px; background: rgba(15,118,110,.10); color: var(--blue);
-      font-size: 11px; font-weight: 800; transition: background-color .16s, color .16s;
-    }
-    .admin-nav-item.active .nav-count { background: rgba(255,255,255,.26); color: #fff; }
-    .admin-nav-item.oculto { display: none; }
-    .admin-nav-group.oculto { display: none; }
-
-    /* rodapé da sidebar: usuário + permissão */
-    .admin-sidebar-foot {
-      display: flex; align-items: center; gap: 10px; padding: 10px;
+    /* Queue box no painel */
+    .control-panel .queue-box {
       border-radius: 14px; border: 1px solid rgba(196,211,218,.6);
-      background: rgba(255,255,255,.6);
+      background: rgba(248,251,252,.9); padding: 12px; margin-bottom: 12px;
     }
-    .admin-user-avatar {
-      flex: 0 0 auto; width: 38px; height: 38px; border-radius: 50%;
-      display: inline-flex; align-items: center; justify-content: center;
-      background: linear-gradient(135deg, #14b8a6, #0f766e); color: #fff;
-      font-weight: 800; font-size: 15px; text-transform: uppercase;
-    }
-    .admin-user-meta { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-    .admin-user-nome { font-weight: 800; font-size: 13px; color: #1e2f36; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .admin-perm-selo {
-      width: fit-content; padding: 2px 9px; border-radius: 999px; font-size: 10.5px;
-      font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
-      background: var(--green-soft); color: var(--green);
-      display: inline-flex; align-items: center; gap: 5px;
-    }
-    .admin-perm-selo.leitura { background: var(--amber-soft); color: var(--amber); }
+    .queue-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+    .queue-header strong { font-size: 13px; color: #1e2f36; }
+    .control-panel .queue-list { max-height: 130px; overflow-y: auto; list-style: none; padding: 0; margin: 0 0 10px; display: flex; flex-direction: column; gap: 6px; }
+    .control-panel .queue-item { font-size: 12.5px; border-radius: 10px; border: 1px solid rgba(196,211,218,.6); background: #fff; padding: 8px 10px; color: #46606a; }
+    .queue-empty { color: var(--muted); font-style: italic; }
+    .control-panel .btn-imprimir { width: 100%; }
 
-    .admin-content { min-width: 0; }
+    /* Pontos de atenção no painel */
+    .control-panel .pontos-card { margin-top: 12px; }
+    .control-panel .pontos-card h3 { font-size: 13px; margin-bottom: 10px; }
 
-    /* botão de abrir seções no mobile (drawer) */
-    .admin-drawer-toggle {
-      display: none; align-items: center; gap: 10px; width: 100%;
-      margin-bottom: 14px; padding: 12px 14px; border-radius: 14px;
-      border: 1px solid rgba(196,211,218,.7); background: rgba(255,255,255,.92);
-      color: #1e2f36; font: inherit; font-weight: 800; font-size: 14px; cursor: pointer;
-      box-shadow: var(--shadow);
+    /* ── Área de conteúdo ── */
+    .content-area {
+      padding: 32px 28px 60px;
+      display: flex; flex-direction: column; align-items: center; gap: 28px;
+      min-height: calc(100vh - 60px);
     }
-    .admin-drawer-toggle i.chev { margin-left: auto; transition: transform .2s ease; }
 
-    /* ── Visão geral (mini-dashboard) ── */
-    .visao-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 14px; }
-    .visao-card {
-      position: relative; display: flex; flex-direction: column; gap: 6px;
-      padding: 18px; border-radius: 18px;
-      border: 1px solid rgba(196,211,218,.66); background: rgba(255,255,255,.92);
-      box-shadow: 0 10px 26px rgba(16,40,52,.07);
-      transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+    /* Estado vazio */
+    .empty-state {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 16px; text-align: center;
+      min-height: 55vh; max-width: 440px; padding: 40px 20px;
     }
-    .visao-card:hover { transform: translateY(-2px); box-shadow: 0 16px 34px rgba(16,40,52,.12); border-color: rgba(15,118,110,.35); }
-    .visao-ico {
-      width: 42px; height: 42px; border-radius: 13px; display: inline-flex;
-      align-items: center; justify-content: center; font-size: 18px; margin-bottom: 4px;
+    .empty-state-ico {
+      width: 80px; height: 80px; border-radius: 24px;
       background: var(--blue-soft); color: var(--blue);
+      display: flex; align-items: center; justify-content: center; font-size: 36px;
+      box-shadow: 0 10px 28px rgba(15,118,110,.15);
     }
-    .visao-ico.verde { background: var(--green-soft); color: var(--green); }
-    .visao-ico.ambar { background: var(--amber-soft); color: var(--amber); }
-    .visao-ico.vermelho { background: var(--red-soft); color: var(--red); }
-    .visao-label { font-size: 12px; font-weight: 800; letter-spacing: .03em; text-transform: uppercase; color: var(--muted); }
-    .visao-valor { font-size: 28px; font-weight: 900; color: #16252b; letter-spacing: -.02em; line-height: 1.1; }
-    .visao-sub { font-size: 12.5px; color: var(--muted); line-height: 1.45; }
-    .visao-edit {
-      margin-top: 8px; align-self: flex-start; border: 0; background: transparent;
-      color: var(--blue); font: inherit; font-weight: 800; font-size: 12.5px; cursor: pointer;
-      display: inline-flex; align-items: center; gap: 6px; padding: 4px 0;
+    .empty-state-title { font-size: 22px; font-weight: 900; color: #1e2f36; margin: 0; }
+    .empty-state-desc { font-size: 14px; color: var(--muted); line-height: 1.6; margin: 0; }
+
+    /* Loading skeleton */
+    .content-loading { width: 100%; max-width: 840px; display: flex; flex-direction: column; gap: 16px; }
+    .skel-page-label { height: 28px; width: 240px; border-radius: 8px; background: rgba(196,211,218,.4); animation: skelSlide 1.3s ease infinite; }
+    .skel-page { width: 210mm; max-width: 100%; height: 297mm; border-radius: 16px; background: linear-gradient(100deg, rgba(220,230,233,.5) 30%, rgba(235,243,245,.85) 50%, rgba(220,230,233,.5) 70%); background-size: 200% 100%; animation: skelSlide 1.3s ease infinite; }
+
+    /* Labels de página (só na tela, não no PDF) */
+    .page-label {
+      width: 210mm; max-width: 100%;
+      display: flex; align-items: center; gap: 10px;
+      font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase;
+      color: var(--muted); padding: 6px 2px;
     }
-    .visao-edit:hover { text-decoration: underline; }
-    .visao-card.full { grid-column: 1 / -1; }
-    .visao-status-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--green); margin-right: 6px; vertical-align: middle; }
-    .visao-status-dot.off { background: #b9c4c9; }
 
-    /* ── Toggle switch (alertas) ── */
-    .admin-switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px; font-weight: 700; color: #4b5f67; }
-    .admin-switch input { position: absolute; opacity: 0; width: 0; height: 0; }
-    .admin-switch .track {
-      flex: 0 0 auto; position: relative; width: 44px; height: 25px; border-radius: 999px;
-      background: #cfdadf; transition: background-color .18s ease;
+    /* Report stack (páginas A4 na área de conteúdo) */
+    .content-area .report-stack { display: flex; flex-direction: column; align-items: center; gap: 16px; width: 100%; }
+
+    /* Metric cards com ícone watermark */
+    .mc-icon {
+      position: absolute; top: 10px; right: 12px;
+      font-size: 36px; opacity: .09; color: currentColor;
     }
-    .admin-switch .track::after {
-      content: ''; position: absolute; top: 3px; left: 3px; width: 19px; height: 19px;
-      border-radius: 50%; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,.2);
-      transition: transform .18s ease;
+    .metric-card { position: relative; }
+
+    /* FAB mobile */
+    .filter-fab {
+      display: none; position: fixed; bottom: 22px; right: 22px; z-index: 50;
+      width: 56px; height: 56px; border-radius: 50%;
+      background: linear-gradient(135deg, #14b8a6, #0f766e);
+      color: #fff; border: 0; cursor: pointer; font-size: 20px;
+      box-shadow: 0 8px 24px rgba(15,118,110,.38);
+      align-items: center; justify-content: center;
+      transition: transform .18s ease, box-shadow .18s ease;
     }
-    .admin-switch input:checked + .track { background: linear-gradient(135deg, #14b8a6, #0f766e); }
-    .admin-switch input:checked + .track::after { transform: translateX(19px); }
-    .admin-switch input:focus-visible + .track { box-shadow: 0 0 0 3px rgba(15,118,110,.25); }
-
-    /* ── Save-bar flutuante (alterações não salvas) ── */
-    .admin-savebar {
-      position: sticky; bottom: 16px; z-index: 30;
-      display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
-      margin-top: 18px; padding: 13px 16px 13px 18px; border-radius: 16px;
-      border: 1px solid rgba(15,118,110,.28);
-      background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(240,250,248,.98));
-      box-shadow: 0 18px 40px rgba(16,40,52,.18);
-      animation: riseIn .3s cubic-bezier(.16,.84,.44,1) both;
+    .filter-fab:hover { transform: scale(1.08); }
+    .filter-backdrop {
+      display: none; position: fixed; inset: 0; z-index: 38;
+      background: rgba(10,22,28,.44); opacity: 0; transition: opacity .22s ease;
     }
-    .admin-savebar[hidden] { display: none; }
-    .admin-savebar-info { display: flex; align-items: center; gap: 11px; font-weight: 800; color: #15413c; font-size: 14px; }
-    .admin-savebar-info .pulse {
-      width: 11px; height: 11px; border-radius: 50%; background: var(--amber);
-      box-shadow: 0 0 0 0 rgba(183,121,31,.5); animation: savePulse 1.8s infinite;
-    }
-    @keyframes savePulse { 0% { box-shadow: 0 0 0 0 rgba(183,121,31,.5); } 70% { box-shadow: 0 0 0 8px rgba(183,121,31,0); } 100% { box-shadow: 0 0 0 0 rgba(183,121,31,0); } }
-    .admin-savebar-msg small { display: block; font-weight: 600; color: var(--muted); font-size: 12px; }
-    .admin-savebar-actions { display: flex; gap: 10px; flex-wrap: wrap; }
-    .admin-savebar-actions .btn { min-height: 44px; }
+    .filter-backdrop.visible { opacity: 1; pointer-events: auto; }
 
-    /* rodapé persistente (info + restaurar) */
-    .admin-actionbar { position: static; box-shadow: none; background: transparent; border: 0; padding: 16px 2px 0; }
-
-    /* ── Skeleton de carregamento ── */
-    .admin-skel { display: grid; gap: 14px; }
-    .admin-skel-row { height: 88px; border-radius: 18px; background: linear-gradient(100deg, rgba(220,230,233,.5) 30%, rgba(235,243,245,.85) 50%, rgba(220,230,233,.5) 70%); background-size: 200% 100%; animation: skelSlide 1.3s ease infinite; }
-    @keyframes skelSlide { from { background-position: 200% 0; } to { background-position: -200% 0; } }
-
-    /* destaque de busca */
-    .admin-card.realce, .visao-card.realce, .rule-card.realce { border-color: var(--blue) !important; box-shadow: 0 0 0 3px rgba(15,118,110,.16), 0 10px 26px rgba(16,40,52,.10) !important; }
-
+    /* ── Responsive mobile ── */
     @media (max-width: 900px) {
-      .admin-shell { grid-template-columns: 1fr; }
-      .admin-drawer-toggle { display: flex; }
-      .admin-sidebar {
-        position: fixed; top: 0; left: 0; bottom: 0; z-index: 60; width: min(320px, 86vw);
-        border-radius: 0 20px 20px 0; transform: translateX(-104%); transition: transform .26s cubic-bezier(.16,.84,.44,1);
-        overflow-y: auto;
+      .main-shell { grid-template-columns: 1fr; }
+      .control-panel {
+        position: fixed; top: 0; left: 0; bottom: 0; z-index: 39; width: min(310px, 88vw);
+        transform: translateX(-105%); transition: transform .26s cubic-bezier(.16,.84,.44,1);
+        height: 100vh; top: 0;
       }
-      .admin-shell.drawer-aberto .admin-sidebar { transform: translateX(0); }
-      .admin-backdrop { position: fixed; inset: 0; z-index: 55; background: rgba(10,22,28,.45); opacity: 0; pointer-events: none; transition: opacity .22s ease; }
-      .admin-shell.drawer-aberto .admin-backdrop { opacity: 1; pointer-events: auto; }
+      .main-shell.panel-aberto .control-panel { transform: translateX(0); }
+      .filter-fab { display: inline-flex; }
+      .filter-backdrop { display: block; pointer-events: none; }
+      .content-area { padding: 20px 14px 80px; }
+      .topbar-sub { display: none; }
+    }
+    @media (max-width: 580px) {
+      .skel-page, .page-label, .content-area .document-page { width: 100%; }
     }
 
-    /* ── Tema escuro (classes novas) ── */
-    html[data-theme="dark"] .admin-sidebar { background: linear-gradient(180deg, rgba(22,38,45,.96), rgba(16,30,36,.94)); border-color: rgba(148,180,190,.16); box-shadow: 0 18px 44px rgba(0,0,0,.4); }
-    html[data-theme="dark"] .admin-search input { background: rgba(10,20,24,.85); border-color: rgba(100,150,162,.28); color: #dde9eb; }
-    html[data-theme="dark"] .admin-nav-group-label { color: #6f8990; }
-    html[data-theme="dark"] .admin-nav-item .nav-count { background: rgba(45,212,191,.16); color: #7ee8dc; }
-    html[data-theme="dark"] .admin-sidebar-foot { background: rgba(10,20,24,.5); border-color: rgba(100,150,162,.18); }
-    html[data-theme="dark"] .admin-user-nome { color: #e4f0f1; }
-    html[data-theme="dark"] .admin-drawer-toggle { background: rgba(20,36,43,.92); border-color: rgba(148,180,190,.18); color: #e4f0f1; }
-    html[data-theme="dark"] .visao-card { background: rgba(18,32,38,.95); border-color: rgba(148,180,190,.14); box-shadow: 0 10px 26px rgba(0,0,0,.32); }
-    html[data-theme="dark"] .visao-valor { color: #f1f7f7; }
-    html[data-theme="dark"] .visao-sub, html[data-theme="dark"] .visao-label { color: #8aa6ad; }
-    html[data-theme="dark"] .admin-switch { color: #96b4bb; }
-    html[data-theme="dark"] .admin-switch .track { background: #3a4e55; }
-    html[data-theme="dark"] .admin-savebar { background: linear-gradient(180deg, rgba(20,38,43,.98), rgba(14,30,34,.98)); border-color: rgba(45,212,191,.3); box-shadow: 0 18px 40px rgba(0,0,0,.5); }
-    html[data-theme="dark"] .admin-savebar-info { color: #c9f3ec; }
+    /* ── Tema escuro ── */
+    html[data-theme="dark"] .topbar { background: rgba(15,28,34,.94); border-color: rgba(148,180,190,.18); }
+    html[data-theme="dark"] .topbar-brand { color: #5eead4; }
+    html[data-theme="dark"] .topbar-sub { color: #8aa6ad; }
+    html[data-theme="dark"] .topbar-link { color: #b4c6cc; }
+    html[data-theme="dark"] .topbar-link:hover, html[data-theme="dark"] .topbar-link.active { background: rgba(45,212,191,.12); color: #7ff0e2; }
+    html[data-theme="dark"] .control-panel { background: linear-gradient(180deg, rgba(16,30,36,.97), rgba(14,26,32,.96)); border-color: rgba(148,180,190,.16); }
+    html[data-theme="dark"] .panel-header { border-color: rgba(148,180,190,.16); }
+    html[data-theme="dark"] .panel-title { color: #e4f0f1; }
+    html[data-theme="dark"] .filter-details { background: rgba(18,32,38,.9); border-color: rgba(100,150,162,.2); }
+    html[data-theme="dark"] .filter-details-summary { color: #e4f0f1; }
+    html[data-theme="dark"] .panel-filters .filter-search { background: rgba(10,20,24,.85); border-color: rgba(100,150,162,.28); color: #dde9eb; }
+    html[data-theme="dark"] .panel-summary { background: rgba(12,24,30,.7); border-color: rgba(100,150,162,.18); }
+    html[data-theme="dark"] .panel-summary .summary-pill { background: rgba(100,150,162,.2); color: #9fbcc4; }
+    html[data-theme="dark"] .panel-summary-head { color: #7fa8b0; }
+    html[data-theme="dark"] .control-panel .queue-box { background: rgba(12,24,30,.7); border-color: rgba(100,150,162,.18); }
+    html[data-theme="dark"] .control-panel .queue-item { background: rgba(18,32,38,.8); border-color: rgba(100,150,162,.2); color: #9fbcc4; }
+    html[data-theme="dark"] .empty-state-title { color: #f1f7f7; }
+    html[data-theme="dark"] .empty-state-ico { background: rgba(45,212,191,.14); }
+    html[data-theme="dark"] .skel-page { background: linear-gradient(100deg, rgba(20,36,43,.7) 30%, rgba(28,50,60,.9) 50%, rgba(20,36,43,.7) 70%); background-size: 200% 100%; }
+    html[data-theme="dark"] .page-label { color: #6f8990; }
+
 
   </style>
   <script>
@@ -2863,193 +2777,183 @@
 <body>
   <div id="toast-root" class="fixed right-4 top-4 z-[9999] grid w-[min(420px,calc(100vw-2rem))] gap-3 pointer-events-none" aria-live="polite" aria-atomic="true"></div>
   <main class="app-shell app-view" id="boletim-app">
-    <section class="hero-card">
-      <div class="top-menu-wrap">
-        <nav class="top-menu" aria-label="Menu superior">
-          <div class="top-menu-inner">
-            <span class="top-menu-toggle" aria-hidden="true"><i class="fa-solid fa-bars"></i></span>
-            <div class="top-menu-links">
-              <a class="top-menu-link" href="<?!= appUrl ?>" data-app-link="boletim" data-view-link="boletim"><i class="fa-solid fa-shield-heart"></i> COSEP</a>
-              <a class="top-menu-link" href="<?!= appUrl ?>?page=relatorios" data-app-link="relatorios" data-view-link="relatorios"><i class="fa-solid fa-chart-line"></i> Relatórios</a>
-              <a class="top-menu-link" href="<?!= appUrl ?>?page=admin" data-app-link="admin" data-view-link="admin"><i class="fa-solid fa-gear"></i> Admin</a>
-              <a class="top-menu-link" href="https://script.google.com/macros/s/AKfycbyrFcu7qj-Ydr2nwWqaaYpzntLct0jjN2ylXnrL5hXP5vWuiYcG_c4LYVVilFvJy-tadg/exec" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-gauge-high"></i> Painel NUGESP</a>
-            </div>
-            <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Alternar entre tema claro e escuro" aria-pressed="false" title="Alternar tema">
-              <i class="fa-solid fa-sun icon-sun" aria-hidden="true"></i>
-              <i class="fa-solid fa-moon icon-moon" aria-hidden="true"></i>
-            </button>
-          </div>
+
+    <!-- ░░ TOPBAR STICKY ░░ -->
+    <header class="topbar" id="main-topbar">
+      <div class="topbar-inner">
+        <a class="topbar-brand" href="<?!= appUrl ?>" data-app-link="boletim" data-view-link="boletim" aria-label="COSEP — início">
+          <i class="fa-solid fa-shield-heart" aria-hidden="true"></i>
+          <span><strong>COSEP</strong><span class="topbar-sub"> · Segurança do Paciente</span></span>
+        </a>
+        <nav class="topbar-nav" aria-label="Navegação principal">
+          <a class="topbar-link active" href="<?!= appUrl ?>" data-app-link="boletim" data-view-link="boletim"><i class="fa-solid fa-file-medical" aria-hidden="true"></i> Boletim</a>
+          <a class="topbar-link" href="<?!= appUrl ?>?page=admin" data-app-link="admin" data-view-link="admin"><i class="fa-solid fa-gear" aria-hidden="true"></i> Admin</a>
+          <a class="topbar-link topbar-ext" href="https://script.google.com/macros/s/AKfycbyrFcu7qj-Ydr2nwWqaaYpzntLct0jjN2ylXnrL5hXP5vWuiYcG_c4LYVVilFvJy-tadg/exec" target="_blank" rel="noopener noreferrer" title="Painel NUGESP" aria-label="Abrir Painel NUGESP (nova aba)"><i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i><span class="topbar-ext-label"> NUGESP</span></a>
         </nav>
+        <div class="topbar-end">
+          <button type="button" class="theme-toggle" id="theme-toggle" aria-label="Alternar entre tema claro e escuro" aria-pressed="false" title="Alternar tema">
+            <i class="fa-solid fa-sun icon-sun" aria-hidden="true"></i>
+            <i class="fa-solid fa-moon icon-moon" aria-hidden="true"></i>
+          </button>
+        </div>
       </div>
-      <header class="hero-header">
-        <h1>Boletim da Segurança do Paciente</h1>
-        <p>Selecione os filtros e gere o boletim em duas páginas (Caminhadas e Notificações).</p>
-      </header>
+    </header>
 
-      <div class="section-divider"></div>
+    <!-- ░░ BACKDROP MOBILE DRAWER ░░ -->
+    <div class="filter-backdrop" id="filter-backdrop" aria-hidden="true"></div>
 
-      <section class="filters-grid grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_310px] gap-7 items-start">
-        <div class="filters-main rounded-[1.35rem] border border-white/70 bg-white/75 p-4 shadow-premium shadow-slate-900/10 ring-1 ring-slate-200/60 backdrop-blur-2xl">
-          <div class="filter-tabs flex w-full gap-2 rounded-2xl border border-slate-200/80 bg-slate-100/80 p-1 shadow-inner" role="tablist" aria-label="Tipo de boletim">
-            <button type="button" class="tab-btn active flex-1 rounded-xl px-4 py-3 text-sm font-bold text-white shadow-lg shadow-teal-900/20 transition-all duration-200 bg-gradient-to-br from-teal-500 to-teal-700" id="tab-caminhadas" data-tab="caminhadas" role="tab" aria-selected="true">Caminhadas</button>
-            <button type="button" class="tab-btn flex-1 rounded-xl px-4 py-3 text-sm font-bold text-slate-600 transition-all duration-200 hover:bg-white hover:text-teal-700 hover:shadow-md" id="tab-notificacoes" data-tab="notificacoes" role="tab" aria-selected="false">Notificações</button>
+    <!-- ░░ MAIN SHELL: SIDEBAR + CONTENT ░░ -->
+    <div class="main-shell" id="main-shell">
+
+      <!-- ── PAINEL LATERAL (controles) ── -->
+      <aside class="control-panel" id="control-panel" aria-label="Painel de controles">
+        <div class="panel-inner">
+
+          <div class="panel-header">
+            <span class="panel-title"><i class="fa-solid fa-sliders" aria-hidden="true"></i> Configurar boletim</span>
           </div>
 
-          <div class="filter-panel active mt-5" data-panel="caminhadas">
-            <div class="filter-group">
-              <div class="filter-group-head mb-5 flex items-center gap-3">
-                <span class="filter-icon blue" aria-hidden="true">
-                  <i class="fa-solid fa-shoe-prints"></i>
-                </span>
-                <h2>Caminhadas</h2>
-              </div>
-              <div class="fields grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <div class="field field-ano searchable-field grid min-w-0 gap-2">
-                  <label for="ano-cosep">Ano</label>
-                  <input id="busca-ano-cosep" class="filter-search min-h-11 rounded-2xl border border-slate-200 bg-white/95 px-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10" type="search" placeholder="Buscar ano..." data-target="ano-cosep">
-                  <select id="ano-cosep" multiple></select>
+          <!-- Filtros sem abas: dois grupos dobráveis -->
+          <div class="panel-filters">
+            <details class="filter-details" open>
+              <summary class="filter-details-summary">
+                <span class="filter-icon blue" aria-hidden="true"><i class="fa-solid fa-shoe-prints"></i></span>
+                <span>Caminhadas</span>
+                <i class="fa-solid fa-chevron-down fds-chev" aria-hidden="true"></i>
+              </summary>
+              <div class="filter-fields">
+                <div class="filter-row-2">
+                  <div class="field field-ano searchable-field">
+                    <label for="ano-cosep">Ano</label>
+                    <input id="busca-ano-cosep" class="filter-search" type="search" placeholder="Buscar ano..." data-target="ano-cosep" autocomplete="off">
+                    <select id="ano-cosep" multiple></select>
+                  </div>
+                  <div class="field field-mes searchable-field">
+                    <label for="mes-cosep">Mês</label>
+                    <input id="busca-mes-cosep" class="filter-search" type="search" placeholder="Buscar mês..." data-target="mes-cosep" autocomplete="off">
+                    <select id="mes-cosep" multiple></select>
+                  </div>
                 </div>
-                <div class="field field-mes searchable-field grid min-w-0 gap-2">
-                  <label for="mes-cosep">Mês</label>
-                  <input id="busca-mes-cosep" class="filter-search min-h-11 rounded-2xl border border-slate-200 bg-white/95 px-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10" type="search" placeholder="Buscar mês..." data-target="mes-cosep">
-                  <select id="mes-cosep" multiple></select>
-                </div>
-                <div class="field field-setor searchable-field grid min-w-0 gap-2 lg:col-auto">
-                  <label for="unidade-cosep">Setor <small id="contador-unidade-cosep">0 selecionados</small></label>
-                  <input id="busca-unidade-cosep" class="filter-search min-h-11 rounded-2xl border border-slate-200 bg-white/95 px-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10" type="search" placeholder="Buscar setor..." data-target="unidade-cosep">
+                <div class="field field-setor searchable-field">
+                  <label for="unidade-cosep">Setor <small id="contador-unidade-cosep"></small></label>
+                  <input id="busca-unidade-cosep" class="filter-search" type="search" placeholder="Buscar setor..." data-target="unidade-cosep" autocomplete="off">
                   <select id="unidade-cosep" multiple></select>
                 </div>
               </div>
-            </div>
-          </div>
+            </details>
 
-          <div class="filter-panel mt-5" data-panel="notificacoes">
-            <div class="filter-group">
-              <div class="filter-group-head mb-5 flex items-center gap-3">
-                <span class="filter-icon orange" aria-hidden="true">
-                  <i class="fa-solid fa-bell"></i>
-                </span>
-                <h2>Notificações</h2>
-              </div>
-              <div class="fields grid grid-cols-1 gap-4 lg:grid-cols-3">
-                <div class="field field-ano searchable-field grid min-w-0 gap-2">
-                  <label for="ano-notifica">Ano</label>
-                  <input id="busca-ano-notifica" class="filter-search min-h-11 rounded-2xl border border-slate-200 bg-white/95 px-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10" type="search" placeholder="Buscar ano..." data-target="ano-notifica">
-                  <select id="ano-notifica" multiple></select>
+            <details class="filter-details" open>
+              <summary class="filter-details-summary">
+                <span class="filter-icon orange" aria-hidden="true"><i class="fa-solid fa-bell"></i></span>
+                <span>Notificações</span>
+                <i class="fa-solid fa-chevron-down fds-chev" aria-hidden="true"></i>
+              </summary>
+              <div class="filter-fields">
+                <div class="filter-row-2">
+                  <div class="field field-ano searchable-field">
+                    <label for="ano-notifica">Ano</label>
+                    <input id="busca-ano-notifica" class="filter-search" type="search" placeholder="Buscar ano..." data-target="ano-notifica" autocomplete="off">
+                    <select id="ano-notifica" multiple></select>
+                  </div>
+                  <div class="field field-mes searchable-field">
+                    <label for="mes-notifica">Mês</label>
+                    <input id="busca-mes-notifica" class="filter-search" type="search" placeholder="Buscar mês..." data-target="mes-notifica" autocomplete="off">
+                    <select id="mes-notifica" multiple></select>
+                  </div>
                 </div>
-                <div class="field field-mes searchable-field grid min-w-0 gap-2">
-                  <label for="mes-notifica">Mês</label>
-                  <input id="busca-mes-notifica" class="filter-search min-h-11 rounded-2xl border border-slate-200 bg-white/95 px-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10" type="search" placeholder="Buscar mês..." data-target="mes-notifica">
-                  <select id="mes-notifica" multiple></select>
-                </div>
-                <div class="field field-setor searchable-field grid min-w-0 gap-2 lg:col-auto">
-                  <label for="unidade-notifica">Setor <small id="contador-unidade-notifica">0 selecionados</small></label>
-                  <input id="busca-unidade-notifica" class="filter-search min-h-11 rounded-2xl border border-slate-200 bg-white/95 px-3 text-sm text-slate-700 shadow-sm outline-none transition focus:border-teal-500 focus:ring-4 focus:ring-teal-500/10" type="search" placeholder="Buscar setor..." data-target="unidade-notifica">
+                <div class="field field-setor searchable-field">
+                  <label for="unidade-notifica">Setor <small id="contador-unidade-notifica"></small></label>
+                  <input id="busca-unidade-notifica" class="filter-search" type="search" placeholder="Buscar setor..." data-target="unidade-notifica" autocomplete="off">
                   <select id="unidade-notifica" multiple></select>
                 </div>
               </div>
+            </details>
+          </div>
+
+          <!-- Resumo compacto da seleção -->
+          <div class="panel-summary" id="panel-summary-area">
+            <div class="panel-summary-head" id="status-gerado">
+              <i class="fa-solid fa-clock" aria-hidden="true"></i>
+              <span>Última geração: <strong>não realizada</strong></span>
+            </div>
+            <div class="summary-rows">
+              <div class="summary-row" id="status-cosep">
+                <span class="summary-pill primary page-caminhadas">Pág. 1 · Caminhadas</span>
+                <span class="summary-pill">Todos os anos</span>
+                <span class="summary-pill">Todos os meses</span>
+                <span class="summary-pill">Todos os setores</span>
+              </div>
+              <div class="summary-row" id="status-notifica">
+                <span class="summary-pill primary page-notificacoes">Pág. 2 · Notificações</span>
+                <span class="summary-pill">Todos os anos</span>
+                <span class="summary-pill">Todos os meses</span>
+                <span class="summary-pill">Todos os setores</span>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div class="actions grid gap-3 rounded-[1.35rem] border border-white/70 bg-white/75 p-3 shadow-premium shadow-slate-900/10 ring-1 ring-slate-200/60 backdrop-blur-2xl">
-          <section class="action-group grid gap-2 rounded-2xl border border-slate-200/80 bg-white/90 p-3 shadow-sm">
-            <h4>Ação principal</h4>
-            <button type="button" class="btn btn-primary min-h-[60px] rounded-2xl bg-gradient-to-br from-teal-500 via-teal-600 to-cyan-700 px-4 text-sm font-bold text-white shadow-xl shadow-teal-900/25 transition duration-200 hover:-translate-y-0.5 hover:shadow-2xl disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0" id="btn-gerar" onclick="carregarDados()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"></path><path d="M14 3v5h5"></path><path d="M9 13h6"></path><path d="M9 17h6"></path><path d="M9 9h1"></path></svg>
+          <!-- CTA principal -->
+          <div class="panel-cta">
+            <button type="button" class="btn btn-primary btn-gerar-main" id="btn-gerar" onclick="carregarDados()">
+              <i class="fa-solid fa-bolt" aria-hidden="true"></i>
               <span>Gerar boletim</span>
             </button>
-            <button type="button" class="btn min-h-[54px] rounded-2xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-teal-200 hover:text-teal-700 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0" id="btn-baixar" onclick="baixarPDF()" disabled>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12"></path><path d="m7 10 5 5 5-5"></path><path d="M5 21h14"></path></svg>
-              <span>Baixar PDF</span>
-            </button>
-          </section>
+          </div>
 
-          <section class="action-group grid gap-2 rounded-2xl border border-slate-200/80 bg-white/90 p-3 shadow-sm">
-            <h4>Manipulação da fila</h4>
-            <button type="button" class="btn min-h-[54px] rounded-2xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-teal-200 hover:text-teal-700 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0" id="btn-adicionar-fila" onclick="adicionarAFila()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 5v14"></path><path d="M5 12h14"></path></svg>
-              <span>Adicionar à fila</span>
+          <!-- Ações secundárias -->
+          <div class="panel-secondary" id="panel-secondary">
+            <button type="button" class="btn btn-secondary" id="btn-baixar" onclick="baixarPDF()" disabled>
+              <i class="fa-solid fa-download" aria-hidden="true"></i> Baixar PDF
             </button>
-            <button type="button" class="btn min-h-[54px] rounded-2xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-teal-200 hover:text-teal-700 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0" id="btn-imprimir-fila" onclick="imprimirFilaPDF()" disabled>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9V3h12v6"></path><path d="M6 18h12v3H6z"></path><rect x="3" y="9" width="18" height="9" rx="2"></rect></svg>
-              <span>Imprimir fila</span>
+            <button type="button" class="btn btn-secondary" id="btn-adicionar-fila" onclick="adicionarAFila()">
+              <i class="fa-solid fa-plus" aria-hidden="true"></i> Adicionar à fila
             </button>
-          </section>
+          </div>
 
-          <section class="action-group grid gap-2 rounded-2xl border border-slate-200/80 bg-white/90 p-3 shadow-sm">
-            <h4>Limpeza</h4>
-            <button type="button" class="btn min-h-[54px] rounded-2xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-teal-200 hover:text-teal-700 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0" id="btn-limpar-fila" onclick="limparFila()" disabled>
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="m19 6-1 14H6L5 6"></path></svg>
-              <span>Limpar fila</span>
-            </button>
-            <button type="button" class="btn min-h-[54px] rounded-2xl border border-slate-200 bg-white px-4 text-sm font-bold text-slate-700 shadow-sm transition duration-200 hover:-translate-y-0.5 hover:border-teal-200 hover:text-teal-700 hover:shadow-lg disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0" id="btn-limpar" onclick="limparFiltros()">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"></path><path d="M8 6V4h8v2"></path><path d="m19 6-1 14H6L5 6"></path></svg>
-              <span>Limpar filtros</span>
-            </button>
-          </section>
-
-          <section class="queue-box grid gap-2 rounded-2xl border border-slate-200/80 bg-slate-50/80 p-3 text-slate-700" id="queue-box">
-            <strong>Fila de boletins (0)</strong>
-            <ul class="queue-list grid max-h-56 list-none gap-2 overflow-y-auto p-0 m-0" id="queue-list">
-              <li class="queue-item rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm leading-relaxed shadow-sm">Nenhum boletim adicionado.</li>
+          <!-- Fila de boletins -->
+          <div class="queue-box" id="queue-box">
+            <div class="queue-header">
+              <strong>Fila de boletins (0)</strong>
+              <button type="button" class="btn-ghost-sm" id="btn-limpar-fila" onclick="limparFila()" disabled>Limpar</button>
+            </div>
+            <ul class="queue-list" id="queue-list">
+              <li class="queue-item queue-empty">Nenhum boletim adicionado.</li>
             </ul>
+            <button type="button" class="btn btn-secondary" id="btn-imprimir-fila" onclick="imprimirFilaPDF()" disabled>
+              <i class="fa-solid fa-print" aria-hidden="true"></i> Imprimir fila
+            </button>
+          </div>
+
+          <!-- Pontos de atenção (movido para o painel) -->
+          <section class="pontos-card" id="pontos-atencao" aria-label="Pontos de atenção" hidden>
+            <h3><i class="fa-solid fa-clipboard-check" aria-hidden="true"></i> Pontos de atenção</h3>
+            <ul class="pontos-lista" id="lista-pontos-atencao"></ul>
           </section>
+
         </div>
-      </section>
+      </aside>
 
-      <div class="section-divider"></div>
+      <!-- ── ÁREA DE CONTEÚDO (páginas A4) ── -->
+      <div class="content-area" id="content-area">
 
-      <section class="selection-summary">
-        <div class="summary-header">
-          <div class="summary-title">
-            <span class="filter-icon indigo" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 6h13"></path><path d="M8 12h13"></path><path d="M8 18h13"></path><path d="M3 6h.01"></path><path d="M3 12h.01"></path><path d="M3 18h.01"></path></svg>
-            </span>
-            <h3>Resumo da seleção</h3>
-          </div>
-          <div id="status-gerado" class="summary-updated">
-            <span class="icon-inline slate" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg>
-            </span>
-            <span>Última geração: <strong>não realizada</strong></span>
-          </div>
+        <!-- Estado vazio (antes de gerar) -->
+        <div class="empty-state" id="empty-state" aria-label="Nenhum boletim gerado">
+          <div class="empty-state-ico"><i class="fa-solid fa-file-medical" aria-hidden="true"></i></div>
+          <h2 class="empty-state-title">Pronto para gerar</h2>
+          <p class="empty-state-desc">Selecione os filtros no painel ao lado e clique em <strong>Gerar boletim</strong> para visualizar as páginas.</p>
         </div>
 
-        <div class="summary-rows">
-          <div class="summary-row" id="status-cosep">
-            <span class="summary-pill primary page-caminhadas">Página 1 · Caminhadas</span>
-            <span class="summary-pill">Todos os anos</span>
-            <span class="summary-pill">Todos os meses</span>
-            <span class="summary-pill">Todos os setores</span>
-          </div>
-          <div class="summary-row" id="status-notifica">
-            <span class="summary-pill primary page-notificacoes">Página 2 · Notificações</span>
-            <span class="summary-pill">Todos os anos</span>
-            <span class="summary-pill">Todos os meses</span>
-            <span class="summary-pill">Todos os setores</span>
-          </div>
-        </div>
-      </section>
+        <!-- Loading (skeleton) -->
+        <section id="loading" class="content-loading" hidden aria-busy="true" aria-label="Gerando boletim">
+          <div class="skel-page-label"></div>
+          <div class="skel-page"></div>
+          <div class="skel-page-label"></div>
+          <div class="skel-page"></div>
+        </section>
 
-      <div class="section-divider"></div>
-
-      <section class="info-strip">
-        <span class="filter-icon indigo" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.75a9.25 9.25 0 1 0 0 18.5 9.25 9.25 0 0 0 0-18.5Zm0 5a1.25 1.25 0 1 1 0 2.5 1.25 1.25 0 0 1 0-2.5Zm1.25 8.5h-2.5v-5h2.5v5Z"></path></svg>
-        </span>
-        <div>O PDF será gerado em formato A4 com duas páginas: <strong>Caminhadas de Segurança</strong> + <strong>Notificações</strong>, conforme os filtros acima.</div>
-      </section>
-    </section>
-
-    <section id="loading" class="loading-box">Preparando filtros do boletim...</section>
-
-    <section id="boletim" class="report-stack hidden">
-      <section class="pontos-card" id="pontos-atencao" aria-label="Pontos de atenção">
-        <h3><i class="fa-solid fa-clipboard-check" aria-hidden="true"></i> Pontos de atenção</h3>
-        <ul class="pontos-lista" id="lista-pontos-atencao"></ul>
-      </section>
-      <article class="document-page page-break pdf-page-cosep" id="pagina-cosep">
+        <!-- Páginas do boletim - CONTENT PRESERVED FROM ORIGINAL -->
+        <section id="boletim" class="report-stack hidden">
+          <article class="document-page page-break pdf-page-cosep" id="pagina-cosep">
         <header class="page-header">
           <div class="page-header-main">
             <img class="page-logo" src="https://i.ibb.co/ccny4xx5/NGQS-Caminhada-Pela-Seguran-a-Mascote-Toten-Mandala-24-x-25cm-final-1.png" alt="Logo">
@@ -3105,7 +3009,7 @@
         </footer>
       </article>
 
-      <article class="document-page pdf-page-notifica" id="pagina-notifica">
+          <article class="document-page pdf-page-notifica" id="pagina-notifica">
         <header class="page-header">
           <div class="page-header-main">
             <img class="page-logo" src="https://i.ibb.co/7xnQsN29/Design-sem-nome-9.png" alt="Ícone de notificações">
@@ -3194,29 +3098,18 @@
           <img class="footer-brand" src="https://i.ibb.co/VYv0RyF3/Rodape-1.png" alt="Rodapé institucional">
         </footer>
       </article>
-    </section>
-  </main>
 
-  <section class="relatorios-shell app-view" id="relatorios-app" hidden aria-label="Relatórios COSEP">
-    <div class="top-menu-wrap">
-      <nav class="top-menu" aria-label="Menu superior">
-        <div class="top-menu-inner">
-          <span class="top-menu-toggle" aria-hidden="true"><i class="fa-solid fa-bars"></i></span>
-          <div class="top-menu-links">
-            <a class="top-menu-link" href="<?!= appUrl ?>" data-app-link="boletim" data-view-link="boletim"><i class="fa-solid fa-shield-heart"></i> COSEP</a>
-            <a class="top-menu-link" href="<?!= appUrl ?>?page=relatorios" data-app-link="relatorios" data-view-link="relatorios"><i class="fa-solid fa-chart-line"></i> Relatórios</a>
-            <a class="top-menu-link" href="<?!= appUrl ?>?page=admin" data-app-link="admin" data-view-link="admin"><i class="fa-solid fa-gear"></i> Admin</a>
-            <a class="top-menu-link" href="https://script.google.com/macros/s/AKfycbyrFcu7qj-Ydr2nwWqaaYpzntLct0jjN2ylXnrL5hXP5vWuiYcG_c4LYVVilFvJy-tadg/exec" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-gauge-high"></i> Painel NUGESP</a>
-          </div>
-          <button type="button" class="theme-toggle" aria-label="Alternar entre tema claro e escuro" aria-pressed="false" title="Alternar tema">
-            <i class="fa-solid fa-sun icon-sun" aria-hidden="true"></i>
-            <i class="fa-solid fa-moon icon-moon" aria-hidden="true"></i>
-          </button>
-        </div>
-      </nav>
-    </div>
-    <iframe class="relatorios-frame" id="relatorios-frame" title="Relatório Analítico COSEP"></iframe>
-  </section>
+        </section>
+
+      </div><!-- /content-area -->
+    </div><!-- /main-shell -->
+
+    <!-- FAB mobile para abrir o painel de filtros -->
+    <button type="button" class="filter-fab" id="filter-fab" aria-label="Abrir filtros" aria-expanded="false" aria-controls="control-panel">
+      <i class="fa-solid fa-sliders" aria-hidden="true"></i>
+    </button>
+
+  </main>
 
   <main class="app-shell app-view" id="admin-app" hidden aria-label="Administração COSEP">
     <section class="hero-card">
@@ -3226,7 +3119,6 @@
             <span class="top-menu-toggle" aria-hidden="true"><i class="fa-solid fa-bars"></i></span>
             <div class="top-menu-links">
               <a class="top-menu-link" href="<?!= appUrl ?>" data-app-link="boletim" data-view-link="boletim"><i class="fa-solid fa-shield-heart"></i> COSEP</a>
-              <a class="top-menu-link" href="<?!= appUrl ?>?page=relatorios" data-app-link="relatorios" data-view-link="relatorios"><i class="fa-solid fa-chart-line"></i> Relatórios</a>
               <a class="top-menu-link" href="<?!= appUrl ?>?page=admin" data-app-link="admin" data-view-link="admin"><i class="fa-solid fa-gear"></i> Admin</a>
             </div>
             <button type="button" class="theme-toggle" aria-label="Alternar entre tema claro e escuro" aria-pressed="false" title="Alternar tema">
@@ -3244,1381 +3136,111 @@
 
       <div class="section-divider"></div>
 
-      <div id="admin-loading" class="admin-skel" aria-busy="true" aria-label="Carregando configurações">
-        <div class="admin-skel-row" style="height:54px"></div>
-        <div class="admin-skel-row"></div>
-        <div class="admin-skel-row"></div>
-        <div class="admin-skel-row" style="height:120px"></div>
-      </div>
+      <div id="admin-loading" class="loading-box">Carregando configurações...</div>
       <div id="admin-bloqueio" class="info-strip" hidden>
         <span class="filter-icon indigo" aria-hidden="true"><i class="fa-solid fa-lock"></i></span>
         <div>Você está no modo <strong>somente leitura</strong>. Para editar, peça para um administrador incluir seu e-mail na lista de administradores.</div>
       </div>
 
-      <form id="admin-form" hidden>
-        <button type="button" class="admin-drawer-toggle" id="admin-drawer-toggle" aria-expanded="false" aria-controls="admin-sidebar">
-          <i class="fa-solid fa-bars" aria-hidden="true"></i> Seções · <span id="admin-drawer-atual" style="font-weight:600;color:var(--muted)">Visão geral</span>
-          <i class="fa-solid fa-chevron-down chev" aria-hidden="true"></i>
-        </button>
-        <div class="admin-shell" id="admin-shell">
-          <div class="admin-backdrop" id="admin-backdrop" aria-hidden="true"></div>
-          <aside class="admin-sidebar" id="admin-sidebar">
-            <div class="admin-search">
-              <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
-              <input type="text" id="admin-busca" placeholder="Buscar configuração…" autocomplete="off" aria-label="Buscar configuração">
-            </div>
-            <nav class="admin-nav" id="admin-nav" aria-label="Seções da administração">
-              <div class="admin-nav-group">
-                <span class="admin-nav-group-label">Painel</span>
-                <button type="button" class="admin-nav-item active" data-admin-sec="visao" data-busca="visão geral resumo painel dashboard"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i><span>Visão geral</span></button>
-              </div>
-              <div class="admin-nav-group">
-                <span class="admin-nav-group-label">Cálculo</span>
-                <button type="button" class="admin-nav-item" data-admin-sec="geral" data-busca="geral meta institucional prazos classificações críticas"><i class="fa-solid fa-sliders" aria-hidden="true"></i><span>Geral</span></button>
-                <button type="button" class="admin-nav-item" data-admin-sec="metas" data-busca="metas caminhadas segurança itens"><i class="fa-solid fa-shoe-prints" aria-hidden="true"></i><span>Metas</span></button>
-                <button type="button" class="admin-nav-item" data-admin-sec="periodo" data-busca="metas por período ano mês setor"><i class="fa-solid fa-bullseye" aria-hidden="true"></i><span>Metas por período</span><span class="nav-count" data-count="periodo" hidden>0</span></button>
-                <button type="button" class="admin-nav-item" data-admin-sec="excecoes" data-busca="exceções setor bidirecional puxados"><i class="fa-solid fa-diagram-project" aria-hidden="true"></i><span>Exceções</span><span class="nav-count" data-count="excecoes" hidden>0</span></button>
-              </div>
-              <div class="admin-nav-group">
-                <span class="admin-nav-group-label">Operação</span>
-                <button type="button" class="admin-nav-item" data-admin-sec="alertas" data-busca="alertas e-mail proativo envio diário destinatários"><i class="fa-solid fa-bell" aria-hidden="true"></i><span>Alertas</span></button>
-              </div>
-              <div class="admin-nav-group">
-                <span class="admin-nav-group-label">Acesso</span>
-                <button type="button" class="admin-nav-item" data-admin-sec="admins" data-busca="administradores e-mails permissão editar"><i class="fa-solid fa-user-shield" aria-hidden="true"></i><span>Administradores</span><span class="nav-count" data-count="admins" hidden>0</span></button>
-                <button type="button" class="admin-nav-item" data-admin-sec="historico" data-busca="histórico alterações log"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><span>Histórico</span></button>
-              </div>
-            </nav>
-            <div class="admin-sidebar-foot">
-              <span class="admin-user-avatar" id="admin-user-avatar" aria-hidden="true">·</span>
-              <div class="admin-user-meta">
-                <span class="admin-user-nome" id="admin-user-nome">Você</span>
-                <span class="admin-perm-selo" id="admin-perm-selo"><i class="fa-solid fa-pen" aria-hidden="true"></i> Editor</span>
-              </div>
-            </div>
-          </aside>
-
-          <div class="admin-content">
-            <div class="admin-panels">
-            <!-- ░░ VISÃO GERAL ░░ -->
-            <section class="admin-panel ativo" data-admin-panel="visao">
-              <div class="admin-panel-head">
-                <span class="eyebrow"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i> Painel</span>
-                <h2>Visão geral</h2>
-                <p>Resumo rápido das configurações atuais do boletim. Clique em <strong>Editar</strong> em qualquer cartão para ajustar a seção correspondente.</p>
-              </div>
-              <div id="cfg-visao" class="visao-grid"></div>
-            </section>
-
-            <!-- ░░ GERAL ░░ -->
-            <section class="admin-panel" data-admin-panel="geral">
-              <div class="admin-panel-head">
-                <span class="eyebrow"><i class="fa-solid fa-sliders" aria-hidden="true"></i> Geral</span>
-                <h2>Configurações gerais</h2>
-                <p>Meta do hospital, prazos de resposta e quais classificações são tratadas como críticas.</p>
-              </div>
-
-              <div class="admin-grid">
-                <section class="admin-card">
-                  <h3><i class="fa-solid fa-bullseye" aria-hidden="true"></i> Meta institucional</h3>
-                  <p>Percentual de conformidade considerado como meta do hospital.</p>
-                  <div class="admin-inline">
-                    <input type="number" id="cfg-meta" class="admin-input" min="0" max="100" step="1" inputmode="numeric">
-                    <span class="admin-suffix">%</span>
-                  </div>
-                </section>
-
-                <section class="admin-card">
-                  <h3><i class="fa-solid fa-clock" aria-hidden="true"></i> Prazos de resposta (dias)</h3>
-                  <p>Prazo para responder às notificações conforme a criticidade.</p>
-                  <div class="admin-two">
-                    <label class="admin-field">Crítica <small>(evento grave / óbito / never event)</small>
-                      <input type="number" id="cfg-prazo5" class="admin-input" min="1" step="1" inputmode="numeric">
-                    </label>
-                    <label class="admin-field">Geral <small>(demais notificações)</small>
-                      <input type="number" id="cfg-prazo10" class="admin-input" min="1" step="1" inputmode="numeric">
-                    </label>
-                  </div>
-                </section>
-
-                <section class="admin-card admin-card-wide">
-                  <h3><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Classificações críticas</h3>
-                  <p>Notificações com essas classificações usam o prazo crítico. Digite e pressione Enter para adicionar.</p>
-                  <div class="tag-input-wrap" id="cfg-classificacoes"></div>
-                </section>
-              </div>
-            </section>
-
-            <!-- ░░ METAS ░░ -->
-            <section class="admin-panel" data-admin-panel="metas">
-              <div class="admin-panel-head">
-                <span class="eyebrow"><i class="fa-solid fa-shoe-prints" aria-hidden="true"></i> Metas</span>
-                <h2>Metas das Caminhadas de Segurança</h2>
-                <p>Renomeie metas e itens, ou desative uma meta para ocultá-la do boletim. A estrutura de cálculo (colunas) é preservada.</p>
-              </div>
-              <div id="cfg-metas" class="rule-list"></div>
-            </section>
-
-            <!-- ░░ METAS POR PERÍODO ░░ -->
-            <section class="admin-panel" data-admin-panel="periodo">
-              <div class="admin-panel-head">
-                <span class="eyebrow"><i class="fa-solid fa-bullseye" aria-hidden="true"></i> Metas por período</span>
-                <h2>Metas por período</h2>
-                <p>Defina metas específicas por ano, ano+mês, por meta/indicador e/ou por setor. A regra mais específica vale (precedência: <strong>setor &gt; meta &gt; mês &gt; ano</strong>). Sem regra aplicável, vale a meta institucional.</p>
-              </div>
-              <div id="cfg-metas-alvo" class="rule-list"></div>
-              <div class="admin-buttons">
-                <button type="button" class="btn" id="btn-add-meta-alvo"><i class="fa-solid fa-plus" aria-hidden="true"></i> Adicionar meta por período</button>
-              </div>
-            </section>
-
-            <!-- ░░ EXCEÇÕES ░░ -->
-            <section class="admin-panel" data-admin-panel="excecoes">
-              <div class="admin-panel-head">
-                <span class="eyebrow"><i class="fa-solid fa-diagram-project" aria-hidden="true"></i> Exceções</span>
-                <h2>Exceções de setor por meta</h2>
-                <p>Quando um setor de origem é filtrado, o cálculo da meta escolhida passa a considerar os setores puxados. Marque <strong>bidirecional</strong> para valer nos dois sentidos.</p>
-              </div>
-              <div id="cfg-excecoes" class="rule-list"></div>
-              <div class="admin-buttons">
-                <button type="button" class="btn" id="btn-add-excecao"><i class="fa-solid fa-plus" aria-hidden="true"></i> Adicionar exceção</button>
-              </div>
-            </section>
-
-            <!-- ░░ ALERTAS ░░ -->
-            <section class="admin-panel" data-admin-panel="alertas">
-              <div class="admin-panel-head">
-                <span class="eyebrow"><i class="fa-solid fa-bell" aria-hidden="true"></i> Alertas</span>
-                <h2>Alertas proativos por e-mail</h2>
-                <p>O sistema verifica os dados e avisa quando há setores abaixo da meta ou notificações críticas sem resposta. Apenas <strong>lê</strong> os dados — nada é gravado na base.</p>
-              </div>
-              <section class="admin-card">
-                <div class="admin-two">
-                  <label class="admin-switch admin-field"><input type="checkbox" id="cfg-alerta-ativo"><span class="track" aria-hidden="true"></span> Ativar alertas</label>
-                  <label class="admin-switch admin-field"><input type="checkbox" id="cfg-alerta-notif"><span class="track" aria-hidden="true"></span> Incluir notificações críticas pendentes</label>
-                  <label class="admin-field">Conformidade mínima (%)<input type="number" id="cfg-alerta-min" class="admin-input" min="0" max="100" step="1"></label>
-                  <label class="admin-field">Hora do envio diário <small>(0–23h)</small><input type="number" id="cfg-alerta-hora" class="admin-input" min="0" max="23" step="1" inputmode="numeric"></label>
-                </div>
-                <div class="admin-field" style="margin-top:14px">Destinatários <small>(digite o e-mail e pressione Enter)</small>
-                  <div class="tag-input-wrap" id="cfg-alerta-emails"></div>
-                </div>
-                <div class="admin-buttons" style="margin-top:14px">
-                  <button type="button" class="btn" id="btn-alerta-teste"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Salvar e enviar teste</button>
-                  <button type="button" class="btn" id="btn-alerta-gatilho"><i class="fa-solid fa-clock" aria-hidden="true"></i> Ativar envio diário</button>
-                </div>
-                <div id="alerta-status" class="admin-updated" style="margin-top:10px"></div>
-              </section>
-            </section>
-
-            <!-- ░░ ADMINISTRADORES ░░ -->
-            <section class="admin-panel" data-admin-panel="admins">
-              <div class="admin-panel-head">
-                <span class="eyebrow"><i class="fa-solid fa-user-shield" aria-hidden="true"></i> Administradores</span>
-                <h2>Administradores</h2>
-                <p>E-mails que podem editar estas configurações. Se ficar vazio, qualquer editor da planilha pode alterar.</p>
-              </div>
-              <section class="admin-card">
-                <div class="tag-input-wrap" id="cfg-admins"></div>
-                <p style="margin:12px 0 0;color:var(--muted);font-size:13px"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> A lista é salva junto com as demais configurações ao clicar em <strong>Salvar tudo</strong>.</p>
-              </section>
-            </section>
-
-            <!-- ░░ HISTÓRICO ░░ -->
-            <section class="admin-panel" data-admin-panel="historico">
-              <div class="admin-panel-head">
-                <span class="eyebrow"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Histórico</span>
-                <h2>Histórico de alterações</h2>
-                <p>Últimas alterações registradas nas configurações.</p>
-              </div>
-              <section class="admin-card">
-                <div id="cfg-historico" class="admin-updated">Sem registros.</div>
-              </section>
-            </section>
-
-            <div class="admin-actionbar">
-              <div id="admin-meta-info" class="admin-updated"></div>
-              <div class="admin-buttons">
-                <button type="button" class="btn btn-danger" id="btn-config-reset"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Restaurar padrão</button>
-              </div>
-            </div>
-
-            <div class="admin-savebar" id="admin-savebar" hidden role="status" aria-live="polite">
-              <div class="admin-savebar-info">
-                <span class="pulse" aria-hidden="true"></span>
-                <div class="admin-savebar-msg">
-                  <span id="admin-savebar-msg">Alterações não salvas</span>
-                  <small>Salve para aplicar a todos os boletins gerados a partir de agora.</small>
-                </div>
-              </div>
-              <div class="admin-savebar-actions">
-                <button type="button" class="btn" id="btn-config-descartar"><i class="fa-solid fa-arrow-rotate-left" aria-hidden="true"></i> Descartar</button>
-                <button type="submit" class="btn btn-primary" id="btn-config-salvar"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Salvar tudo</button>
-              </div>
-            </div>
+      <form id="admin-form" class="admin-grid" hidden>
+        <section class="admin-card">
+          <h3><i class="fa-solid fa-bullseye" aria-hidden="true"></i> Meta institucional</h3>
+          <p>Percentual de conformidade considerado como meta do hospital.</p>
+          <div class="admin-inline">
+            <input type="number" id="cfg-meta" class="admin-input" min="0" max="100" step="1" inputmode="numeric">
+            <span class="admin-suffix">%</span>
           </div>
+        </section>
+
+        <section class="admin-card">
+          <h3><i class="fa-solid fa-clock" aria-hidden="true"></i> Prazos de resposta (dias)</h3>
+          <p>Prazo para responder às notificações conforme a criticidade.</p>
+          <div class="admin-two">
+            <label class="admin-field">Crítica <small>(evento grave / óbito / never event)</small>
+              <input type="number" id="cfg-prazo5" class="admin-input" min="1" step="1" inputmode="numeric">
+            </label>
+            <label class="admin-field">Geral <small>(demais notificações)</small>
+              <input type="number" id="cfg-prazo10" class="admin-input" min="1" step="1" inputmode="numeric">
+            </label>
           </div>
-        </div>
+        </section>
+
+        <section class="admin-card admin-card-wide">
+          <h3><i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Classificações críticas</h3>
+          <p>Uma por linha. Notificações com essas classificações usam o prazo crítico.</p>
+          <textarea id="cfg-classificacoes" class="admin-input admin-textarea" rows="4" spellcheck="false"></textarea>
+        </section>
+
+        <section class="admin-card admin-card-wide">
+          <h3><i class="fa-solid fa-bell" aria-hidden="true"></i> Alertas proativos por e-mail</h3>
+          <p>O sistema verifica os dados e avisa quando há setores abaixo da meta ou notificações críticas sem resposta. Apenas <strong>lê</strong> os dados — nada é gravado na base.</p>
+          <div class="reg-fields">
+            <label class="admin-toggle admin-field"><input type="checkbox" id="cfg-alerta-ativo"> Ativar alertas</label>
+            <label class="admin-field">Conformidade mínima (%)<input type="number" id="cfg-alerta-min" class="admin-input" min="0" max="100" step="1"></label>
+            <label class="admin-field">Hora do envio diário <small>(0–23h)</small><input type="number" id="cfg-alerta-hora" class="admin-input" min="0" max="23" step="1" inputmode="numeric"></label>
+            <label class="admin-toggle admin-field"><input type="checkbox" id="cfg-alerta-notif"> Incluir notificações críticas pendentes</label>
+          </div>
+          <label class="admin-field" style="margin-top:12px">Destinatários <small>(um e-mail por linha)</small>
+            <textarea id="cfg-alerta-emails" class="admin-input admin-textarea" rows="3" spellcheck="false" placeholder="fulano@hospital.org"></textarea>
+          </label>
+          <div class="admin-buttons" style="margin-top:12px">
+            <button type="button" class="btn" id="btn-alerta-teste"><i class="fa-solid fa-paper-plane" aria-hidden="true"></i> Salvar e enviar teste</button>
+            <button type="button" class="btn" id="btn-alerta-gatilho"><i class="fa-solid fa-clock" aria-hidden="true"></i> Ativar envio diário</button>
+          </div>
+          <div id="alerta-status" class="admin-updated" style="margin-top:10px"></div>
+        </section>
+
+        <section class="admin-card admin-card-wide">
+          <h3><i class="fa-solid fa-shoe-prints" aria-hidden="true"></i> Metas das Caminhadas de Segurança</h3>
+          <p>Renomeie metas e itens, ou desative uma meta para ocultá-la do boletim. A estrutura de cálculo (colunas) é preservada.</p>
+          <div id="cfg-metas" class="admin-metas"></div>
+        </section>
+
+        <section class="admin-card admin-card-wide">
+          <h3><i class="fa-solid fa-bullseye" aria-hidden="true"></i> Metas por período</h3>
+          <p>Defina metas específicas por ano, ano+mês, por meta/indicador e/ou por setor. A regra mais específica vale (precedência: <strong>setor &gt; meta &gt; mês &gt; ano</strong>). Sem regra aplicável, vale a meta institucional.</p>
+          <div id="cfg-metas-alvo" class="admin-metas"></div>
+          <div class="admin-buttons" style="margin-top:12px">
+            <button type="button" class="btn" id="btn-add-meta-alvo"><i class="fa-solid fa-plus" aria-hidden="true"></i> Adicionar meta por período</button>
+          </div>
+        </section>
+
+        <section class="admin-card admin-card-wide">
+          <h3><i class="fa-solid fa-diagram-project" aria-hidden="true"></i> Exceções de setor por meta</h3>
+          <p>Quando um setor de origem é filtrado, o cálculo da meta escolhida passa a considerar os setores puxados. Marque <strong>bidirecional</strong> para valer nos dois sentidos. Cobre as regras atuais e futuras sem mexer no código.</p>
+          <div id="cfg-excecoes" class="admin-metas"></div>
+          <div class="admin-buttons" style="margin-top:12px">
+            <button type="button" class="btn" id="btn-add-excecao"><i class="fa-solid fa-plus" aria-hidden="true"></i> Adicionar exceção</button>
+          </div>
+        </section>
+
+        <section class="admin-card admin-card-wide">
+          <h3><i class="fa-solid fa-user-shield" aria-hidden="true"></i> Administradores</h3>
+          <p>E-mails que podem editar estas configurações (um por linha). Se ficar vazio, qualquer editor da planilha pode alterar.</p>
+          <textarea id="cfg-admins" class="admin-input admin-textarea" rows="3" spellcheck="false" placeholder="fulano@hospital.org"></textarea>
+          <div class="admin-buttons" style="margin-top:12px">
+            <button type="button" class="btn" id="btn-salvar-admins"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Salvar administradores</button>
+          </div>
+        </section>
+
+        <section class="admin-card admin-card-wide">
+          <h3><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i> Histórico de alterações</h3>
+          <p>Últimas alterações registradas nas configurações.</p>
+          <div id="cfg-historico" class="admin-updated">Sem registros.</div>
+        </section>
 
         <datalist id="cfg-setores-lista"></datalist>
+
+        <section class="admin-actions admin-card-wide">
+          <div id="admin-meta-info" class="admin-updated"></div>
+          <div class="admin-buttons">
+            <button type="button" class="btn" id="btn-config-reset"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Restaurar padrão</button>
+            <button type="submit" class="btn btn-primary" id="btn-config-salvar"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Salvar configurações</button>
+          </div>
+        </section>
       </form>
     </section>
   </main>
-
-  <template id="relatorios-srcdoc">
-<!DOCTYPE html>
-<html lang="pt-BR">
-<head>
-  <meta charset="UTF-8">
-  <title>Relatório Analítico Editável</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: {
-            sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif']
-          },
-          colors: {
-            cosep: {
-              ink: '#173037',
-              teal: '#0f766e',
-              petroleum: '#0e7490',
-              soft: '#e4f5f2',
-              line: '#d9e6e4'
-            }
-          },
-          boxShadow: {
-            executive: '0 18px 48px rgba(23, 48, 55, 0.08)',
-            subtle: '0 8px 22px rgba(23, 48, 55, 0.06)'
-          },
-          borderRadius: {
-            executive: '28px'
-          }
-        }
-      }
-    };
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <style>
-    :root {
-      --bg: #f5faf9;
-      --surface: #ffffff;
-      --surface-soft: #f8fcfb;
-      --line: #d9e6e4;
-      --line-strong: #bfd4d0;
-      --text: #173037;
-      --muted: #657b82;
-      --muted-strong: #425b63;
-      --brand: #0f766e;
-      --brand-dark: #0b4f4a;
-      --brand-2: #0e7490;
-      --brand-soft: #e4f5f2;
-      --success: #16845b;
-      --warning: #a56613;
-      --danger: #b54721;
-      --shadow: 0 18px 48px rgba(23, 48, 55, .08);
-      --shadow-subtle: 0 8px 22px rgba(23, 48, 55, .06);
-      --radius-xl: 28px;
-      --radius-lg: 20px;
-      --radius-md: 14px;
-    }
-
-    * { box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    html, body { overflow-x: hidden; }
-    body {
-      margin: 0;
-      min-height: 100vh;
-      color: var(--text);
-      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background:
-        radial-gradient(circle at 12% -12%, rgba(15, 118, 110, .16), transparent 34rem),
-        radial-gradient(circle at 96% 10%, rgba(14, 116, 144, .12), transparent 30rem),
-        linear-gradient(180deg, #fbfefd 0%, var(--bg) 48%, #edf5f4 100%);
-    }
-    body::before {
-      content: '';
-      position: fixed;
-      inset: 0;
-      pointer-events: none;
-      background-image: linear-gradient(rgba(15, 118, 110, .035) 1px, transparent 1px), linear-gradient(90deg, rgba(15, 118, 110, .035) 1px, transparent 1px);
-      background-size: 38px 38px;
-      mask-image: linear-gradient(180deg, rgba(0,0,0,.9), transparent 70%);
-    }
-    button, input, select, textarea { font: inherit; }
-    button { cursor: pointer; }
-    .hidden { display: none !important; }
-
-    .app-shell {
-      position: relative;
-      z-index: 1;
-      width: min(1280px, calc(100% - 32px));
-      margin: 0 auto;
-      padding: 22px 0 56px;
-    }
-
-    .top-nav {
-      display: flex;
-      justify-content: flex-end;
-      margin-bottom: 16px;
-    }
-    .top-nav__inner {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px;
-      overflow-x: auto;
-      border: 1px solid rgba(191, 212, 208, .85);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, .78);
-      backdrop-filter: blur(14px);
-      box-shadow: var(--shadow-subtle);
-    }
-    .top-nav a {
-      flex: 0 0 auto;
-      padding: 8px 13px;
-      border-radius: 999px;
-      color: var(--muted-strong);
-      font-size: 13px;
-      font-weight: 800;
-      text-decoration: none;
-      transition: color .18s ease, background .18s ease;
-    }
-    .top-nav a { display: inline-flex; align-items: center; gap: 8px; }
-    .top-nav a:hover, .top-nav a.active { background: linear-gradient(135deg, #14b8a6, #0f766e 62%, #0e7490); color: #fff; box-shadow: 0 12px 28px rgba(15, 118, 110, .2); }
-
-    .page-header {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto;
-      gap: clamp(18px, 3vw, 34px);
-      align-items: end;
-      padding: clamp(24px, 4vw, 42px);
-      border: 1px solid rgba(204, 221, 218, .82);
-      border-radius: var(--radius-xl);
-      background: rgba(255, 255, 255, .86);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(18px);
-    }
-    .eyebrow {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 14px;
-      padding: 7px 11px;
-      border-radius: 999px;
-      background: var(--brand-soft);
-      color: var(--brand-dark);
-      font-size: 12px;
-      font-weight: 900;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-    }
-    h1 {
-      margin: 0;
-      max-width: 820px;
-      color: #132a31;
-      font-size: clamp(34px, 5vw, 58px);
-      line-height: 1;
-      letter-spacing: -.055em;
-      font-weight: 900;
-    }
-    .header-copy {
-      margin: 14px 0 0;
-      max-width: 760px;
-      color: var(--muted);
-      font-size: clamp(15px, 1.45vw, 18px);
-      line-height: 1.65;
-      font-weight: 560;
-    }
-
-    .indicator-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(150px, 1fr));
-      gap: 10px;
-      min-width: min(430px, 100%);
-    }
-    .indicator-card {
-      min-height: 106px;
-      padding: 17px;
-      border: 1px solid rgba(207, 223, 220, .8);
-      border-radius: var(--radius-lg);
-      background: linear-gradient(180deg, #fff, #f8fcfb);
-      box-shadow: 0 8px 20px rgba(23, 48, 55, .045);
-    }
-    .indicator-card span {
-      display: block;
-      color: var(--muted);
-      font-size: 11px;
-      font-weight: 900;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-    }
-    .indicator-card strong {
-      display: block;
-      margin-top: 9px;
-      color: var(--text);
-      font-size: 28px;
-      line-height: 1.05;
-      letter-spacing: -.04em;
-    }
-
-    .editor-card, .preview-card, .loading-box {
-      border: 1px solid rgba(207, 223, 220, .84);
-      border-radius: var(--radius-xl);
-      background: rgba(255, 255, 255, .92);
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(18px);
-    }
-    .editor-card { margin-top: 22px; overflow: hidden; }
-    .card-section { padding: clamp(20px, 3vw, 30px); }
-    .card-section + .card-section { border-top: 1px solid rgba(217, 230, 228, .72); }
-    .section-head {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 18px;
-      margin-bottom: 18px;
-    }
-    .section-head h2 {
-      margin: 0;
-      color: var(--text);
-      font-size: clamp(20px, 2.1vw, 27px);
-      line-height: 1.15;
-      letter-spacing: -.04em;
-      font-weight: 900;
-    }
-    .section-head p {
-      margin: 6px 0 0;
-      color: var(--muted);
-      font-size: 14px;
-      line-height: 1.55;
-      font-weight: 600;
-    }
-    .status-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      flex: 0 0 auto;
-      padding: 8px 11px;
-      border-radius: 999px;
-      background: #eef8f6;
-      color: var(--brand-dark);
-      font-size: 12px;
-      font-weight: 900;
-      white-space: nowrap;
-    }
-
-    .filter-grid {
-      display: grid;
-      grid-template-columns: minmax(260px, .9fr) repeat(3, minmax(180px, 1fr));
-      gap: 14px;
-      align-items: stretch;
-    }
-    .filter-field {
-      min-width: 0;
-      padding: 14px;
-      border: 1px solid rgba(215, 225, 229, .9);
-      border-radius: 22px;
-      background: linear-gradient(180deg, rgba(255,255,255,.94), rgba(248,252,251,.88));
-      box-shadow: inset 0 1px 0 rgba(255,255,255,.9), 0 10px 24px rgba(23,48,55,.045);
-    }
-    .field-label {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 9px;
-      color: var(--muted-strong);
-      font-size: 13px;
-      font-weight: 900;
-    }
-    .field-label small {
-      color: var(--brand);
-      font-size: 10px;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-    }
-    .commission-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-    .commission-option {
-      position: relative;
-      min-height: 112px;
-      padding: 15px;
-      border: 1px solid transparent;
-      border-radius: 18px;
-      background: #fff;
-      color: var(--muted-strong);
-      transition: border-color .18s ease, background .18s ease, color .18s ease;
-    }
-    .commission-option input { position: absolute; opacity: 0; pointer-events: none; }
-    .commission-option strong { display: block; color: inherit; font-size: 21px; letter-spacing: -.04em; }
-    .commission-option span { display: block; margin-top: 6px; font-size: 12px; line-height: 1.45; }
-    .commission-option:has(input:checked) { border-color: rgba(15, 118, 110, .55); background: var(--brand-soft); color: var(--brand-dark); }
-    .commission-option.disabled { cursor: not-allowed; opacity: .56; }
-
-    .select-shell { position: relative; }
-    .select-shell::after {
-      content: attr(data-count) ' selecionado(s)';
-      position: absolute;
-      right: 10px;
-      bottom: 9px;
-      color: var(--muted);
-      font-size: 10px;
-      font-weight: 900;
-      pointer-events: none;
-    }
-    select, textarea {
-      width: 100%;
-      outline: none;
-      border: 1px solid rgba(190, 211, 207, .9);
-      border-radius: 16px;
-      background: rgba(255,255,255,.96);
-      color: var(--text);
-      transition: border-color .18s ease, box-shadow .18s ease;
-    }
-    select { min-height: 48px; padding: 10px 12px; }
-    select[multiple] { min-height: 144px; padding: 9px 10px 30px; scrollbar-width: thin; }
-    select[multiple] option { margin: 3px 0; padding: 8px 10px; border-radius: 10px; font-weight: 700; }
-    select[multiple] option:checked { background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; }
-    textarea {
-      min-height: 380px;
-      padding: 18px;
-      resize: vertical;
-      color: #213f47;
-      font-size: 16px;
-      line-height: 1.72;
-      font-weight: 520;
-    }
-    select:focus, textarea:focus { border-color: var(--brand); box-shadow: 0 0 0 4px rgba(15, 118, 110, .12); }
-
-    .filter-summary {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 16px;
-      min-height: 32px;
-    }
-    .filter-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      max-width: 100%;
-      padding: 7px 10px;
-      border-radius: 999px;
-      background: #eef8f6;
-      color: var(--brand-dark);
-      font-size: 12px;
-      font-weight: 800;
-    }
-    .filter-chip.empty { background: #f0f6f5; color: var(--muted); }
-
-    .filter-actions, .footer-actions, .report-tools {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      align-items: center;
-    }
-    .filter-actions { justify-content: flex-end; margin-top: 18px; }
-    .footer-actions { justify-content: space-between; }
-    .footer-actions__secondary { display: flex; flex-wrap: wrap; gap: 10px; }
-    .btn {
-      min-height: 46px;
-      border: 0;
-      border-radius: 999px;
-      padding: 12px 17px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 9px;
-      color: var(--muted-strong);
-      background: #fff;
-      font-size: 14px;
-      font-weight: 900;
-      text-decoration: none;
-      transition: transform .18s ease, box-shadow .18s ease, background .18s ease, color .18s ease;
-    }
-    .btn:hover { transform: translateY(-1px); box-shadow: var(--shadow-subtle); }
-    .btn-primary { background: linear-gradient(135deg, var(--brand), var(--brand-2)); color: #fff; box-shadow: 0 12px 28px rgba(15, 118, 110, .22); }
-    .btn-secondary { border: 1px solid rgba(190, 211, 207, .9); }
-    .btn-ghost { background: transparent; color: var(--brand-dark); }
-
-    .tabs {
-      display: flex;
-      gap: 8px;
-      overflow-x: auto;
-      padding: 6px;
-      border-radius: 999px;
-      background: #eef6f5;
-      margin-bottom: 18px;
-    }
-    .tab-button {
-      flex: 0 0 auto;
-      min-height: 42px;
-      border: 0;
-      border-radius: 999px;
-      padding: 10px 14px;
-      background: transparent;
-      color: var(--muted-strong);
-      font-size: 13px;
-      font-weight: 900;
-      transition: background .18s ease, color .18s ease, box-shadow .18s ease;
-    }
-    .tab-button.active { background: #fff; color: var(--brand-dark); box-shadow: 0 8px 18px rgba(23, 48, 55, .07); }
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; animation: fadeIn .18s ease; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-
-    .loading-box {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      min-height: 86px;
-      padding: 20px;
-      color: var(--muted);
-      font-weight: 800;
-      margin-top: 22px;
-    }
-    .spinner { width: 22px; height: 22px; border: 3px solid #dce8e6; border-top-color: var(--brand); border-radius: 50%; animation: spin .75s linear infinite; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .preview-card { margin-top: 22px; padding: clamp(14px, 2vw, 22px); }
-    .report-tools { justify-content: flex-end; margin-bottom: 14px; }
-    .document-page {
-      width: 210mm;
-      min-height: 297mm;
-      margin: 0 auto 18px;
-      padding: 10mm;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      break-after: page;
-      page-break-after: always;
-      border: 1px solid #e3ecea;
-      background: #fff;
-      box-shadow: 0 18px 46px rgba(23, 48, 55, .1);
-    }
-    .doc-page-header { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; padding-bottom: 8px; border-bottom: 1px solid rgba(31, 41, 55, .12); }
-    .page-header-main { display: flex; align-items: flex-start; gap: 10px; min-width: 0; }
-    .page-logo { width: 52px; height: 52px; flex: 0 0 52px; object-fit: contain; object-position: center; }
-    .doc-page-header h2 { margin: 0 0 4px; color: var(--text); font-size: 20px; line-height: 1.16; letter-spacing: -.035em; }
-    .doc-page-header p, .page-meta { margin: 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
-    .page-meta { min-width: 205px; text-align: right; }
-    .doc-content { flex: 1 1 auto; display: flex; flex-direction: column; }
-    .doc-header { display: grid; grid-template-columns: 1fr auto; gap: 18px; align-items: start; padding: 12px 0 4px; }
-    .doc-kicker { color: var(--brand); font-size: 11px; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
-    .doc-title { margin: 6px 0 0; color: #1e2f36; font-size: 27px; line-height: 1.08; letter-spacing: -.035em; }
-    .doc-subtitle { margin: 8px 0 0; color: var(--muted); font-size: 12px; line-height: 1.55; }
-    .doc-badge { border: 1px solid #bfd0d6; border-radius: 16px; padding: 12px; text-align: right; min-width: 150px; background: linear-gradient(180deg, #fff, #f8fbfc); }
-    .doc-badge strong { display: block; color: var(--brand); font-size: 30px; line-height: 1; letter-spacing: -.04em; }
-    .doc-badge span { display: block; margin-top: 5px; color: var(--muted); font-size: 11px; font-weight: 900; text-transform: uppercase; }
-    .footer-note { display: flex; justify-content: center; align-items: center; padding-top: 4px; margin-top: auto; border-top: 1px solid var(--line); overflow: hidden; }
-    .footer-brand { height: 40px; width: auto; max-width: 156mm; object-fit: contain; object-position: center; flex: 0 1 auto; }
-    .doc-section { margin-top: 16px; break-inside: avoid; }
-    .doc-section h3 { display: flex; align-items: center; gap: 9px; margin: 0 0 10px; color: #1f343c; font-size: 16px; letter-spacing: -.02em; }
-    .doc-section h3::before { content: ''; width: 8px; height: 22px; border-radius: 999px; background: linear-gradient(180deg, var(--brand), var(--brand-2)); }
-    .doc-text { color: #31454d; font-size: 12.4px; line-height: 1.72; text-align: justify; white-space: pre-line; }
-    .metric-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 14px; }
-    .metric-card { border: 1px solid #d4e0e4; border-radius: 16px; padding: 12px; background: linear-gradient(180deg, #fff, #f8fbfc); break-inside: avoid; }
-    .metric-card span { display: block; color: var(--muted); font-size: 10px; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }
-    .metric-card strong { display: block; margin-top: 7px; color: var(--text); font-size: 24px; letter-spacing: -.04em; }
-    .metric-card small { display: block; margin-top: 4px; color: var(--muted); line-height: 1.35; }
-    .chart-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 12px; margin-top: 12px; }
-    .chart-box { position: relative; border: 1px solid #d4e0e4; border-radius: 18px; padding: 12px; height: 238px; min-height: 238px; background: #fbfdfd; overflow: hidden; break-inside: avoid; }
-    .chart-box canvas, .chart-box img { display: block; width: 100% !important; height: 210px !important; object-fit: contain; }
-    .table-wrap { border: 1px solid #d4e0e4; border-radius: 18px; overflow: hidden; margin-top: 12px; }
-    table { width: 100%; border-collapse: collapse; font-size: 11px; }
-    th, td { padding: 8px 9px; border-bottom: 1px solid #e4ecef; text-align: left; vertical-align: top; }
-    th { background: #eef6f5; color: #31525b; font-size: 10px; text-transform: uppercase; letter-spacing: .06em; }
-    tr:last-child td { border-bottom: 0; }
-    .tag { display: inline-flex; border-radius: 999px; padding: 3px 7px; font-size: 10px; font-weight: 900; background: var(--brand-soft); color: var(--brand); }
-    .tag.red { background: #fff0eb; color: var(--danger); }
-    .tag.amber { background: #fff5e5; color: var(--warning); }
-    .tag.green { background: #eaf7f0; color: var(--success); }
-    .structure-alert { border: 1px solid #f2c078; background: linear-gradient(180deg, #fff9ed, #fff4dc); color: #7c4a03; border-radius: 16px; padding: 12px 14px; margin-top: 14px; font-size: 11px; line-height: 1.55; break-inside: avoid; }
-    .structure-alert strong { display: block; margin-bottom: 6px; color: #8a5200; font-size: 12px; }
-    .structure-alert ul { margin: 0; padding-left: 18px; }
-
-    @media (max-width: 1100px) {
-      .page-header { grid-template-columns: 1fr; }
-      .indicator-grid, .filter-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .document-page { width: 100%; min-height: auto; }
-    }
-    @media (max-width: 720px) {
-      .app-shell { width: min(100% - 20px, 1280px); padding-top: 12px; }
-      .page-header, .card-section { padding: 20px; }
-      .indicator-grid, .filter-grid, .commission-switch, .chart-grid, .metric-grid { grid-template-columns: 1fr; }
-      .section-head, .footer-actions { display: grid; grid-template-columns: 1fr; }
-      .footer-actions__secondary, .filter-actions { justify-content: stretch; }
-      .btn { width: 100%; }
-      textarea { min-height: 330px; }
-      .doc-header, .doc-page-header { grid-template-columns: 1fr; flex-direction: column; }
-      .doc-badge, .page-meta { text-align: left; min-width: 0; }
-      .document-page { padding: 22px; }
-    }
-    .pdf-capture-stage {
-      position: fixed;
-      inset: 0;
-      z-index: 2147483647;
-      overflow: auto;
-      background: #ffffff;
-      pointer-events: none;
-      opacity: 1;
-    }
-    .pdf-capture-stage > article,
-    .pdf-capture-stage > section {
-      width: 210mm;
-      max-width: 210mm;
-      margin: 0 auto;
-      background: #ffffff;
-    }
-    body.pdf-export .document-page,
-    body.pdf-export .metric-card,
-    body.pdf-export .chart-box {
-      background: #ffffff !important;
-      box-shadow: none !important;
-      backdrop-filter: none !important;
-      -webkit-backdrop-filter: none !important;
-    }
-
-    @media print {
-      body { background: #fff; }
-      body::before, .top-nav, .page-header, .editor-card, .report-tools, .loading-box, #toast-root { display: none !important; }
-      .app-shell { width: auto; max-width: none; padding: 0; }
-      .preview-card { margin: 0; padding: 0; border: 0; box-shadow: none; }
-      .document-page { width: 210mm; min-height: 297mm; height: auto; margin: 0; box-shadow: none; border: 0; break-after: page; page-break-after: always; }
-      .document-page:last-child { break-after: auto; page-break-after: auto; }
-      .footer-note { margin-top: auto; }
-    }
-  </style>
-</head>
-<body class="antialiased selection:bg-cosep-soft selection:text-cosep-teal">
-  <div id="toast-root" style="position:fixed;right:16px;top:16px;z-index:9999;display:grid;gap:10px;width:min(420px,calc(100vw - 32px));pointer-events:none" aria-live="polite" aria-atomic="true"></div>
-  <main class="app-shell">
-    <header class="page-header">
-      <div>
-        <span class="eyebrow"><i class="fa-solid fa-file-pen"></i> Produção executiva</span>
-        <h1>Relatório Analítico Editável</h1>
-        <p class="header-copy">Monte um relatório institucional claro, editável e pronto para PDF com filtros essenciais, indicadores consolidados e texto analítico estruturado.</p>
-      </div>
-      <section class="indicator-grid" aria-label="Indicadores do relatório">
-        <article class="indicator-card"><span>Comissão atual</span><strong id="hero-comissao">CRP</strong></article>
-        <article class="indicator-card"><span>Conformidade geral</span><strong id="hero-conformidade">--</strong></article>
-        <article class="indicator-card"><span>Avaliações analisadas</span><strong id="hero-avaliacoes">--</strong></article>
-        <article class="indicator-card"><span>Indicadores avaliados</span><strong id="hero-indicadores">--</strong></article>
-      </section>
-    </header>
-
-    <section class="editor-card" aria-label="Editor do relatório">
-      <section class="card-section">
-        <div class="section-head">
-          <div>
-            <h2>Filtros do relatório</h2>
-            <p>Use apenas os recortes essenciais para manter a leitura objetiva e a geração do relatório mais rápida.</p>
-          </div>
-          <span class="status-pill"><i class="fa-solid fa-sliders"></i> Filtros essenciais</span>
-        </div>
-
-        <div class="filter-grid">
-          <div class="filter-field">
-            <div class="field-label"><span>Comissão</span><small>atual</small></div>
-            <div class="commission-switch" role="radiogroup" aria-label="Comissão do relatório">
-              <label class="commission-option"><input type="radio" name="comissao" value="CRP" checked><strong>CRP</strong><span>Prontuário / registros assistenciais</span></label>
-              <label class="commission-option disabled"><input type="radio" name="comissao" value="CRO" disabled><strong>CRO</strong><span>Disponível em versão futura</span></label>
-            </div>
-          </div>
-
-          <div class="filter-field">
-            <label class="field-label" for="anos"><span>Ano</span><small>multi</small></label>
-            <div class="select-shell" data-count="0"><select id="anos" multiple aria-label="Filtrar por ano"></select></div>
-          </div>
-
-          <div class="filter-field">
-            <label class="field-label" for="meses"><span>Mês</span><small>multi</small></label>
-            <div class="select-shell" data-count="0"><select id="meses" multiple aria-label="Filtrar por mês"></select></div>
-          </div>
-
-          <div class="filter-field">
-            <label class="field-label" for="unidades"><span>Setores</span><small>multi</small></label>
-            <div class="select-shell" data-count="0"><select id="unidades" multiple aria-label="Filtrar por setores"></select></div>
-          </div>
-        </div>
-
-        <div class="filter-summary" id="active-filters" aria-live="polite">
-          <span class="filter-chip empty"><i class="fa-solid fa-layer-group"></i> Todos os dados selecionados</span>
-        </div>
-
-        <div class="filter-actions">
-          <button class="btn btn-primary" type="button" id="btn-aplicar-filtros"><i class="fa-solid fa-filter-circle-check"></i> Aplicar filtros</button>
-          <button class="btn btn-secondary" type="button" id="btn-limpar-filtros"><i class="fa-solid fa-eraser"></i> Limpar filtros</button>
-        </div>
-      </section>
-
-      <section class="card-section">
-        <div class="section-head">
-          <div>
-            <h2>Texto do relatório</h2>
-            <p>Edite cada bloco narrativo em abas amplas, confortáveis e legíveis antes de gerar o PDF final.</p>
-          </div>
-          <span class="status-pill"><i class="fa-solid fa-pen-nib"></i> Editável</span>
-        </div>
-
-        <div id="report-text-react" aria-live="polite"></div>
-      </section>
-
-      <footer class="card-section footer-actions" aria-label="Ações do relatório">
-        <button class="btn btn-primary" type="button" id="btn-gerar"><i class="fa-solid fa-chart-line"></i> Gerar relatório</button>
-        <div class="footer-actions__secondary">
-          <button class="btn btn-secondary" type="button" id="btn-texto"><i class="fa-solid fa-rotate-left"></i> Restaurar texto padrão</button>
-          <button class="btn btn-secondary" type="button" id="btn-imprimir"><i class="fa-solid fa-print"></i> Imprimir / salvar PDF</button>
-        </div>
-      </footer>
-    </section>
-
-    <div id="loading" class="loading-box"><span class="spinner" aria-hidden="true"></span><span>Carregando filtros e preparando relatório...</span></div>
-    <section class="preview-card" aria-label="Prévia do relatório">
-      <div class="report-tools hidden" id="report-tools">
-        <button class="btn btn-secondary" type="button" id="btn-topo"><i class="fa-solid fa-arrow-up"></i> Topo</button>
-        <button class="btn btn-secondary" type="button" id="btn-copiar"><i class="fa-solid fa-copy"></i> Copiar resumo</button>
-      </div>
-      <article id="relatorio" class="hidden"></article>
-    </section>
-  </main>
-
-  <script>
-    const APP_URL = '<?!= appUrl ?>';
-    const LOGO_INSTITUCIONAL = 'https://i.ibb.co/tTGkBCXj/oie-transparent.png';
-    const RODAPE_INSTITUCIONAL = 'https://i.ibb.co/VYv0RyF3/Rodape-1.png';
-    const textTabs = [
-      { key: 'intro', label: 'Introdução', textareaId: 'texto-intro', panelId: 'tab-intro', aria: 'Texto da introdução' },
-      { key: 'metodo', label: 'Metodologia', textareaId: 'texto-metodo', panelId: 'tab-metodo', aria: 'Texto da metodologia' },
-      { key: 'analise', label: 'Análise crítica', textareaId: 'texto-analise', panelId: 'tab-analise', aria: 'Texto da análise crítica' },
-      { key: 'plano', label: 'Plano de ação', textareaId: 'texto-plano', panelId: 'tab-plano', aria: 'Texto do plano de ação' },
-      { key: 'conclusao', label: 'Conclusão', textareaId: 'texto-conclusao', panelId: 'tab-conclusao', aria: 'Texto da conclusão' }
-    ];
-
-    function renderTextEditorReact(activeTab = 'intro') {
-      const root = document.getElementById('report-text-react');
-      if (!root) return;
-      if (!window.React || !window.ReactDOM) {
-        root.innerHTML = `<div class="tabs" role="tablist" aria-label="Seções do texto do relatório">${textTabs.map(tab => `<button class="tab-button ${tab.key === activeTab ? 'active' : ''}" type="button" role="tab" aria-selected="${tab.key === activeTab}" aria-controls="${tab.panelId}" data-tab="${tab.key}">${tab.label}</button>`).join('')}</div>${textTabs.map(tab => `<div class="tab-panel ${tab.key === activeTab ? 'active' : ''}" id="${tab.panelId}" role="tabpanel"><textarea id="${tab.textareaId}" aria-label="${tab.aria}"></textarea></div>`).join('')}`;
-        return;
-      }
-      const h = React.createElement;
-      const app = h(React.Fragment, null,
-        h('div', { className: 'tabs', role: 'tablist', 'aria-label': 'Seções do texto do relatório' },
-          textTabs.map(tab => h('button', {
-            key: `button-${tab.key}`,
-            className: `tab-button ${tab.key === activeTab ? 'active' : ''}`,
-            type: 'button',
-            role: 'tab',
-            'aria-selected': String(tab.key === activeTab),
-            'aria-controls': tab.panelId,
-            'data-tab': tab.key
-          }, tab.label))
-        ),
-        textTabs.map(tab => h('div', {
-          key: `panel-${tab.key}`,
-          className: `tab-panel ${tab.key === activeTab ? 'active' : ''}`,
-          id: tab.panelId,
-          role: 'tabpanel'
-        }, h('textarea', { id: tab.textareaId, 'aria-label': tab.aria })))
-      );
-      ReactDOM.render(app, root);
-    }
-
-    renderTextEditorReact();
-
-    const state = { payload: null, charts: [] };
-    const idsFiltros = ['anos', 'meses', 'unidades'];
-    const filtroLabels = { anos: 'Ano', meses: 'Mês', unidades: 'Setores' };
-    const textos = {
-      intro: document.getElementById('texto-intro'),
-      metodo: document.getElementById('texto-metodo'),
-      analise: document.getElementById('texto-analise'),
-      plano: document.getElementById('texto-plano'),
-      conclusao: document.getElementById('texto-conclusao')
-    };
-
-    function escapeHtml(value) {
-      return String(value == null ? '' : value)
-        .replaceAll('&', '&amp;')
-        .replaceAll('<', '&lt;')
-        .replaceAll('>', '&gt;')
-        .replaceAll('"', '&quot;')
-        .replaceAll("'", '&#039;');
-    }
-
-    function fmtPct(value) {
-      if (value == null || Number.isNaN(Number(value))) return 'N/A';
-      return `${Number(value).toLocaleString('pt-BR', { minimumFractionDigits: 1, maximumFractionDigits: 1 })}%`;
-    }
-
-    function fmtNum(value) {
-      return Number(value || 0).toLocaleString('pt-BR');
-    }
-
-    function selecionados(id) {
-      return Array.from(document.getElementById(id).selectedOptions).map(option => option.value).filter(Boolean);
-    }
-
-    function atualizarResumoFiltros() {
-      const chips = idsFiltros.flatMap(id => {
-        const valores = selecionados(id);
-        const shell = document.getElementById(id).closest('.select-shell');
-        if (shell) shell.dataset.count = valores.length;
-        if (!valores.length) return [];
-        const texto = valores.length > 3 ? `${valores.slice(0, 3).join(', ')} +${valores.length - 3}` : valores.join(', ');
-        return [`<span class="filter-chip"><i class="fa-solid fa-circle-check"></i> ${filtroLabels[id]}: ${escapeHtml(texto)}</span>`];
-      }).join('');
-      document.getElementById('active-filters').innerHTML = chips || '<span class="filter-chip empty"><i class="fa-solid fa-layer-group"></i> Todos os dados selecionados</span>';
-    }
-
-    function limparFiltros() {
-      idsFiltros.forEach(id => Array.from(document.getElementById(id).options).forEach(option => { option.selected = false; }));
-      atualizarResumoFiltros();
-      toast('Filtros limpos. O relatório usará todos os dados.', 'info', 'Filtros atualizados');
-    }
-
-    function setLoading(message, active = true) {
-      const loading = document.getElementById('loading');
-      loading.classList.toggle('hidden', !active);
-      loading.innerHTML = active ? `<span class="spinner" aria-hidden="true"></span><span>${escapeHtml(message)}</span>` : '';
-    }
-
-    function mostrarToast(message, tipo = 'info', titulo = '') {
-      const root = document.getElementById('toast-root');
-      if (!root) return;
-      const estilos = {
-        success: { bg: '#ecfdf5', color: '#064e3b', border: '#bbf7d0', dot: '#10b981' },
-        error: { bg: '#fff1f2', color: '#881337', border: '#fecdd3', dot: '#f43f5e' },
-        warning: { bg: '#fffbeb', color: '#78350f', border: '#fde68a', dot: '#f59e0b' },
-        info: { bg: '#eff6ff', color: '#1e3a8a', border: '#bfdbfe', dot: '#3b82f6' }
-      };
-      const cfg = estilos[tipo] || estilos.info;
-      const toastEl = document.createElement('section');
-      toastEl.setAttribute('role', tipo === 'error' ? 'alert' : 'status');
-      toastEl.style.cssText = `pointer-events:auto;border:1px solid ${cfg.border};background:${cfg.bg};color:${cfg.color};border-radius:18px;padding:14px 15px;box-shadow:0 18px 36px rgba(15,23,42,.14);transform:translateX(16px);opacity:0;transition:.24s ease;`;
-      toastEl.innerHTML = `
-        <div style="display:flex;align-items:flex-start;gap:11px">
-          <span style="width:10px;height:10px;border-radius:999px;background:${cfg.dot};margin-top:7px;flex:0 0 auto"></span>
-          <div style="min-width:0;flex:1">
-            ${titulo ? `<strong style="display:block;font-size:14px;font-weight:900">${escapeHtml(titulo)}</strong>` : ''}
-            <p style="margin:2px 0 0;font-size:13px;font-weight:700;line-height:1.5">${escapeHtml(message)}</p>
-          </div>
-          <button type="button" style="border:0;background:transparent;color:currentColor;padding:2px;opacity:.65" aria-label="Fechar notificação"><i class="fa-solid fa-xmark"></i></button>
-        </div>`;
-      const fechar = () => {
-        toastEl.style.transform = 'translateX(16px)';
-        toastEl.style.opacity = '0';
-        window.setTimeout(() => toastEl.remove(), 260);
-      };
-      toastEl.querySelector('button').addEventListener('click', fechar);
-      root.appendChild(toastEl);
-      window.requestAnimationFrame(() => { toastEl.style.transform = 'translateX(0)'; toastEl.style.opacity = '1'; });
-      window.setTimeout(fechar, tipo === 'error' ? 7200 : 4200);
-    }
-
-    function toast(message, tipo = 'info', titulo = '') { mostrarToast(message, tipo, titulo); }
-
-    function validarPayload(payload) {
-      if (!payload || payload.success === false) {
-        throw new Error((payload && (payload.mensagem || payload.detalhe)) || 'Resposta inválida do Apps Script.');
-      }
-      return payload;
-    }
-
-    function fetchViaGoogleScript(params = {}) {
-      return new Promise((resolve, reject) => {
-        if (!(window.google && google.script && google.script.run)) return reject(new Error('google.script.run indisponível.'));
-        google.script.run.withSuccessHandler(resolve).withFailureHandler(reject).obterPayloadRelatorios(params);
-      });
-    }
-
-    async function fetchViaHttp(params = {}) {
-      const query = new URLSearchParams({ api: 'relatorios' });
-      Object.entries(params).forEach(([key, value]) => {
-        if (Array.isArray(value)) {
-          if (value.length) query.set(key, value.join('|'));
-        } else if (value != null && String(value).trim()) query.set(key, String(value));
-      });
-      const endpoint = APP_URL || location.pathname;
-      const response = await fetch(`${endpoint}?${query.toString()}`, { cache: 'no-store' });
-      if (!response.ok) throw new Error('Falha ao carregar relatório.');
-      return response.json();
-    }
-
-    async function fetchPayload(params = {}) {
-      const payload = window.google && google.script && google.script.run
-        ? await fetchViaGoogleScript(params)
-        : await fetchViaHttp(params);
-      return validarPayload(payload);
-    }
-
-    function obterFiltros() {
-      return {
-        comissao: document.querySelector('input[name="comissao"]:checked')?.value || 'CRP',
-        anos: selecionados('anos'),
-        meses: selecionados('meses'),
-        unidades: selecionados('unidades')
-      };
-    }
-
-    function preencherSelect(id, values) {
-      const select = document.getElementById(id);
-      select.innerHTML = (values || []).map(value => `<option value="${escapeHtml(value)}">${escapeHtml(value)}</option>`).join('');
-    }
-
-    function preencherFiltros(filtros) {
-      idsFiltros.forEach(id => preencherSelect(id, filtros[id] || []));
-      atualizarResumoFiltros();
-    }
-
-    function periodoTexto(aplicado) {
-      const anos = aplicado?.anos?.length ? aplicado.anos.join(', ') : 'todos os anos';
-      const meses = aplicado?.meses?.length ? aplicado.meses.join(', ') : 'todos os meses';
-      return `${meses} / ${anos}`;
-    }
-
-    function listaTop(map, limite = 5) {
-      return Object.entries(map || {}).slice(0, limite).map(([nome, total]) => `${nome} (${total})`).join(', ') || 'não informado';
-    }
-
-    function gerarTextosPadrao() {
-      const payload = state.payload || {};
-      const rel = payload.relatorio || {};
-      const aplicado = payload.aplicado || {};
-      const setores = aplicado.unidades?.length ? aplicado.unidades.join(', ') : 'todos os setores elegíveis';
-      const criticos = (rel.indicadoresCriticos || []).slice(0, 4).map(item => `${item.nome} (${fmtPct(item.percentual)})`).join('; ') || 'sem indicadores críticos no recorte selecionado';
-      const fortalezas = (rel.indicadoresExcelencia || []).slice(0, 3).map(item => `${item.nome} (${fmtPct(item.percentual)})`).join('; ') || 'sem destaques disponíveis';
-      const status = listaTop(rel.porStatus, 3);
-
-      textos.intro.value = `Este relatório apresenta a análise consolidada da comissão ${rel.comissao || 'CRP'} para o período ${periodoTexto(aplicado)}, considerando ${setores}. O objetivo é sintetizar o desempenho dos registros avaliados, evidenciar conformidades e não conformidades e apoiar decisões de melhoria contínua.`;
-      textos.metodo.value = `A base foi lida diretamente da aba ${rel.abaEncontrada || 'CRP'} da planilha institucional, usando a estrutura oficial da CRP de A até AQ: campos cadastrais de A a K, 29 indicadores assistenciais de L a AN e campos NUMERADOR, DENOMINADOR e RESULTADO em AO, AP e AQ. Para cálculo de conformidade, entram no denominador apenas os itens classificados como Conforme ou Não Conforme; itens Não se Aplica, vazios ou marcados com hífen são apresentados separadamente para transparência da amostra.`;
-      textos.analise.value = `No recorte selecionado, foram identificadas ${fmtNum(rel.totalAvaliacoes)} avaliações e ${fmtNum(rel.totalAuditavel)} itens auditáveis. A conformidade geral foi de ${fmtPct(rel.conformidadeGeral)}, com ${fmtNum(rel.conformes)} conformidades e ${fmtNum(rel.naoConformes)} não conformidades. Os principais pontos de atenção foram: ${criticos}. Como fortalezas, destacam-se: ${fortalezas}. O status predominante das avaliações foi: ${status}.`;
-      textos.plano.value = `Recomenda-se priorizar os indicadores com menor conformidade, revisar rotinas de preenchimento junto às equipes assistenciais, reforçar orientação sobre assinatura/carimbo e completude documental, e acompanhar mensalmente os setores com maior volume de não conformidades. A gestão deve pactuar responsáveis, prazos e evidências de conclusão para cada ação corretiva.`;
-      textos.conclusao.value = `A análise demonstra o panorama atual da qualidade dos registros da comissão ${rel.comissao || 'CRP'} e direciona intervenções objetivas para elevar a aderência documental. A continuidade do monitoramento por período, setor e categoria permitirá verificar tendência, sustentabilidade das melhorias e alinhamento à meta institucional de ${fmtPct(rel.metaInstitucional)}.`;
-    }
-
-    function atualizarHero() {
-      const rel = state.payload?.relatorio || {};
-      document.getElementById('hero-comissao').textContent = rel.comissao || 'CRP';
-      document.getElementById('hero-conformidade').textContent = fmtPct(rel.conformidadeGeral);
-      document.getElementById('hero-avaliacoes').textContent = fmtNum(rel.totalAvaliacoes);
-      document.getElementById('hero-indicadores').textContent = fmtNum((rel.indicadores || []).length);
-    }
-
-    function tagPct(value) {
-      const n = Number(value);
-      const klass = n >= 80 ? 'green' : n >= 60 ? 'amber' : 'red';
-      return `<span class="tag ${klass}">${fmtPct(value)}</span>`;
-    }
-
-    function renderTabelaIndicadores(rel) {
-      const rows = (rel.indicadoresCriticos || []).map(item => `
-        <tr>
-          <td>${escapeHtml(item.nome)}</td>
-          <td>${fmtNum(item.avaliados)}</td>
-          <td>${fmtNum(item.conformes)}</td>
-          <td>${fmtNum(item.naoConformes)}</td>
-          <td>${tagPct(item.percentual)}</td>
-        </tr>`).join('');
-      return `<div class="table-wrap"><table><thead><tr><th>Indicador crítico</th><th>Avaliados</th><th>Conformes</th><th>Não conformes</th><th>Resultado</th></tr></thead><tbody>${rows || '<tr><td colspan="5">Sem indicadores no recorte selecionado.</td></tr>'}</tbody></table></div>`;
-    }
-
-    function renderTabelaSetores(rel) {
-      const rows = (rel.rankingSetores || []).slice(0, 10).map(item => `
-        <tr>
-          <td>${escapeHtml(item.setor)}</td>
-          <td>${fmtNum(item.avaliacoes)}</td>
-          <td>${fmtNum(item.conformes)}</td>
-          <td>${fmtNum(item.naoConformes)}</td>
-          <td>${tagPct(item.percentual)}</td>
-        </tr>`).join('');
-      return `<div class="table-wrap"><table><thead><tr><th>Setor</th><th>Avaliações</th><th>Conformes</th><th>Não conformes</th><th>Resultado</th></tr></thead><tbody>${rows || '<tr><td colspan="5">Sem setores no recorte selecionado.</td></tr>'}</tbody></table></div>`;
-    }
-
-    function renderTexto(titulo, conteudo) {
-      return `<section class="doc-section"><h3>${escapeHtml(titulo)}</h3><div class="doc-text">${escapeHtml(conteudo)}</div></section>`;
-    }
-
-    function renderAlertasEstrutura(rel) {
-      const alertas = (rel.alertasEstrutura || []).slice(0, 8);
-      if (!alertas.length) return '';
-      const itens = alertas.map(alerta => `<li>${escapeHtml(alerta)}</li>`).join('');
-      const total = rel.alertasEstrutura.length > alertas.length ? `<li>Mais ${fmtNum(rel.alertasEstrutura.length - alertas.length)} alerta(s) oculto(s).</li>` : '';
-      return `<div class="structure-alert"><strong>Alertas de estrutura da base</strong><ul>${itens}${total}</ul></div>`;
-    }
-
-    function renderMetricas(rel) {
-      return `
-        <section class="metric-grid">
-          <article class="metric-card"><span>Avaliações</span><strong>${fmtNum(rel.totalAvaliacoes)}</strong><small>Registros no recorte</small></article>
-          <article class="metric-card"><span>Conformidade</span><strong>${fmtPct(rel.conformidadeGeral)}</strong><small>Meta ${fmtPct(rel.metaInstitucional)}</small></article>
-          <article class="metric-card"><span>Conformes</span><strong>${fmtNum(rel.conformes)}</strong><small>Itens auditáveis aprovados</small></article>
-          <article class="metric-card"><span>Não conformes</span><strong>${fmtNum(rel.naoConformes)}</strong><small>Itens que exigem ação</small></article>
-        </section>`;
-    }
-
-    function renderGraficos() {
-      return `
-        <section class="chart-grid">
-          <div class="chart-box"><canvas id="chart-evolucao" aria-label="Gráfico de evolução mensal"></canvas></div>
-          <div class="chart-box"><canvas id="chart-distribuicao" aria-label="Gráfico de distribuição dos itens"></canvas></div>
-        </section>`;
-    }
-
-    function renderRelatorio() {
-      const rel = state.payload?.relatorio;
-      if (!rel) return;
-      destroyCharts();
-      const aplicado = state.payload.aplicado || {};
-      const html = `
-        <section class="document-page">
-          <header class="doc-page-header">
-            <div class="page-header-main">
-              <img class="page-logo" src="${LOGO_INSTITUCIONAL}" alt="Logo institucional">
-              <div>
-                <h2>Relatório Analítico Editável</h2>
-                <p>Comissão ${escapeHtml(rel.comissao || 'CRP')} · ${escapeHtml(periodoTexto(aplicado))}</p>
-              </div>
-            </div>
-            <p class="page-meta">Gerado em ${new Date().toLocaleDateString('pt-BR')}<br>Fonte: ${escapeHtml(rel.abaEncontrada || 'CRP')}</p>
-          </header>
-
-          <main class="doc-content">
-            <section class="doc-header">
-              <div>
-                <span class="doc-kicker">Análise institucional</span>
-                <h1 class="doc-title">Panorama de conformidade dos registros assistenciais</h1>
-                <p class="doc-subtitle">Recorte: ${escapeHtml(aplicado.unidades?.length ? aplicado.unidades.join(', ') : 'todos os setores elegíveis')}.</p>
-              </div>
-              <aside class="doc-badge"><strong>${fmtPct(rel.conformidadeGeral)}</strong><span>Conformidade geral</span></aside>
-            </section>
-            ${renderMetricas(rel)}
-            ${renderTexto('1. Introdução', textos.intro.value)}
-            ${renderTexto('2. Metodologia', textos.metodo.value)}
-            ${renderTexto('3. Análise crítica', textos.analise.value)}
-            ${renderGraficos()}
-            ${renderAlertasEstrutura(rel)}
-            <section class="doc-section"><h3>4. Indicadores críticos</h3>${renderTabelaIndicadores(rel)}</section>
-            <section class="doc-section"><h3>5. Setores com maior oportunidade</h3>${renderTabelaSetores(rel)}</section>
-            ${renderTexto('6. Plano de ação recomendado', textos.plano.value)}
-            ${renderTexto('7. Conclusão', textos.conclusao.value)}
-          </main>
-
-          <footer class="footer-note">
-            <img class="footer-brand" src="${RODAPE_INSTITUCIONAL}" alt="Rodapé institucional">
-          </footer>
-        </section>`;
-
-      document.getElementById('relatorio').innerHTML = html;
-      document.getElementById('relatorio').classList.remove('hidden');
-      document.getElementById('report-tools').classList.remove('hidden');
-      renderCharts(rel);
-    }
-
-    function destroyCharts() {
-      state.charts.forEach(chart => chart.destroy());
-      state.charts = [];
-    }
-
-    function renderCharts(rel) {
-      destroyCharts();
-      if (!window.Chart) return;
-      const evolucao = rel.evolucaoMensal || [];
-      const chartEvolucao = document.getElementById('chart-evolucao');
-      const chartDistribuicao = document.getElementById('chart-distribuicao');
-      if (chartEvolucao) {
-        state.charts.push(new Chart(chartEvolucao, {
-          type: 'line',
-          data: { labels: evolucao.map(item => item.mes), datasets: [{ label: 'Conformidade', data: evolucao.map(item => item.percentual), borderColor: '#0f766e', backgroundColor: 'rgba(15,118,110,.12)', tension: .35, fill: true }] },
-          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false }, title: { display: true, text: 'Evolução mensal (%)' } }, scales: { y: { min: 0, max: 100 } } }
-        }));
-      }
-      if (chartDistribuicao) {
-        state.charts.push(new Chart(chartDistribuicao, {
-          type: 'doughnut',
-          data: { labels: ['Conforme', 'Não conforme', 'Não se aplica'], datasets: [{ data: [rel.conformes || 0, rel.naoConformes || 0, rel.naoSeAplica || 0], backgroundColor: ['#16845b', '#b54721', '#a56613'], borderWidth: 0 }] },
-          options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' }, title: { display: true, text: 'Distribuição dos itens' } }, cutout: '62%' }
-        }));
-      }
-    }
-
-    async function gerarRelatorio(recriarTexto = false) {
-      setLoading('Lendo planilha e consolidando indicadores...');
-      try {
-        state.payload = await fetchPayload(obterFiltros());
-        if (recriarTexto || !textos.intro.value.trim()) gerarTextosPadrao();
-        atualizarHero();
-        renderRelatorio();
-        setLoading('', false);
-        toast('Relatório gerado com sucesso e pronto para impressão.', 'success', 'Relatório pronto');
-      } catch (error) {
-        console.error(error);
-        setLoading('Não foi possível gerar o relatório. Confira o nome da aba CRP na planilha e tente novamente.');
-        toast(error.message || 'Falha ao gerar relatório.', 'error', 'Erro na geração');
-      }
-    }
-
-    function copiarResumo() {
-      const rel = state.payload?.relatorio || {};
-      const resumo = `Relatório ${rel.comissao || 'CRP'} — conformidade ${fmtPct(rel.conformidadeGeral)}, ${fmtNum(rel.totalAvaliacoes)} avaliações, ${fmtNum(rel.naoConformes)} não conformidades.`;
-      navigator.clipboard?.writeText(resumo).then(() => toast('Resumo copiado para a área de transferência.', 'success', 'Resumo copiado'), () => toast(resumo, 'info', 'Resumo do relatório'));
-    }
-
-    function setupTabs() {
-      document.querySelectorAll('.tab-button').forEach(button => {
-        button.addEventListener('click', () => {
-          const tab = button.dataset.tab;
-          document.querySelectorAll('.tab-button').forEach(item => {
-            const active = item === button;
-            item.classList.toggle('active', active);
-            item.setAttribute('aria-selected', String(active));
-          });
-          document.querySelectorAll('.tab-panel').forEach(panel => panel.classList.toggle('active', panel.id === `tab-${tab}`));
-        });
-      });
-    }
-
-    async function init() {
-      setupTabs();
-      try {
-        const payload = await fetchPayload({ comissao: 'CRP' });
-        state.payload = payload;
-        preencherFiltros(payload.filtros || {});
-        gerarTextosPadrao();
-        atualizarHero();
-        renderRelatorio();
-        setLoading('', false);
-        toast('Filtros e relatório carregados com segurança.', 'success', 'Sistema pronto');
-      } catch (error) {
-        console.error(error);
-        setLoading('Não foi possível carregar os filtros. A aba CRP precisa existir na planilha.');
-        toast(error.message || 'Não foi possível carregar os filtros.', 'error', 'Inicialização indisponível');
-      }
-    }
-
-    document.getElementById('btn-gerar').addEventListener('click', () => gerarRelatorio(false));
-    document.getElementById('btn-aplicar-filtros').addEventListener('click', () => gerarRelatorio(false));
-    document.getElementById('btn-limpar-filtros').addEventListener('click', limparFiltros);
-    idsFiltros.forEach(id => document.getElementById(id).addEventListener('change', atualizarResumoFiltros));
-    document.getElementById('btn-texto').addEventListener('click', () => { gerarTextosPadrao(); renderRelatorio(); toast('Texto padrão restaurado com base nos indicadores atuais.', 'success', 'Narrativa atualizada'); });
-    let html2pdfLoader = null;
-
-    function loadScript(src) {
-      return new Promise((resolve, reject) => {
-        const existing = document.querySelector(`script[src="${src}"]`);
-        if (existing) {
-          existing.addEventListener('load', () => resolve(window.html2pdf), { once: true });
-          if (window.html2pdf) resolve(window.html2pdf);
-          return;
-        }
-        const script = document.createElement('script');
-        script.src = src;
-        script.async = true;
-        script.onload = () => resolve(window.html2pdf);
-        script.onerror = () => reject(new Error('Não foi possível carregar o gerador de PDF.'));
-        document.head.appendChild(script);
-      });
-    }
-
-    async function getHtml2PdfRelatorio() {
-      if (window.html2pdf) return window.html2pdf;
-      if (!html2pdfLoader) html2pdfLoader = loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js');
-      const ref = await html2pdfLoader;
-      if (!ref) throw new Error('html2pdf indisponível.');
-      return ref;
-    }
-
-    async function aguardarEstabilidadeRelatorio() {
-      if (document.fonts && document.fonts.ready) {
-        try { await document.fonts.ready; } catch (_) {}
-      }
-      await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-      await new Promise(resolve => setTimeout(resolve, 120));
-    }
-
-    function cloneRelatorioParaPdf() {
-      const original = document.getElementById('relatorio');
-      const clone = original.cloneNode(true);
-      clone.classList.remove('hidden');
-      const originais = original.querySelectorAll('canvas');
-      clone.querySelectorAll('canvas').forEach((canvas, idx) => {
-        const origem = originais[idx];
-        if (!origem) return;
-        const img = document.createElement('img');
-        try { img.src = origem.toDataURL('image/png'); } catch (_) { return; }
-        img.alt = canvas.getAttribute('aria-label') || '';
-        img.style.width = '100%';
-        img.style.height = '210px';
-        img.style.objectFit = 'contain';
-        canvas.replaceWith(img);
-      });
-      clone.querySelectorAll('[id]').forEach(el => el.removeAttribute('id'));
-      return clone;
-    }
-
-    function criarPalcoCapturaPdfRelatorio(conteudo) {
-      const palco = document.createElement('div');
-      palco.className = 'pdf-capture-stage';
-      palco.setAttribute('aria-hidden', 'true');
-      palco.appendChild(conteudo);
-      document.body.appendChild(palco);
-      return palco;
-    }
-
-    async function baixarRelatorioPdf() {
-      if (!state.payload?.relatorio) return;
-      const rel = state.payload.relatorio;
-      const nomeArquivo = `relatorio-${String(rel.comissao || 'crp').toLowerCase()}-${new Date().toISOString().slice(0, 10)}.pdf`;
-      const html2pdf = await getHtml2PdfRelatorio();
-      await aguardarEstabilidadeRelatorio();
-      const clone = cloneRelatorioParaPdf();
-      const palco = criarPalcoCapturaPdfRelatorio(clone);
-      document.body.classList.add('pdf-export');
-      try {
-        await aguardarEstabilidadeRelatorio();
-        await html2pdf().set({
-          margin: [0, 0, 0, 0],
-          filename: nomeArquivo,
-          image: { type: 'png', quality: 1 },
-          html2canvas: {
-            scale: 2.4,
-            useCORS: true,
-            scrollX: 0,
-            scrollY: 0,
-            windowWidth: Math.max(clone.scrollWidth, palco.clientWidth, 794),
-            windowHeight: Math.max(clone.scrollHeight, palco.clientHeight, 1123),
-            backgroundColor: '#ffffff'
-          },
-          jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-          pagebreak: { mode: ['css', 'legacy'], avoid: ['.chart-box', '.metric-card', '.doc-section'] }
-        }).from(clone).save();
-        toast('PDF gerado sem cabeçalho/rodapé do navegador.', 'success', 'PDF baixado');
-      } finally {
-        document.body.classList.remove('pdf-export');
-        palco.remove();
-      }
-    }
-
-    document.getElementById('btn-imprimir').addEventListener('click', () => { baixarRelatorioPdf().catch(error => { console.error(error); toast(error.message || 'Não foi possível gerar o PDF.', 'error', 'Erro no PDF'); }); });
-    document.getElementById('btn-topo').addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-    document.getElementById('btn-copiar').addEventListener('click', copiarResumo);
-    Object.values(textos).forEach(textarea => textarea.addEventListener('input', () => state.payload && renderRelatorio()));
-
-    init();
-  </script>
-</body>
-</html>
-
-  </template>
 
 
   <script>
@@ -6696,18 +5318,10 @@
     function obterViewAtual() {
       const params = new URLSearchParams(window.location.search || '');
       const page = String(params.get('page') || params.get('pagina') || APP_VIEW_INICIAL || '').toLowerCase();
-      if (page === 'relatorios' || page === 'relatórios') return 'relatorios';
       if (page === 'admin' || page === 'administracao' || page === 'administração') return 'admin';
       return 'boletim';
     }
 
-    function carregarRelatoriosFrame() {
-      const frame = document.getElementById('relatorios-frame');
-      const template = document.getElementById('relatorios-srcdoc');
-      if (!frame || !template || frame.dataset.loaded === '1') return;
-      frame.srcdoc = template.innerHTML;
-      frame.dataset.loaded = '1';
-    }
 
     function sincronizarMenuSuperior(view) {
       document.querySelectorAll('[data-view-link]').forEach(link => {
@@ -6720,11 +5334,9 @@
 
     function navegarParaView(view, atualizarHistorico = true) {
       let destino = 'boletim';
-      if (view === 'relatorios') destino = 'relatorios';
-      else if (view === 'admin') destino = 'admin';
+      if (view === 'admin') destino = 'admin';
       let url = window.location.pathname;
-      if (destino === 'relatorios') url += '?page=relatorios';
-      else if (destino === 'admin') url += '?page=admin';
+      if (destino === 'admin') url += '?page=admin';
       if (atualizarHistorico) window.history.pushState({ view: destino }, '', url);
       aplicarRoteamentoInterno();
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -6744,16 +5356,11 @@
     function aplicarRoteamentoInterno() {
       const view = obterViewAtual();
       const boletim = document.getElementById('boletim-app');
-      const relatorios = document.getElementById('relatorios-app');
       const admin = document.getElementById('admin-app');
       if (boletim) boletim.hidden = view !== 'boletim';
-      if (relatorios) relatorios.hidden = view !== 'relatorios';
       if (admin) admin.hidden = view !== 'admin';
-      document.title = view === 'relatorios'
-        ? 'Relatórios COSEP'
-        : (view === 'admin' ? 'Administração · Boletim COSEP' : 'Boletim COSEP');
+      document.title = view === 'admin' ? 'Administração · Boletim COSEP' : 'Boletim COSEP';
       sincronizarMenuSuperior(view);
-      if (view === 'relatorios') carregarRelatoriosFrame();
       if (view === 'admin') carregarConfigAdmin();
     }
 
@@ -6762,297 +5369,6 @@
     let adminPodeEditar = true;
     let adminSetores = [];
     let adminMetasRef = [];
-    const adminTagInputs = {};
-    const ADMIN_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    let adminSnapshot = '';
-    let adminUltimoConfig = null;
-    let adminUltimaResp = null;
-
-    /* Componente leve de chips: digite + Enter/vírgula adiciona, × remove.
-       Reaproveita os estilos .chip/.chip-remove. Retorna { obterValores }. */
-    function criarTagInput(ref, opcoes) {
-      opcoes = opcoes || {};
-      let container = typeof ref === 'string' ? document.getElementById(ref) : ref;
-      if (!container) return { obterValores: () => [] };
-      // Recria o nó para descartar chips/listeners de uma renderização anterior.
-      const fresh = container.cloneNode(false);
-      if (container.parentNode) container.parentNode.replaceChild(fresh, container);
-      container = fresh;
-      const chaveRegistro = container.id || ('tag-' + Math.random().toString(36).slice(2, 9));
-      let valores = (opcoes.valores || []).map(v => String(v || '').trim()).filter(Boolean);
-      const validar = typeof opcoes.validar === 'function' ? opcoes.validar : null;
-      const notificar = typeof opcoes.onChange === 'function' ? opcoes.onChange : null;
-
-      const campo = document.createElement('input');
-      campo.type = 'text';
-      campo.className = 'tag-input-field';
-      campo.placeholder = opcoes.placeholder || 'Digite e pressione Enter...';
-      if (opcoes.datalistId) campo.setAttribute('list', opcoes.datalistId);
-
-      function render() {
-        container.querySelectorAll('.chip').forEach(c => c.remove());
-        valores.forEach((valor, idx) => {
-          const chip = document.createElement('span');
-          chip.className = 'chip' + (validar && !validar(valor) ? ' invalido' : '');
-          chip.innerHTML = `${escapeHtml(valor)} <button type="button" class="chip-remove" aria-label="Remover" title="Remover">×</button>`;
-          chip.querySelector('.chip-remove').addEventListener('click', () => {
-            valores.splice(idx, 1);
-            render();
-            if (notificar) notificar();
-          });
-          container.insertBefore(chip, campo);
-        });
-      }
-
-      function adicionar(texto) {
-        const partes = String(texto || '').split(/[,;\n]/).map(s => s.trim()).filter(Boolean);
-        let mudou = false;
-        partes.forEach(p => {
-          if (valores.some(v => v.toLowerCase() === p.toLowerCase())) return;
-          if (validar && !validar(p)) {
-            if (typeof mostrarToast === 'function') mostrarToast('"' + p + '" não parece válido.', 'error', 'Administração');
-            return;
-          }
-          valores.push(p);
-          mudou = true;
-        });
-        if (mudou) { render(); if (notificar) notificar(); }
-      }
-
-      container.className = 'tag-input';
-      container.appendChild(campo);
-      render();
-
-      container.addEventListener('click', () => campo.focus());
-      campo.addEventListener('focus', () => container.classList.add('focado'));
-      campo.addEventListener('blur', () => { container.classList.remove('focado'); if (campo.value.trim()) { adicionar(campo.value); campo.value = ''; } });
-      campo.addEventListener('keydown', (ev) => {
-        if (ev.key === 'Enter' || ev.key === ',' || ev.key === ';') {
-          ev.preventDefault();
-          adicionar(campo.value);
-          campo.value = '';
-        } else if (ev.key === 'Backspace' && !campo.value && valores.length) {
-          valores.pop();
-          render();
-        }
-      });
-
-      const api = {
-        obterValores: () => valores.slice(),
-        definir: (novos) => { valores = (novos || []).map(v => String(v || '').trim()).filter(Boolean); render(); },
-        setDisabled: (d) => { campo.disabled = d; container.style.pointerEvents = d ? 'none' : ''; container.style.opacity = d ? '.6' : ''; }
-      };
-      adminTagInputs[chaveRegistro] = api;
-      return api;
-    }
-
-    /* Ativa uma seção da Admin (atualiza nav + painel + drawer mobile). */
-    function irParaSecaoAdmin(sec) {
-      const nav = document.getElementById('admin-nav');
-      if (!nav) return;
-      let rotulo = '';
-      nav.querySelectorAll('.admin-nav-item').forEach(b => {
-        const ativo = b.getAttribute('data-admin-sec') === sec;
-        b.classList.toggle('active', ativo);
-        if (ativo) { const s = b.querySelector('span'); rotulo = s ? s.textContent : ''; }
-      });
-      document.querySelectorAll('#admin-form .admin-panel').forEach(p => {
-        p.classList.toggle('ativo', p.getAttribute('data-admin-panel') === sec);
-      });
-      const atual = document.getElementById('admin-drawer-atual');
-      if (atual && rotulo) atual.textContent = rotulo;
-      fecharDrawerAdmin();
-      const content = document.querySelector('.admin-content');
-      if (content && content.scrollIntoView) content.scrollIntoView({ block: 'nearest' });
-    }
-
-    function abrirDrawerAdmin() {
-      const shell = document.getElementById('admin-shell');
-      const toggle = document.getElementById('admin-drawer-toggle');
-      if (shell) shell.classList.add('drawer-aberto');
-      if (toggle) toggle.setAttribute('aria-expanded', 'true');
-    }
-    function fecharDrawerAdmin() {
-      const shell = document.getElementById('admin-shell');
-      const toggle = document.getElementById('admin-drawer-toggle');
-      if (shell) shell.classList.remove('drawer-aberto');
-      if (toggle) toggle.setAttribute('aria-expanded', 'false');
-    }
-
-    /* Filtra as seções pela busca da sidebar e dá realce nos cartões. */
-    function filtrarAdmin(termo) {
-      termo = String(termo || '').trim().toLowerCase();
-      const nav = document.getElementById('admin-nav');
-      if (!nav) return;
-      nav.querySelectorAll('.admin-nav-item').forEach(item => {
-        const alvo = ((item.getAttribute('data-busca') || '') + ' ' + (item.textContent || '')).toLowerCase();
-        item.classList.toggle('oculto', !!termo && alvo.indexOf(termo) === -1);
-      });
-      nav.querySelectorAll('.admin-nav-group').forEach(g => {
-        const algum = Array.from(g.querySelectorAll('.admin-nav-item')).some(i => !i.classList.contains('oculto'));
-        g.classList.toggle('oculto', !algum);
-      });
-      // Realce nos cartões do painel ativo.
-      document.querySelectorAll('#admin-form .realce').forEach(el => el.classList.remove('realce'));
-      if (termo.length >= 2) {
-        document.querySelectorAll('#admin-form .admin-panel.ativo .admin-card, #admin-form .admin-panel.ativo .rule-card, #admin-form .admin-panel.ativo .visao-card').forEach(card => {
-          if ((card.textContent || '').toLowerCase().indexOf(termo) !== -1) card.classList.add('realce');
-        });
-      }
-    }
-
-    /* Navegação entre as seções da Admin (grupos + busca + drawer + teclado). */
-    function configurarNavAdmin() {
-      const nav = document.getElementById('admin-nav');
-      if (!nav || nav.dataset.ligado === '1') return;
-      nav.dataset.ligado = '1';
-      nav.addEventListener('click', (ev) => {
-        const item = ev.target.closest('.admin-nav-item');
-        if (!item) return;
-        irParaSecaoAdmin(item.getAttribute('data-admin-sec'));
-      });
-      nav.addEventListener('keydown', (ev) => {
-        if (ev.key !== 'ArrowDown' && ev.key !== 'ArrowUp') return;
-        const itens = Array.from(nav.querySelectorAll('.admin-nav-item:not(.oculto)'));
-        const i = itens.indexOf(document.activeElement);
-        if (i === -1) return;
-        ev.preventDefault();
-        const prox = itens[(i + (ev.key === 'ArrowDown' ? 1 : -1) + itens.length) % itens.length];
-        if (prox) { prox.focus(); irParaSecaoAdmin(prox.getAttribute('data-admin-sec')); }
-      });
-
-      const busca = document.getElementById('admin-busca');
-      if (busca) busca.addEventListener('input', () => filtrarAdmin(busca.value));
-
-      const toggle = document.getElementById('admin-drawer-toggle');
-      if (toggle) toggle.addEventListener('click', () => {
-        const aberto = document.getElementById('admin-shell').classList.contains('drawer-aberto');
-        aberto ? fecharDrawerAdmin() : abrirDrawerAdmin();
-      });
-      const backdrop = document.getElementById('admin-backdrop');
-      if (backdrop) backdrop.addEventListener('click', fecharDrawerAdmin);
-
-      // Botões "Editar" da Visão geral (delegação — cartões são recriados).
-      const visao = document.getElementById('cfg-visao');
-      if (visao) visao.addEventListener('click', (ev) => {
-        const btn = ev.target.closest('[data-goto]');
-        if (btn) irParaSecaoAdmin(btn.getAttribute('data-goto'));
-      });
-    }
-
-    /* Estado serializado do formulário (config + administradores). */
-    function adminEstadoAtual() {
-      try {
-        const admins = adminTagInputs['cfg-admins'] ? adminTagInputs['cfg-admins'].obterValores() : [];
-        return JSON.stringify({ config: coletarConfigAdmin(), admins });
-      } catch (_) { return ''; }
-    }
-    function marcarSnapshotAdmin() {
-      adminSnapshot = adminEstadoAtual();
-      atualizarDirtyAdmin();
-    }
-    /* Mostra/esconde a save-bar conforme houver alterações não salvas. */
-    function atualizarDirtyAdmin() {
-      const bar = document.getElementById('admin-savebar');
-      if (!bar) return;
-      if (!adminPodeEditar) { bar.hidden = true; return; }
-      const atual = adminEstadoAtual();
-      const sujo = adminSnapshot !== '' && atual !== adminSnapshot;
-      bar.hidden = !sujo;
-      if (sujo) {
-        const n = contarCamposAlterados(adminSnapshot, atual);
-        const msg = document.getElementById('admin-savebar-msg');
-        if (msg) msg.textContent = n > 0
-          ? (n === 1 ? '1 alteração não salva' : n + ' alterações não salvas')
-          : 'Alterações não salvas';
-      }
-    }
-    /* Conta seções/campos de topo que diferem entre dois snapshots. */
-    function contarCamposAlterados(antesStr, depoisStr) {
-      try {
-        const a = JSON.parse(antesStr), b = JSON.parse(depoisStr);
-        const flat = (o, p, acc) => {
-          if (o && typeof o === 'object' && !Array.isArray(o)) {
-            Object.keys(o).forEach(k => flat(o[k], p ? p + '.' + k : k, acc));
-          } else { acc[p] = JSON.stringify(o); }
-          return acc;
-        };
-        const fa = flat(a, '', {}), fb = flat(b, '', {});
-        const chaves = new Set([...Object.keys(fa), ...Object.keys(fb)]);
-        let n = 0;
-        chaves.forEach(k => { if (fa[k] !== fb[k]) n++; });
-        return n;
-      } catch (_) { return 0; }
-    }
-
-    /* Monta os cartões da aba "Visão geral" a partir da config carregada. */
-    function renderVisaoGeral(config, resp) {
-      const wrap = document.getElementById('cfg-visao');
-      if (!wrap) return;
-      const alertas = config.alertas || {};
-      const nMetasAlvo = (config.metasAlvo || []).length;
-      const nExcecoes = (config.excecoesSetores || []).length;
-      const nClass = (config.classificacoesMeta5Dias || []).length;
-      const nAdmins = (resp.admins || []).length;
-      const nDest = (alertas.destinatarios || []).length;
-      const metasAtivas = (config.metasCaminhadas || []).filter(m => m.ativa !== false).length;
-      const metasTotal = (config.metasCaminhadas || []).length;
-      const ultima = resp.historico && resp.historico[0];
-
-      const card = (ico, cor, label, valor, sub, goto) => `
-        <div class="visao-card">
-          <span class="visao-ico ${cor}"><i class="fa-solid ${ico}" aria-hidden="true"></i></span>
-          <span class="visao-label">${escapeHtml(label)}</span>
-          <span class="visao-valor">${valor}</span>
-          <span class="visao-sub">${sub}</span>
-          ${goto ? `<button type="button" class="visao-edit" data-goto="${goto}">Editar <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>` : ''}
-        </div>`;
-
-      wrap.innerHTML = [
-        card('fa-bullseye', '', 'Meta institucional', (config.metaInstitucional != null ? config.metaInstitucional : '—') + '%',
-             nMetasAlvo ? (nMetasAlvo + ' regra(s) por período')  : 'Sem regras por período', 'geral'),
-        card('fa-clock', 'ambar', 'Prazos de resposta', (config.prazoMeta5Dias != null ? config.prazoMeta5Dias : '—') + ' / ' + (config.prazoMeta10Dias != null ? config.prazoMeta10Dias : '—') + ' dias',
-             'Crítica / Geral · ' + nClass + ' classificação(ões) crítica(s)', 'geral'),
-        card('fa-shoe-prints', 'verde', 'Metas de caminhada', metasAtivas + '<span style="font-size:16px;color:var(--muted);font-weight:700"> / ' + metasTotal + '</span>',
-             'Metas ativas no boletim', 'metas'),
-        card('fa-diagram-project', '', 'Exceções de setor', String(nExcecoes),
-             nExcecoes ? 'Regras de setor configuradas' : 'Nenhuma exceção', 'excecoes'),
-        card('fa-bell', alertas.ativo ? 'verde' : '', 'Alertas por e-mail',
-             '<span class="visao-status-dot ' + (alertas.ativo ? '' : 'off') + '"></span>' + (alertas.ativo ? 'Ativos' : 'Inativos'),
-             alertas.ativo ? ('Envio ~' + (alertas.horaEnvio != null ? alertas.horaEnvio : 7) + 'h · ' + nDest + ' destinatário(s)') : 'Configure e ative os avisos', 'alertas'),
-        card('fa-user-shield', '', 'Administradores', String(nAdmins),
-             nAdmins ? 'E-mails com permissão de edição' : 'Liberado para editores da planilha', 'admins'),
-        `<div class="visao-card full">
-           <span class="visao-ico"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i></span>
-           <span class="visao-label">Última alteração</span>
-           <span class="visao-sub" style="font-size:14px;color:var(--text)">${ultima ? (escapeHtml(ultima.quando) + ' — <strong>' + escapeHtml(ultima.usuario) + '</strong>: ' + escapeHtml(ultima.acao)) : (config.atualizadoEm ? ('Em <strong>' + escapeHtml(config.atualizadoEm) + '</strong>' + (config.atualizadoPor ? ' por <strong>' + escapeHtml(config.atualizadoPor) + '</strong>' : '')) : 'Ainda sem alterações registradas.')}</span>
-           <button type="button" class="visao-edit" data-goto="historico">Ver histórico <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
-         </div>`
-      ].join('');
-
-      // Contadores na navegação lateral.
-      const setCount = (chave, n) => {
-        const el = document.querySelector('.nav-count[data-count="' + chave + '"]');
-        if (el) { el.textContent = n; el.hidden = !n; }
-      };
-      setCount('periodo', nMetasAlvo);
-      setCount('excecoes', nExcecoes);
-      setCount('admins', nAdmins);
-
-      // Rodapé da sidebar: usuário + permissão.
-      const email = resp.usuario || '';
-      const nomeEl = document.getElementById('admin-user-nome');
-      const avatarEl = document.getElementById('admin-user-avatar');
-      const seloEl = document.getElementById('admin-perm-selo');
-      if (nomeEl) nomeEl.textContent = email || 'Você';
-      if (avatarEl) avatarEl.textContent = (email ? email.charAt(0) : '·').toUpperCase();
-      if (seloEl) {
-        seloEl.className = 'admin-perm-selo' + (adminPodeEditar ? '' : ' leitura');
-        seloEl.innerHTML = adminPodeEditar
-          ? '<i class="fa-solid fa-pen" aria-hidden="true"></i> Editor'
-          : '<i class="fa-solid fa-lock" aria-hidden="true"></i> Somente leitura';
-      }
-    }
 
     function adminMetasOptions(selecionado) {
       const sel = selecionado != null ? String(selecionado) : '';
@@ -7074,62 +5390,40 @@
     function adminCriarLinhaMetaAlvo(regra) {
       regra = regra || {};
       const div = document.createElement('div');
-      div.className = 'rule-card' + (regra.ativa === false ? ' inativa' : '');
+      div.className = 'admin-meta-block';
       div.setAttribute('data-metaalvo-row', '');
       div.innerHTML = `
-        <div class="rule-card-head">
-          <div class="rule-card-title"><span class="rule-badge">Meta-alvo</span></div>
-          <div class="rule-card-tools">
-            <label class="admin-toggle"><input type="checkbox" class="ma-ativa" ${regra.ativa === false ? '' : 'checked'}> Ativa</label>
-            <button type="button" class="btn-ghost-danger ma-remover" title="Remover regra"><i class="fa-solid fa-trash" aria-hidden="true"></i> Remover</button>
-          </div>
-        </div>
-        <div class="rule-grid">
+        <div class="admin-meta-head">
           <label class="admin-field">Ano <input type="text" class="admin-input ma-ano" inputmode="numeric" placeholder="(todos)" value="${escapeHtml(regra.ano != null ? String(regra.ano) : '')}"></label>
           <label class="admin-field">Mês <select class="admin-input ma-mes">${adminMesesOptions(regra.mes)}</select></label>
           <label class="admin-field">Meta <select class="admin-input ma-meta"><option value="">(todas)</option>${adminMetasOptions(regra.metaCodigo)}</select></label>
           <label class="admin-field">Setor <input type="text" class="admin-input ma-setor" list="cfg-setores-lista" placeholder="(todos)" value="${escapeHtml(regra.setor != null ? String(regra.setor) : '')}"></label>
           <label class="admin-field">Meta % <input type="number" class="admin-input ma-valor" min="0" max="100" step="1" value="${escapeHtml(regra.valor != null ? String(regra.valor) : '')}"></label>
+          <label class="admin-toggle"><input type="checkbox" class="ma-ativa" ${regra.ativa === false ? '' : 'checked'}> Ativa</label>
+          <button type="button" class="btn ma-remover" title="Remover regra"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
         </div>`;
-      const ativaEl = div.querySelector('.ma-ativa');
-      ativaEl.addEventListener('change', () => div.classList.toggle('inativa', !ativaEl.checked));
-      div.querySelector('.ma-remover').addEventListener('click', () => { div.remove(); atualizarDirtyAdmin(); });
+      div.querySelector('.ma-remover').addEventListener('click', () => div.remove());
       return div;
     }
 
     function adminCriarLinhaExcecao(regra) {
       regra = regra || {};
+      const puxados = Array.isArray(regra.setoresPuxados) ? regra.setoresPuxados.join('\n') : '';
       const div = document.createElement('div');
-      div.className = 'rule-card' + (regra.ativa === false ? ' inativa' : '');
+      div.className = 'admin-meta-block';
       div.setAttribute('data-excecao-row', '');
       div.innerHTML = `
-        <div class="rule-card-head">
-          <div class="rule-card-title"><span class="rule-badge">Exceção</span></div>
-          <div class="rule-card-tools">
-            <label class="admin-toggle"><input type="checkbox" class="ex-bidir" ${regra.bidirecional ? 'checked' : ''}> Bidirecional</label>
-            <label class="admin-toggle"><input type="checkbox" class="ex-ativa" ${regra.ativa === false ? '' : 'checked'}> Ativa</label>
-            <button type="button" class="btn-ghost-danger ex-remover" title="Remover regra"><i class="fa-solid fa-trash" aria-hidden="true"></i> Remover</button>
-          </div>
-        </div>
-        <div class="rule-grid dois">
+        <div class="admin-meta-head">
           <label class="admin-field">Meta <select class="admin-input ex-meta">${adminMetasOptions(regra.metaCodigo)}</select></label>
-          <label class="admin-field">Setor de origem <input type="text" class="admin-input ex-origem" list="cfg-setores-lista" placeholder="Ex.: B2 - Centro Cirúrgico" value="${escapeHtml(regra.setorOrigem != null ? String(regra.setorOrigem) : '')}"></label>
+          <label class="admin-field">Setor de origem <input type="text" class="admin-input ex-origem" list="cfg-setores-lista" value="${escapeHtml(regra.setorOrigem != null ? String(regra.setorOrigem) : '')}"></label>
+          <label class="admin-toggle"><input type="checkbox" class="ex-bidir" ${regra.bidirecional ? 'checked' : ''}> Bidirecional</label>
+          <label class="admin-toggle"><input type="checkbox" class="ex-ativa" ${regra.ativa === false ? '' : 'checked'}> Ativa</label>
+          <button type="button" class="btn ex-remover" title="Remover regra"><i class="fa-solid fa-trash" aria-hidden="true"></i></button>
         </div>
-        <div class="admin-field" style="margin-top:12px">Setores puxados <small>(digite e pressione Enter)</small>
-          <div class="tag-input-wrap ex-puxados"></div>
-        </div>`;
-      const ativaEl = div.querySelector('.ex-ativa');
-      ativaEl.addEventListener('change', () => div.classList.toggle('inativa', !ativaEl.checked));
-      div.querySelector('.ex-remover').addEventListener('click', () => { div.remove(); atualizarDirtyAdmin(); });
-      // Tag-input local para os setores puxados (escopo deste card).
-      // O cartão ainda está destacado do DOM aqui, por isso passamos o elemento.
-      const wrap = div.querySelector('.ex-puxados');
-      div._puxadosApi = criarTagInput(wrap, {
-        valores: Array.isArray(regra.setoresPuxados) ? regra.setoresPuxados : [],
-        placeholder: 'Setor puxado...',
-        datalistId: 'cfg-setores-lista',
-        onChange: atualizarDirtyAdmin
-      });
+        <label class="admin-field" style="margin-top:8px">Setores puxados <small>(um por linha)</small>
+          <textarea class="admin-input admin-textarea ex-puxados" rows="3" spellcheck="false">${escapeHtml(puxados)}</textarea>
+        </label>`;
+      div.querySelector('.ex-remover').addEventListener('click', () => div.remove());
       return div;
     }
 
@@ -7202,25 +5496,19 @@
         if (bloqueio) bloqueio.hidden = adminPodeEditar;
       } catch (erro) {
         adminConfigCarregada = false;
-        if (loading) {
-          loading.className = 'rule-empty';
-          loading.removeAttribute('aria-busy');
-          loading.innerHTML = '<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Não foi possível carregar as configurações. <button type="button" class="btn" style="margin-top:12px" onclick="adminConfigCarregada=false;carregarConfigAdmin()"><i class="fa-solid fa-rotate-right" aria-hidden="true"></i> Tentar novamente</button>';
-        }
+        if (loading) loading.textContent = 'Não foi possível carregar as configurações. Tente novamente.';
         if (typeof mostrarToast === 'function') mostrarToast(String((erro && erro.message) || erro), 'error', 'Administração');
       }
     }
 
     function renderConfigAdmin(config, resp) {
       resp = resp || {};
-      adminUltimoConfig = JSON.parse(JSON.stringify(config));
-      adminUltimaResp = resp;
-      Object.keys(adminTagInputs).forEach(k => delete adminTagInputs[k]);
       adminMetasRef = (config.metasCaminhadas || []).map(m => ({ codigo: m.codigo, nome: m.nome }));
       const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
       set('cfg-meta', config.metaInstitucional);
       set('cfg-prazo5', config.prazoMeta5Dias);
       set('cfg-prazo10', config.prazoMeta10Dias);
+      set('cfg-classificacoes', (config.classificacoesMeta5Dias || []).join('\n'));
 
       const alertas = config.alertas || {};
       const setChk = (id, val) => { const el = document.getElementById(id); if (el) el.checked = !!val; };
@@ -7228,6 +5516,7 @@
       setChk('cfg-alerta-notif', alertas.incluirNotificacoesCriticas);
       set('cfg-alerta-min', alertas.conformidadeMinima != null ? alertas.conformidadeMinima : '');
       set('cfg-alerta-hora', alertas.horaEnvio != null ? alertas.horaEnvio : 7);
+      set('cfg-alerta-emails', (alertas.destinatarios || []).join('\n'));
 
       // Datalist de setores (reusado pelas exceções e metas por período).
       const datalist = document.getElementById('cfg-setores-lista');
@@ -7235,28 +5524,22 @@
         datalist.innerHTML = adminSetores.map(s => `<option value="${escapeHtml(String(s))}"></option>`).join('');
       }
 
-      // Listas como chips/tags.
-      criarTagInput('cfg-classificacoes', { valores: config.classificacoesMeta5Dias || [], placeholder: 'Ex.: NEVER EVENT', onChange: atualizarDirtyAdmin });
-      criarTagInput('cfg-alerta-emails', { valores: alertas.destinatarios || [], placeholder: 'fulano@hospital.org', validar: v => ADMIN_EMAIL_RE.test(v), onChange: atualizarDirtyAdmin });
-      criarTagInput('cfg-admins', { valores: resp.admins || [], placeholder: 'fulano@hospital.org', validar: v => ADMIN_EMAIL_RE.test(v), onChange: atualizarDirtyAdmin });
-
-      // Metas por período (cartões + empty state).
+      // Metas por período.
       const wrapAlvo = document.getElementById('cfg-metas-alvo');
       if (wrapAlvo) {
         wrapAlvo.innerHTML = '';
-        const regras = config.metasAlvo || [];
-        if (!regras.length) wrapAlvo.innerHTML = '<div class="rule-empty">Nenhuma meta por período ainda. Clique em “Adicionar meta por período”.</div>';
-        else regras.forEach(regra => wrapAlvo.appendChild(adminCriarLinhaMetaAlvo(regra)));
+        (config.metasAlvo || []).forEach(regra => wrapAlvo.appendChild(adminCriarLinhaMetaAlvo(regra)));
       }
 
-      // Exceções de setor (cartões + empty state).
+      // Exceções de setor.
       const wrapExc = document.getElementById('cfg-excecoes');
       if (wrapExc) {
         wrapExc.innerHTML = '';
-        const regras = config.excecoesSetores || [];
-        if (!regras.length) wrapExc.innerHTML = '<div class="rule-empty">Nenhuma exceção cadastrada. Clique em “Adicionar exceção”.</div>';
-        else regras.forEach(regra => wrapExc.appendChild(adminCriarLinhaExcecao(regra)));
+        (config.excecoesSetores || []).forEach(regra => wrapExc.appendChild(adminCriarLinhaExcecao(regra)));
       }
+
+      // Administradores.
+      set('cfg-admins', (resp.admins || []).join('\n'));
 
       // Histórico de alterações.
       const hist = document.getElementById('cfg-historico');
@@ -7267,7 +5550,6 @@
           : 'Sem registros.';
       }
 
-      // Metas das Caminhadas como cartões.
       const wrap = document.getElementById('cfg-metas');
       if (wrap) {
         wrap.innerHTML = (config.metasCaminhadas || []).map(meta => {
@@ -7277,13 +5559,11 @@
               <input type="text" class="admin-input cfg-item-nome" data-codigo="${escapeHtml(String(item.codigo))}" value="${escapeHtml(String(item.nome || ''))}">
             </div>`).join('');
           return `
-            <div class="rule-card ${meta.ativa === false ? 'inativa' : ''}" data-meta-block="${escapeHtml(String(meta.codigo))}">
-              <div class="rule-card-head">
-                <div class="rule-card-title"><span class="rule-badge">Meta ${escapeHtml(String(meta.codigo))}</span>
-                  <input type="text" class="admin-input cfg-meta-nome" value="${escapeHtml(String(meta.nome || ''))}"></div>
-                <div class="rule-card-tools">
-                  <label class="admin-toggle"><input type="checkbox" class="cfg-meta-ativa" ${meta.ativa === false ? '' : 'checked'}> Ativa</label>
-                </div>
+            <div class="admin-meta-block ${meta.ativa === false ? 'inativa' : ''}" data-meta-block="${escapeHtml(String(meta.codigo))}">
+              <div class="admin-meta-head">
+                <span class="admin-meta-codigo">${escapeHtml(String(meta.codigo))}</span>
+                <input type="text" class="admin-input admin-meta-nome cfg-meta-nome" value="${escapeHtml(String(meta.nome || ''))}">
+                <label class="admin-toggle"><input type="checkbox" class="cfg-meta-ativa" ${meta.ativa === false ? '' : 'checked'}> Ativa</label>
               </div>
               <div class="admin-itens">${itens}</div>
             </div>`;
@@ -7291,7 +5571,7 @@
 
         wrap.querySelectorAll('.cfg-meta-ativa').forEach(chk => {
           chk.addEventListener('change', () => {
-            const block = chk.closest('.rule-card');
+            const block = chk.closest('.admin-meta-block');
             if (block) block.classList.toggle('inativa', !chk.checked);
           });
         });
@@ -7305,33 +5585,21 @@
         info.innerHTML = partes.length ? partes.join(' ') : 'Ainda sem alterações registradas.';
       }
 
-      renderVisaoGeral(config, resp);
-      configurarNavAdmin();
       atualizarStatusAlertas();
 
-      // Detecção de alterações não salvas (delegado, liga uma vez só).
-      const form = document.getElementById('admin-form');
-      if (form && form.dataset.dirtyLigado !== '1') {
-        form.dataset.dirtyLigado = '1';
-        form.addEventListener('input', atualizarDirtyAdmin);
-        form.addEventListener('change', atualizarDirtyAdmin);
-      }
-
       if (!adminPodeEditar) {
-        document.querySelectorAll('#admin-form input, #admin-form textarea, #admin-form button, #admin-form select').forEach(el => {
-          if (!el.closest('.admin-sidebar') && el.id !== 'admin-drawer-toggle') el.setAttribute('disabled', 'disabled');
+        document.querySelectorAll('#admin-form input, #admin-form textarea, #admin-form button').forEach(el => {
+          el.setAttribute('disabled', 'disabled');
         });
-        Object.keys(adminTagInputs).forEach(id => adminTagInputs[id].setDisabled(true));
       }
-
-      marcarSnapshotAdmin();
     }
 
     function coletarConfigAdmin() {
       const num = (id) => { const el = document.getElementById(id); return el ? Number(el.value) : undefined; };
       const chk = (id) => { const el = document.getElementById(id); return el ? !!el.checked : false; };
-      const tagVals = (id) => adminTagInputs[id] ? adminTagInputs[id].obterValores() : [];
-      const metas = Array.from(document.querySelectorAll('#cfg-metas [data-meta-block]')).map(block => {
+      const classifTxt = (document.getElementById('cfg-classificacoes') || {}).value || '';
+      const emailsTxt = (document.getElementById('cfg-alerta-emails') || {}).value || '';
+      const metas = Array.from(document.querySelectorAll('#cfg-metas .admin-meta-block')).map(block => {
         const codigo = block.getAttribute('data-meta-block');
         const nomeEl = block.querySelector('.cfg-meta-nome');
         const ativaEl = block.querySelector('.cfg-meta-ativa');
@@ -7362,10 +5630,11 @@
         const origemEl = row.querySelector('.ex-origem');
         const bidirEl = row.querySelector('.ex-bidir');
         const ativaEl = row.querySelector('.ex-ativa');
+        const puxadosEl = row.querySelector('.ex-puxados');
         return {
           metaCodigo: metaEl ? metaEl.value.trim() : '',
           setorOrigem: origemEl ? origemEl.value.trim() : '',
-          setoresPuxados: row._puxadosApi ? row._puxadosApi.obterValores() : [],
+          setoresPuxados: (puxadosEl ? puxadosEl.value : '').split('\n').map(s => s.trim()).filter(Boolean),
           bidirecional: bidirEl ? bidirEl.checked : false,
           ativa: ativaEl ? ativaEl.checked : true
         };
@@ -7375,7 +5644,7 @@
         metaInstitucional: num('cfg-meta'),
         prazoMeta5Dias: num('cfg-prazo5'),
         prazoMeta10Dias: num('cfg-prazo10'),
-        classificacoesMeta5Dias: tagVals('cfg-classificacoes'),
+        classificacoesMeta5Dias: classifTxt.split('\n').map(s => s.trim()).filter(Boolean),
         metasCaminhadas: metas,
         metasAlvo: metasAlvo,
         excecoesSetores: excecoesSetores,
@@ -7384,7 +5653,7 @@
           incluirNotificacoesCriticas: chk('cfg-alerta-notif'),
           conformidadeMinima: num('cfg-alerta-min'),
           horaEnvio: num('cfg-alerta-hora'),
-          destinatarios: tagVals('cfg-alerta-emails')
+          destinatarios: emailsTxt.split('\n').map(s => s.trim()).filter(Boolean)
         }
       };
     }
@@ -7447,7 +5716,6 @@
           } finally {
             btnTeste.disabled = false; btnTeste.innerHTML = original;
             atualizarStatusAlertas();
-            marcarSnapshotAdmin();
           }
         });
       }
@@ -7464,7 +5732,6 @@
           } finally {
             btnGatilho.disabled = false;
             atualizarStatusAlertas();
-            marcarSnapshotAdmin();
           }
         });
       }
@@ -7479,11 +5746,7 @@
         btnAddMetaAlvo.addEventListener('click', () => {
           if (!adminPodeEditar) return;
           const wrap = document.getElementById('cfg-metas-alvo');
-          if (!wrap) return;
-          const vazio = wrap.querySelector('.rule-empty');
-          if (vazio) vazio.remove();
-          wrap.appendChild(adminCriarLinhaMetaAlvo({}));
-          atualizarDirtyAdmin();
+          if (wrap) wrap.appendChild(adminCriarLinhaMetaAlvo({}));
         });
       }
 
@@ -7492,37 +5755,39 @@
         btnAddExcecao.addEventListener('click', () => {
           if (!adminPodeEditar) return;
           const wrap = document.getElementById('cfg-excecoes');
-          if (!wrap) return;
-          const vazio = wrap.querySelector('.rule-empty');
-          if (vazio) vazio.remove();
-          wrap.appendChild(adminCriarLinhaExcecao({}));
-          atualizarDirtyAdmin();
+          if (wrap) wrap.appendChild(adminCriarLinhaExcecao({}));
         });
       }
 
-      // Descartar: volta o formulário ao último estado salvo/carregado.
-      const btnDescartar = document.getElementById('btn-config-descartar');
-      if (btnDescartar) {
-        btnDescartar.addEventListener('click', () => {
-          if (!adminUltimoConfig) return;
-          renderConfigAdmin(adminUltimoConfig, adminUltimaResp || {});
-          if (typeof mostrarToast === 'function') mostrarToast('Alterações descartadas.', 'success', 'Administração');
+      const btnSalvarAdmins = document.getElementById('btn-salvar-admins');
+      if (btnSalvarAdmins) {
+        btnSalvarAdmins.addEventListener('click', async () => {
+          if (!adminPodeEditar) return;
+          const ta = document.getElementById('cfg-admins');
+          const lista = (ta ? ta.value : '').split('\n').map(s => s.trim()).filter(Boolean);
+          const original = btnSalvarAdmins.innerHTML;
+          btnSalvarAdmins.disabled = true; btnSalvarAdmins.innerHTML = 'Salvando...';
+          try {
+            const resp = await adminSalvarAdmins(lista);
+            if (typeof mostrarToast === 'function') mostrarToast((resp && resp.mensagem) || 'Feito.', resp && resp.success ? 'success' : 'error', 'Administração');
+          } catch (erro) {
+            if (typeof mostrarToast === 'function') mostrarToast(String((erro && erro.message) || erro), 'error', 'Administração');
+          } finally {
+            btnSalvarAdmins.disabled = false; btnSalvarAdmins.innerHTML = original;
+          }
         });
       }
 
-      // Salvar tudo (configurações + administradores num só fluxo).
       if (form) {
         form.addEventListener('submit', async (ev) => {
           ev.preventDefault();
           if (!adminPodeEditar) return;
           const btn = document.getElementById('btn-config-salvar');
           const original = btn ? btn.innerHTML : '';
-          if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Salvando…'; }
+          if (btn) { btn.disabled = true; btn.innerHTML = 'Salvando...'; }
           try {
-            const admins = adminTagInputs['cfg-admins'] ? adminTagInputs['cfg-admins'].obterValores() : [];
             const resp = await adminSalvarConfig(coletarConfigAdmin());
             if (resp && resp.success) {
-              try { await adminSalvarAdmins(admins); } catch (_) {}
               await recarregarConfigAdmin();
               if (typeof mostrarToast === 'function') mostrarToast(resp.mensagem || 'Configurações salvas.', 'success', 'Administração');
             } else if (typeof mostrarToast === 'function') {
@@ -7535,12 +5800,6 @@
           }
         });
       }
-
-      // Aviso ao sair com alterações pendentes.
-      window.addEventListener('beforeunload', (ev) => {
-        const bar = document.getElementById('admin-savebar');
-        if (adminPodeEditar && bar && !bar.hidden) { ev.preventDefault(); ev.returnValue = ''; }
-      });
       if (btnReset) {
         btnReset.addEventListener('click', async () => {
           if (!adminPodeEditar) return;
@@ -7564,6 +5823,32 @@
     })();
 
     aplicarRoteamentoInterno();
+
+    /* FAB mobile: abre/fecha o painel lateral */
+    (function configurarFabMobile() {
+      const fab = document.getElementById('filter-fab');
+      const backdrop = document.getElementById('filter-backdrop');
+      const shell = document.getElementById('main-shell');
+      if (!fab || !backdrop || !shell) return;
+      function abrirPainel() {
+        shell.classList.add('panel-aberto');
+        backdrop.classList.add('visible');
+        fab.setAttribute('aria-expanded', 'true');
+        fab.innerHTML = '<i class="fa-solid fa-xmark" aria-hidden="true"></i>';
+      }
+      function fecharPainel() {
+        shell.classList.remove('panel-aberto');
+        backdrop.classList.remove('visible');
+        fab.setAttribute('aria-expanded', 'false');
+        fab.innerHTML = '<i class="fa-solid fa-sliders" aria-hidden="true"></i>';
+      }
+      fab.addEventListener('click', () => {
+        shell.classList.contains('panel-aberto') ? fecharPainel() : abrirPainel();
+      });
+      backdrop.addEventListener('click', fecharPainel);
+      const btnGerar = document.getElementById('btn-gerar');
+      if (btnGerar) btnGerar.addEventListener('click', fecharPainel);
+    })();
 
     init();
 
