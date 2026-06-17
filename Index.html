@@ -2645,6 +2645,187 @@
     html[data-theme="dark"] .rule-card-title .rule-badge { background: rgba(45,212,191,.14); color: #7ee8dc; }
     html[data-theme="dark"] .rule-empty { color: #7fa8b0; border-color: rgba(100,150,162,.3); background: rgba(12,24,29,.4); }
 
+    /* ════════════════════════════════════════════════════════════
+       ADMIN — Redesign (sidebar agrupada, visão geral, save-bar)
+       ════════════════════════════════════════════════════════════ */
+    .admin-sidebar {
+      position: sticky; top: 16px; align-self: start;
+      display: flex; flex-direction: column; gap: 14px;
+      padding: 14px; border-radius: 20px;
+      border: 1px solid rgba(196, 211, 218, 0.66);
+      background: linear-gradient(180deg, rgba(255,255,255,.95), rgba(245,250,251,.92));
+      box-shadow: 0 18px 44px rgba(16,40,52,.10);
+      backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    }
+    .admin-search { position: relative; }
+    .admin-search i { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 13px; pointer-events: none; }
+    .admin-search input {
+      width: 100%; border-radius: 12px; border: 1.5px solid rgba(193,208,214,.9);
+      background: rgba(255,255,255,.9); color: #2b3b43; font: inherit; font-size: 14px;
+      padding: 11px 12px 11px 36px; transition: border-color .16s ease, box-shadow .16s ease;
+    }
+    .admin-search input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(15,118,110,.14); }
+
+    /* navegação agrupada */
+    .admin-nav { position: static; padding: 0; border: 0; background: transparent; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; gap: 14px; }
+    .admin-nav-group { display: flex; flex-direction: column; gap: 4px; }
+    .admin-nav-group-label {
+      padding: 2px 8px; font-size: 10.5px; font-weight: 900; letter-spacing: .12em;
+      text-transform: uppercase; color: #8aa0a8;
+    }
+    .admin-nav-item { position: relative; gap: 11px; }
+    .admin-nav-item .nav-count {
+      margin-left: auto; flex: 0 0 auto; min-width: 20px; height: 20px; padding: 0 6px;
+      display: inline-flex; align-items: center; justify-content: center;
+      border-radius: 999px; background: rgba(15,118,110,.10); color: var(--blue);
+      font-size: 11px; font-weight: 800; transition: background-color .16s, color .16s;
+    }
+    .admin-nav-item.active .nav-count { background: rgba(255,255,255,.26); color: #fff; }
+    .admin-nav-item.oculto { display: none; }
+    .admin-nav-group.oculto { display: none; }
+
+    /* rodapé da sidebar: usuário + permissão */
+    .admin-sidebar-foot {
+      display: flex; align-items: center; gap: 10px; padding: 10px;
+      border-radius: 14px; border: 1px solid rgba(196,211,218,.6);
+      background: rgba(255,255,255,.6);
+    }
+    .admin-user-avatar {
+      flex: 0 0 auto; width: 38px; height: 38px; border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, #14b8a6, #0f766e); color: #fff;
+      font-weight: 800; font-size: 15px; text-transform: uppercase;
+    }
+    .admin-user-meta { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+    .admin-user-nome { font-weight: 800; font-size: 13px; color: #1e2f36; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .admin-perm-selo {
+      width: fit-content; padding: 2px 9px; border-radius: 999px; font-size: 10.5px;
+      font-weight: 800; letter-spacing: .04em; text-transform: uppercase;
+      background: var(--green-soft); color: var(--green);
+      display: inline-flex; align-items: center; gap: 5px;
+    }
+    .admin-perm-selo.leitura { background: var(--amber-soft); color: var(--amber); }
+
+    .admin-content { min-width: 0; }
+
+    /* botão de abrir seções no mobile (drawer) */
+    .admin-drawer-toggle {
+      display: none; align-items: center; gap: 10px; width: 100%;
+      margin-bottom: 14px; padding: 12px 14px; border-radius: 14px;
+      border: 1px solid rgba(196,211,218,.7); background: rgba(255,255,255,.92);
+      color: #1e2f36; font: inherit; font-weight: 800; font-size: 14px; cursor: pointer;
+      box-shadow: var(--shadow);
+    }
+    .admin-drawer-toggle i.chev { margin-left: auto; transition: transform .2s ease; }
+
+    /* ── Visão geral (mini-dashboard) ── */
+    .visao-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(232px, 1fr)); gap: 14px; }
+    .visao-card {
+      position: relative; display: flex; flex-direction: column; gap: 6px;
+      padding: 18px; border-radius: 18px;
+      border: 1px solid rgba(196,211,218,.66); background: rgba(255,255,255,.92);
+      box-shadow: 0 10px 26px rgba(16,40,52,.07);
+      transition: transform .16s ease, box-shadow .16s ease, border-color .16s ease;
+    }
+    .visao-card:hover { transform: translateY(-2px); box-shadow: 0 16px 34px rgba(16,40,52,.12); border-color: rgba(15,118,110,.35); }
+    .visao-ico {
+      width: 42px; height: 42px; border-radius: 13px; display: inline-flex;
+      align-items: center; justify-content: center; font-size: 18px; margin-bottom: 4px;
+      background: var(--blue-soft); color: var(--blue);
+    }
+    .visao-ico.verde { background: var(--green-soft); color: var(--green); }
+    .visao-ico.ambar { background: var(--amber-soft); color: var(--amber); }
+    .visao-ico.vermelho { background: var(--red-soft); color: var(--red); }
+    .visao-label { font-size: 12px; font-weight: 800; letter-spacing: .03em; text-transform: uppercase; color: var(--muted); }
+    .visao-valor { font-size: 28px; font-weight: 900; color: #16252b; letter-spacing: -.02em; line-height: 1.1; }
+    .visao-sub { font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+    .visao-edit {
+      margin-top: 8px; align-self: flex-start; border: 0; background: transparent;
+      color: var(--blue); font: inherit; font-weight: 800; font-size: 12.5px; cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px; padding: 4px 0;
+    }
+    .visao-edit:hover { text-decoration: underline; }
+    .visao-card.full { grid-column: 1 / -1; }
+    .visao-status-dot { display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--green); margin-right: 6px; vertical-align: middle; }
+    .visao-status-dot.off { background: #b9c4c9; }
+
+    /* ── Toggle switch (alertas) ── */
+    .admin-switch { display: inline-flex; align-items: center; gap: 10px; cursor: pointer; font-size: 13px; font-weight: 700; color: #4b5f67; }
+    .admin-switch input { position: absolute; opacity: 0; width: 0; height: 0; }
+    .admin-switch .track {
+      flex: 0 0 auto; position: relative; width: 44px; height: 25px; border-radius: 999px;
+      background: #cfdadf; transition: background-color .18s ease;
+    }
+    .admin-switch .track::after {
+      content: ''; position: absolute; top: 3px; left: 3px; width: 19px; height: 19px;
+      border-radius: 50%; background: #fff; box-shadow: 0 2px 5px rgba(0,0,0,.2);
+      transition: transform .18s ease;
+    }
+    .admin-switch input:checked + .track { background: linear-gradient(135deg, #14b8a6, #0f766e); }
+    .admin-switch input:checked + .track::after { transform: translateX(19px); }
+    .admin-switch input:focus-visible + .track { box-shadow: 0 0 0 3px rgba(15,118,110,.25); }
+
+    /* ── Save-bar flutuante (alterações não salvas) ── */
+    .admin-savebar {
+      position: sticky; bottom: 16px; z-index: 30;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+      margin-top: 18px; padding: 13px 16px 13px 18px; border-radius: 16px;
+      border: 1px solid rgba(15,118,110,.28);
+      background: linear-gradient(180deg, rgba(255,255,255,.98), rgba(240,250,248,.98));
+      box-shadow: 0 18px 40px rgba(16,40,52,.18);
+      animation: riseIn .3s cubic-bezier(.16,.84,.44,1) both;
+    }
+    .admin-savebar[hidden] { display: none; }
+    .admin-savebar-info { display: flex; align-items: center; gap: 11px; font-weight: 800; color: #15413c; font-size: 14px; }
+    .admin-savebar-info .pulse {
+      width: 11px; height: 11px; border-radius: 50%; background: var(--amber);
+      box-shadow: 0 0 0 0 rgba(183,121,31,.5); animation: savePulse 1.8s infinite;
+    }
+    @keyframes savePulse { 0% { box-shadow: 0 0 0 0 rgba(183,121,31,.5); } 70% { box-shadow: 0 0 0 8px rgba(183,121,31,0); } 100% { box-shadow: 0 0 0 0 rgba(183,121,31,0); } }
+    .admin-savebar-msg small { display: block; font-weight: 600; color: var(--muted); font-size: 12px; }
+    .admin-savebar-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+    .admin-savebar-actions .btn { min-height: 44px; }
+
+    /* rodapé persistente (info + restaurar) */
+    .admin-actionbar { position: static; box-shadow: none; background: transparent; border: 0; padding: 16px 2px 0; }
+
+    /* ── Skeleton de carregamento ── */
+    .admin-skel { display: grid; gap: 14px; }
+    .admin-skel-row { height: 88px; border-radius: 18px; background: linear-gradient(100deg, rgba(220,230,233,.5) 30%, rgba(235,243,245,.85) 50%, rgba(220,230,233,.5) 70%); background-size: 200% 100%; animation: skelSlide 1.3s ease infinite; }
+    @keyframes skelSlide { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+
+    /* destaque de busca */
+    .admin-card.realce, .visao-card.realce, .rule-card.realce { border-color: var(--blue) !important; box-shadow: 0 0 0 3px rgba(15,118,110,.16), 0 10px 26px rgba(16,40,52,.10) !important; }
+
+    @media (max-width: 900px) {
+      .admin-shell { grid-template-columns: 1fr; }
+      .admin-drawer-toggle { display: flex; }
+      .admin-sidebar {
+        position: fixed; top: 0; left: 0; bottom: 0; z-index: 60; width: min(320px, 86vw);
+        border-radius: 0 20px 20px 0; transform: translateX(-104%); transition: transform .26s cubic-bezier(.16,.84,.44,1);
+        overflow-y: auto;
+      }
+      .admin-shell.drawer-aberto .admin-sidebar { transform: translateX(0); }
+      .admin-backdrop { position: fixed; inset: 0; z-index: 55; background: rgba(10,22,28,.45); opacity: 0; pointer-events: none; transition: opacity .22s ease; }
+      .admin-shell.drawer-aberto .admin-backdrop { opacity: 1; pointer-events: auto; }
+    }
+
+    /* ── Tema escuro (classes novas) ── */
+    html[data-theme="dark"] .admin-sidebar { background: linear-gradient(180deg, rgba(22,38,45,.96), rgba(16,30,36,.94)); border-color: rgba(148,180,190,.16); box-shadow: 0 18px 44px rgba(0,0,0,.4); }
+    html[data-theme="dark"] .admin-search input { background: rgba(10,20,24,.85); border-color: rgba(100,150,162,.28); color: #dde9eb; }
+    html[data-theme="dark"] .admin-nav-group-label { color: #6f8990; }
+    html[data-theme="dark"] .admin-nav-item .nav-count { background: rgba(45,212,191,.16); color: #7ee8dc; }
+    html[data-theme="dark"] .admin-sidebar-foot { background: rgba(10,20,24,.5); border-color: rgba(100,150,162,.18); }
+    html[data-theme="dark"] .admin-user-nome { color: #e4f0f1; }
+    html[data-theme="dark"] .admin-drawer-toggle { background: rgba(20,36,43,.92); border-color: rgba(148,180,190,.18); color: #e4f0f1; }
+    html[data-theme="dark"] .visao-card { background: rgba(18,32,38,.95); border-color: rgba(148,180,190,.14); box-shadow: 0 10px 26px rgba(0,0,0,.32); }
+    html[data-theme="dark"] .visao-valor { color: #f1f7f7; }
+    html[data-theme="dark"] .visao-sub, html[data-theme="dark"] .visao-label { color: #8aa6ad; }
+    html[data-theme="dark"] .admin-switch { color: #96b4bb; }
+    html[data-theme="dark"] .admin-switch .track { background: #3a4e55; }
+    html[data-theme="dark"] .admin-savebar { background: linear-gradient(180deg, rgba(20,38,43,.98), rgba(14,30,34,.98)); border-color: rgba(45,212,191,.3); box-shadow: 0 18px 40px rgba(0,0,0,.5); }
+    html[data-theme="dark"] .admin-savebar-info { color: #c9f3ec; }
+
   </style>
   <script>
     /* Tema claro/escuro — define antes da pintura para evitar "flash" (FOUC). */
@@ -3063,27 +3244,74 @@
 
       <div class="section-divider"></div>
 
-      <div id="admin-loading" class="loading-box">Carregando configurações...</div>
+      <div id="admin-loading" class="admin-skel" aria-busy="true" aria-label="Carregando configurações">
+        <div class="admin-skel-row" style="height:54px"></div>
+        <div class="admin-skel-row"></div>
+        <div class="admin-skel-row"></div>
+        <div class="admin-skel-row" style="height:120px"></div>
+      </div>
       <div id="admin-bloqueio" class="info-strip" hidden>
         <span class="filter-icon indigo" aria-hidden="true"><i class="fa-solid fa-lock"></i></span>
         <div>Você está no modo <strong>somente leitura</strong>. Para editar, peça para um administrador incluir seu e-mail na lista de administradores.</div>
       </div>
 
       <form id="admin-form" hidden>
-        <div class="admin-shell">
-          <nav class="admin-nav" id="admin-nav" aria-label="Seções da administração">
-            <button type="button" class="admin-nav-item active" data-admin-sec="geral"><i class="fa-solid fa-sliders" aria-hidden="true"></i><span>Geral</span></button>
-            <button type="button" class="admin-nav-item" data-admin-sec="metas"><i class="fa-solid fa-shoe-prints" aria-hidden="true"></i><span>Metas</span></button>
-            <button type="button" class="admin-nav-item" data-admin-sec="periodo"><i class="fa-solid fa-bullseye" aria-hidden="true"></i><span>Metas por período</span></button>
-            <button type="button" class="admin-nav-item" data-admin-sec="excecoes"><i class="fa-solid fa-diagram-project" aria-hidden="true"></i><span>Exceções</span></button>
-            <button type="button" class="admin-nav-item" data-admin-sec="alertas"><i class="fa-solid fa-bell" aria-hidden="true"></i><span>Alertas</span></button>
-            <button type="button" class="admin-nav-item" data-admin-sec="admins"><i class="fa-solid fa-user-shield" aria-hidden="true"></i><span>Administradores</span></button>
-            <button type="button" class="admin-nav-item" data-admin-sec="historico"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><span>Histórico</span></button>
-          </nav>
+        <button type="button" class="admin-drawer-toggle" id="admin-drawer-toggle" aria-expanded="false" aria-controls="admin-sidebar">
+          <i class="fa-solid fa-bars" aria-hidden="true"></i> Seções · <span id="admin-drawer-atual" style="font-weight:600;color:var(--muted)">Visão geral</span>
+          <i class="fa-solid fa-chevron-down chev" aria-hidden="true"></i>
+        </button>
+        <div class="admin-shell" id="admin-shell">
+          <div class="admin-backdrop" id="admin-backdrop" aria-hidden="true"></div>
+          <aside class="admin-sidebar" id="admin-sidebar">
+            <div class="admin-search">
+              <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+              <input type="text" id="admin-busca" placeholder="Buscar configuração…" autocomplete="off" aria-label="Buscar configuração">
+            </div>
+            <nav class="admin-nav" id="admin-nav" aria-label="Seções da administração">
+              <div class="admin-nav-group">
+                <span class="admin-nav-group-label">Painel</span>
+                <button type="button" class="admin-nav-item active" data-admin-sec="visao" data-busca="visão geral resumo painel dashboard"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i><span>Visão geral</span></button>
+              </div>
+              <div class="admin-nav-group">
+                <span class="admin-nav-group-label">Cálculo</span>
+                <button type="button" class="admin-nav-item" data-admin-sec="geral" data-busca="geral meta institucional prazos classificações críticas"><i class="fa-solid fa-sliders" aria-hidden="true"></i><span>Geral</span></button>
+                <button type="button" class="admin-nav-item" data-admin-sec="metas" data-busca="metas caminhadas segurança itens"><i class="fa-solid fa-shoe-prints" aria-hidden="true"></i><span>Metas</span></button>
+                <button type="button" class="admin-nav-item" data-admin-sec="periodo" data-busca="metas por período ano mês setor"><i class="fa-solid fa-bullseye" aria-hidden="true"></i><span>Metas por período</span><span class="nav-count" data-count="periodo" hidden>0</span></button>
+                <button type="button" class="admin-nav-item" data-admin-sec="excecoes" data-busca="exceções setor bidirecional puxados"><i class="fa-solid fa-diagram-project" aria-hidden="true"></i><span>Exceções</span><span class="nav-count" data-count="excecoes" hidden>0</span></button>
+              </div>
+              <div class="admin-nav-group">
+                <span class="admin-nav-group-label">Operação</span>
+                <button type="button" class="admin-nav-item" data-admin-sec="alertas" data-busca="alertas e-mail proativo envio diário destinatários"><i class="fa-solid fa-bell" aria-hidden="true"></i><span>Alertas</span></button>
+              </div>
+              <div class="admin-nav-group">
+                <span class="admin-nav-group-label">Acesso</span>
+                <button type="button" class="admin-nav-item" data-admin-sec="admins" data-busca="administradores e-mails permissão editar"><i class="fa-solid fa-user-shield" aria-hidden="true"></i><span>Administradores</span><span class="nav-count" data-count="admins" hidden>0</span></button>
+                <button type="button" class="admin-nav-item" data-admin-sec="historico" data-busca="histórico alterações log"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i><span>Histórico</span></button>
+              </div>
+            </nav>
+            <div class="admin-sidebar-foot">
+              <span class="admin-user-avatar" id="admin-user-avatar" aria-hidden="true">·</span>
+              <div class="admin-user-meta">
+                <span class="admin-user-nome" id="admin-user-nome">Você</span>
+                <span class="admin-perm-selo" id="admin-perm-selo"><i class="fa-solid fa-pen" aria-hidden="true"></i> Editor</span>
+              </div>
+            </div>
+          </aside>
 
-          <div class="admin-panels">
+          <div class="admin-content">
+            <div class="admin-panels">
+            <!-- ░░ VISÃO GERAL ░░ -->
+            <section class="admin-panel ativo" data-admin-panel="visao">
+              <div class="admin-panel-head">
+                <span class="eyebrow"><i class="fa-solid fa-gauge-high" aria-hidden="true"></i> Painel</span>
+                <h2>Visão geral</h2>
+                <p>Resumo rápido das configurações atuais do boletim. Clique em <strong>Editar</strong> em qualquer cartão para ajustar a seção correspondente.</p>
+              </div>
+              <div id="cfg-visao" class="visao-grid"></div>
+            </section>
+
             <!-- ░░ GERAL ░░ -->
-            <section class="admin-panel ativo" data-admin-panel="geral">
+            <section class="admin-panel" data-admin-panel="geral">
               <div class="admin-panel-head">
                 <span class="eyebrow"><i class="fa-solid fa-sliders" aria-hidden="true"></i> Geral</span>
                 <h2>Configurações gerais</h2>
@@ -3166,8 +3394,8 @@
               </div>
               <section class="admin-card">
                 <div class="admin-two">
-                  <label class="admin-toggle admin-field"><input type="checkbox" id="cfg-alerta-ativo"> Ativar alertas</label>
-                  <label class="admin-toggle admin-field"><input type="checkbox" id="cfg-alerta-notif"> Incluir notificações críticas pendentes</label>
+                  <label class="admin-switch admin-field"><input type="checkbox" id="cfg-alerta-ativo"><span class="track" aria-hidden="true"></span> Ativar alertas</label>
+                  <label class="admin-switch admin-field"><input type="checkbox" id="cfg-alerta-notif"><span class="track" aria-hidden="true"></span> Incluir notificações críticas pendentes</label>
                   <label class="admin-field">Conformidade mínima (%)<input type="number" id="cfg-alerta-min" class="admin-input" min="0" max="100" step="1"></label>
                   <label class="admin-field">Hora do envio diário <small>(0–23h)</small><input type="number" id="cfg-alerta-hora" class="admin-input" min="0" max="23" step="1" inputmode="numeric"></label>
                 </div>
@@ -3191,9 +3419,7 @@
               </div>
               <section class="admin-card">
                 <div class="tag-input-wrap" id="cfg-admins"></div>
-                <div class="admin-buttons" style="margin-top:14px">
-                  <button type="button" class="btn btn-primary" id="btn-salvar-admins"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Salvar administradores</button>
-                </div>
+                <p style="margin:12px 0 0;color:var(--muted);font-size:13px"><i class="fa-solid fa-circle-info" aria-hidden="true"></i> A lista é salva junto com as demais configurações ao clicar em <strong>Salvar tudo</strong>.</p>
               </section>
             </section>
 
@@ -3213,9 +3439,23 @@
               <div id="admin-meta-info" class="admin-updated"></div>
               <div class="admin-buttons">
                 <button type="button" class="btn btn-danger" id="btn-config-reset"><i class="fa-solid fa-rotate-left" aria-hidden="true"></i> Restaurar padrão</button>
-                <button type="submit" class="btn btn-primary" id="btn-config-salvar"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Salvar configurações</button>
               </div>
             </div>
+
+            <div class="admin-savebar" id="admin-savebar" hidden role="status" aria-live="polite">
+              <div class="admin-savebar-info">
+                <span class="pulse" aria-hidden="true"></span>
+                <div class="admin-savebar-msg">
+                  <span id="admin-savebar-msg">Alterações não salvas</span>
+                  <small>Salve para aplicar a todos os boletins gerados a partir de agora.</small>
+                </div>
+              </div>
+              <div class="admin-savebar-actions">
+                <button type="button" class="btn" id="btn-config-descartar"><i class="fa-solid fa-arrow-rotate-left" aria-hidden="true"></i> Descartar</button>
+                <button type="submit" class="btn btn-primary" id="btn-config-salvar"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Salvar tudo</button>
+              </div>
+            </div>
+          </div>
           </div>
         </div>
 
@@ -6524,6 +6764,9 @@
     let adminMetasRef = [];
     const adminTagInputs = {};
     const ADMIN_EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    let adminSnapshot = '';
+    let adminUltimoConfig = null;
+    let adminUltimaResp = null;
 
     /* Componente leve de chips: digite + Enter/vírgula adiciona, × remove.
        Reaproveita os estilos .chip/.chip-remove. Retorna { obterValores }. */
@@ -6538,6 +6781,7 @@
       const chaveRegistro = container.id || ('tag-' + Math.random().toString(36).slice(2, 9));
       let valores = (opcoes.valores || []).map(v => String(v || '').trim()).filter(Boolean);
       const validar = typeof opcoes.validar === 'function' ? opcoes.validar : null;
+      const notificar = typeof opcoes.onChange === 'function' ? opcoes.onChange : null;
 
       const campo = document.createElement('input');
       campo.type = 'text';
@@ -6554,6 +6798,7 @@
           chip.querySelector('.chip-remove').addEventListener('click', () => {
             valores.splice(idx, 1);
             render();
+            if (notificar) notificar();
           });
           container.insertBefore(chip, campo);
         });
@@ -6571,7 +6816,7 @@
           valores.push(p);
           mudou = true;
         });
-        if (mudou) render();
+        if (mudou) { render(); if (notificar) notificar(); }
       }
 
       container.className = 'tag-input';
@@ -6601,7 +6846,62 @@
       return api;
     }
 
-    /* Navegação entre as seções da Admin (sem rolão). */
+    /* Ativa uma seção da Admin (atualiza nav + painel + drawer mobile). */
+    function irParaSecaoAdmin(sec) {
+      const nav = document.getElementById('admin-nav');
+      if (!nav) return;
+      let rotulo = '';
+      nav.querySelectorAll('.admin-nav-item').forEach(b => {
+        const ativo = b.getAttribute('data-admin-sec') === sec;
+        b.classList.toggle('active', ativo);
+        if (ativo) { const s = b.querySelector('span'); rotulo = s ? s.textContent : ''; }
+      });
+      document.querySelectorAll('#admin-form .admin-panel').forEach(p => {
+        p.classList.toggle('ativo', p.getAttribute('data-admin-panel') === sec);
+      });
+      const atual = document.getElementById('admin-drawer-atual');
+      if (atual && rotulo) atual.textContent = rotulo;
+      fecharDrawerAdmin();
+      const content = document.querySelector('.admin-content');
+      if (content && content.scrollIntoView) content.scrollIntoView({ block: 'nearest' });
+    }
+
+    function abrirDrawerAdmin() {
+      const shell = document.getElementById('admin-shell');
+      const toggle = document.getElementById('admin-drawer-toggle');
+      if (shell) shell.classList.add('drawer-aberto');
+      if (toggle) toggle.setAttribute('aria-expanded', 'true');
+    }
+    function fecharDrawerAdmin() {
+      const shell = document.getElementById('admin-shell');
+      const toggle = document.getElementById('admin-drawer-toggle');
+      if (shell) shell.classList.remove('drawer-aberto');
+      if (toggle) toggle.setAttribute('aria-expanded', 'false');
+    }
+
+    /* Filtra as seções pela busca da sidebar e dá realce nos cartões. */
+    function filtrarAdmin(termo) {
+      termo = String(termo || '').trim().toLowerCase();
+      const nav = document.getElementById('admin-nav');
+      if (!nav) return;
+      nav.querySelectorAll('.admin-nav-item').forEach(item => {
+        const alvo = ((item.getAttribute('data-busca') || '') + ' ' + (item.textContent || '')).toLowerCase();
+        item.classList.toggle('oculto', !!termo && alvo.indexOf(termo) === -1);
+      });
+      nav.querySelectorAll('.admin-nav-group').forEach(g => {
+        const algum = Array.from(g.querySelectorAll('.admin-nav-item')).some(i => !i.classList.contains('oculto'));
+        g.classList.toggle('oculto', !algum);
+      });
+      // Realce nos cartões do painel ativo.
+      document.querySelectorAll('#admin-form .realce').forEach(el => el.classList.remove('realce'));
+      if (termo.length >= 2) {
+        document.querySelectorAll('#admin-form .admin-panel.ativo .admin-card, #admin-form .admin-panel.ativo .rule-card, #admin-form .admin-panel.ativo .visao-card').forEach(card => {
+          if ((card.textContent || '').toLowerCase().indexOf(termo) !== -1) card.classList.add('realce');
+        });
+      }
+    }
+
+    /* Navegação entre as seções da Admin (grupos + busca + drawer + teclado). */
     function configurarNavAdmin() {
       const nav = document.getElementById('admin-nav');
       if (!nav || nav.dataset.ligado === '1') return;
@@ -6609,12 +6909,149 @@
       nav.addEventListener('click', (ev) => {
         const item = ev.target.closest('.admin-nav-item');
         if (!item) return;
-        const sec = item.getAttribute('data-admin-sec');
-        nav.querySelectorAll('.admin-nav-item').forEach(b => b.classList.toggle('active', b === item));
-        document.querySelectorAll('#admin-form .admin-panel').forEach(p => {
-          p.classList.toggle('ativo', p.getAttribute('data-admin-panel') === sec);
-        });
+        irParaSecaoAdmin(item.getAttribute('data-admin-sec'));
       });
+      nav.addEventListener('keydown', (ev) => {
+        if (ev.key !== 'ArrowDown' && ev.key !== 'ArrowUp') return;
+        const itens = Array.from(nav.querySelectorAll('.admin-nav-item:not(.oculto)'));
+        const i = itens.indexOf(document.activeElement);
+        if (i === -1) return;
+        ev.preventDefault();
+        const prox = itens[(i + (ev.key === 'ArrowDown' ? 1 : -1) + itens.length) % itens.length];
+        if (prox) { prox.focus(); irParaSecaoAdmin(prox.getAttribute('data-admin-sec')); }
+      });
+
+      const busca = document.getElementById('admin-busca');
+      if (busca) busca.addEventListener('input', () => filtrarAdmin(busca.value));
+
+      const toggle = document.getElementById('admin-drawer-toggle');
+      if (toggle) toggle.addEventListener('click', () => {
+        const aberto = document.getElementById('admin-shell').classList.contains('drawer-aberto');
+        aberto ? fecharDrawerAdmin() : abrirDrawerAdmin();
+      });
+      const backdrop = document.getElementById('admin-backdrop');
+      if (backdrop) backdrop.addEventListener('click', fecharDrawerAdmin);
+
+      // Botões "Editar" da Visão geral (delegação — cartões são recriados).
+      const visao = document.getElementById('cfg-visao');
+      if (visao) visao.addEventListener('click', (ev) => {
+        const btn = ev.target.closest('[data-goto]');
+        if (btn) irParaSecaoAdmin(btn.getAttribute('data-goto'));
+      });
+    }
+
+    /* Estado serializado do formulário (config + administradores). */
+    function adminEstadoAtual() {
+      try {
+        const admins = adminTagInputs['cfg-admins'] ? adminTagInputs['cfg-admins'].obterValores() : [];
+        return JSON.stringify({ config: coletarConfigAdmin(), admins });
+      } catch (_) { return ''; }
+    }
+    function marcarSnapshotAdmin() {
+      adminSnapshot = adminEstadoAtual();
+      atualizarDirtyAdmin();
+    }
+    /* Mostra/esconde a save-bar conforme houver alterações não salvas. */
+    function atualizarDirtyAdmin() {
+      const bar = document.getElementById('admin-savebar');
+      if (!bar) return;
+      if (!adminPodeEditar) { bar.hidden = true; return; }
+      const atual = adminEstadoAtual();
+      const sujo = adminSnapshot !== '' && atual !== adminSnapshot;
+      bar.hidden = !sujo;
+      if (sujo) {
+        const n = contarCamposAlterados(adminSnapshot, atual);
+        const msg = document.getElementById('admin-savebar-msg');
+        if (msg) msg.textContent = n > 0
+          ? (n === 1 ? '1 alteração não salva' : n + ' alterações não salvas')
+          : 'Alterações não salvas';
+      }
+    }
+    /* Conta seções/campos de topo que diferem entre dois snapshots. */
+    function contarCamposAlterados(antesStr, depoisStr) {
+      try {
+        const a = JSON.parse(antesStr), b = JSON.parse(depoisStr);
+        const flat = (o, p, acc) => {
+          if (o && typeof o === 'object' && !Array.isArray(o)) {
+            Object.keys(o).forEach(k => flat(o[k], p ? p + '.' + k : k, acc));
+          } else { acc[p] = JSON.stringify(o); }
+          return acc;
+        };
+        const fa = flat(a, '', {}), fb = flat(b, '', {});
+        const chaves = new Set([...Object.keys(fa), ...Object.keys(fb)]);
+        let n = 0;
+        chaves.forEach(k => { if (fa[k] !== fb[k]) n++; });
+        return n;
+      } catch (_) { return 0; }
+    }
+
+    /* Monta os cartões da aba "Visão geral" a partir da config carregada. */
+    function renderVisaoGeral(config, resp) {
+      const wrap = document.getElementById('cfg-visao');
+      if (!wrap) return;
+      const alertas = config.alertas || {};
+      const nMetasAlvo = (config.metasAlvo || []).length;
+      const nExcecoes = (config.excecoesSetores || []).length;
+      const nClass = (config.classificacoesMeta5Dias || []).length;
+      const nAdmins = (resp.admins || []).length;
+      const nDest = (alertas.destinatarios || []).length;
+      const metasAtivas = (config.metasCaminhadas || []).filter(m => m.ativa !== false).length;
+      const metasTotal = (config.metasCaminhadas || []).length;
+      const ultima = resp.historico && resp.historico[0];
+
+      const card = (ico, cor, label, valor, sub, goto) => `
+        <div class="visao-card">
+          <span class="visao-ico ${cor}"><i class="fa-solid ${ico}" aria-hidden="true"></i></span>
+          <span class="visao-label">${escapeHtml(label)}</span>
+          <span class="visao-valor">${valor}</span>
+          <span class="visao-sub">${sub}</span>
+          ${goto ? `<button type="button" class="visao-edit" data-goto="${goto}">Editar <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>` : ''}
+        </div>`;
+
+      wrap.innerHTML = [
+        card('fa-bullseye', '', 'Meta institucional', (config.metaInstitucional != null ? config.metaInstitucional : '—') + '%',
+             nMetasAlvo ? (nMetasAlvo + ' regra(s) por período')  : 'Sem regras por período', 'geral'),
+        card('fa-clock', 'ambar', 'Prazos de resposta', (config.prazoMeta5Dias != null ? config.prazoMeta5Dias : '—') + ' / ' + (config.prazoMeta10Dias != null ? config.prazoMeta10Dias : '—') + ' dias',
+             'Crítica / Geral · ' + nClass + ' classificação(ões) crítica(s)', 'geral'),
+        card('fa-shoe-prints', 'verde', 'Metas de caminhada', metasAtivas + '<span style="font-size:16px;color:var(--muted);font-weight:700"> / ' + metasTotal + '</span>',
+             'Metas ativas no boletim', 'metas'),
+        card('fa-diagram-project', '', 'Exceções de setor', String(nExcecoes),
+             nExcecoes ? 'Regras de setor configuradas' : 'Nenhuma exceção', 'excecoes'),
+        card('fa-bell', alertas.ativo ? 'verde' : '', 'Alertas por e-mail',
+             '<span class="visao-status-dot ' + (alertas.ativo ? '' : 'off') + '"></span>' + (alertas.ativo ? 'Ativos' : 'Inativos'),
+             alertas.ativo ? ('Envio ~' + (alertas.horaEnvio != null ? alertas.horaEnvio : 7) + 'h · ' + nDest + ' destinatário(s)') : 'Configure e ative os avisos', 'alertas'),
+        card('fa-user-shield', '', 'Administradores', String(nAdmins),
+             nAdmins ? 'E-mails com permissão de edição' : 'Liberado para editores da planilha', 'admins'),
+        `<div class="visao-card full">
+           <span class="visao-ico"><i class="fa-solid fa-clock-rotate-left" aria-hidden="true"></i></span>
+           <span class="visao-label">Última alteração</span>
+           <span class="visao-sub" style="font-size:14px;color:var(--text)">${ultima ? (escapeHtml(ultima.quando) + ' — <strong>' + escapeHtml(ultima.usuario) + '</strong>: ' + escapeHtml(ultima.acao)) : (config.atualizadoEm ? ('Em <strong>' + escapeHtml(config.atualizadoEm) + '</strong>' + (config.atualizadoPor ? ' por <strong>' + escapeHtml(config.atualizadoPor) + '</strong>' : '')) : 'Ainda sem alterações registradas.')}</span>
+           <button type="button" class="visao-edit" data-goto="historico">Ver histórico <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></button>
+         </div>`
+      ].join('');
+
+      // Contadores na navegação lateral.
+      const setCount = (chave, n) => {
+        const el = document.querySelector('.nav-count[data-count="' + chave + '"]');
+        if (el) { el.textContent = n; el.hidden = !n; }
+      };
+      setCount('periodo', nMetasAlvo);
+      setCount('excecoes', nExcecoes);
+      setCount('admins', nAdmins);
+
+      // Rodapé da sidebar: usuário + permissão.
+      const email = resp.usuario || '';
+      const nomeEl = document.getElementById('admin-user-nome');
+      const avatarEl = document.getElementById('admin-user-avatar');
+      const seloEl = document.getElementById('admin-perm-selo');
+      if (nomeEl) nomeEl.textContent = email || 'Você';
+      if (avatarEl) avatarEl.textContent = (email ? email.charAt(0) : '·').toUpperCase();
+      if (seloEl) {
+        seloEl.className = 'admin-perm-selo' + (adminPodeEditar ? '' : ' leitura');
+        seloEl.innerHTML = adminPodeEditar
+          ? '<i class="fa-solid fa-pen" aria-hidden="true"></i> Editor'
+          : '<i class="fa-solid fa-lock" aria-hidden="true"></i> Somente leitura';
+      }
     }
 
     function adminMetasOptions(selecionado) {
@@ -6656,7 +7093,7 @@
         </div>`;
       const ativaEl = div.querySelector('.ma-ativa');
       ativaEl.addEventListener('change', () => div.classList.toggle('inativa', !ativaEl.checked));
-      div.querySelector('.ma-remover').addEventListener('click', () => div.remove());
+      div.querySelector('.ma-remover').addEventListener('click', () => { div.remove(); atualizarDirtyAdmin(); });
       return div;
     }
 
@@ -6683,14 +7120,15 @@
         </div>`;
       const ativaEl = div.querySelector('.ex-ativa');
       ativaEl.addEventListener('change', () => div.classList.toggle('inativa', !ativaEl.checked));
-      div.querySelector('.ex-remover').addEventListener('click', () => div.remove());
+      div.querySelector('.ex-remover').addEventListener('click', () => { div.remove(); atualizarDirtyAdmin(); });
       // Tag-input local para os setores puxados (escopo deste card).
       // O cartão ainda está destacado do DOM aqui, por isso passamos o elemento.
       const wrap = div.querySelector('.ex-puxados');
       div._puxadosApi = criarTagInput(wrap, {
         valores: Array.isArray(regra.setoresPuxados) ? regra.setoresPuxados : [],
         placeholder: 'Setor puxado...',
-        datalistId: 'cfg-setores-lista'
+        datalistId: 'cfg-setores-lista',
+        onChange: atualizarDirtyAdmin
       });
       return div;
     }
@@ -6764,13 +7202,19 @@
         if (bloqueio) bloqueio.hidden = adminPodeEditar;
       } catch (erro) {
         adminConfigCarregada = false;
-        if (loading) loading.textContent = 'Não foi possível carregar as configurações. Tente novamente.';
+        if (loading) {
+          loading.className = 'rule-empty';
+          loading.removeAttribute('aria-busy');
+          loading.innerHTML = '<i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i> Não foi possível carregar as configurações. <button type="button" class="btn" style="margin-top:12px" onclick="adminConfigCarregada=false;carregarConfigAdmin()"><i class="fa-solid fa-rotate-right" aria-hidden="true"></i> Tentar novamente</button>';
+        }
         if (typeof mostrarToast === 'function') mostrarToast(String((erro && erro.message) || erro), 'error', 'Administração');
       }
     }
 
     function renderConfigAdmin(config, resp) {
       resp = resp || {};
+      adminUltimoConfig = JSON.parse(JSON.stringify(config));
+      adminUltimaResp = resp;
       Object.keys(adminTagInputs).forEach(k => delete adminTagInputs[k]);
       adminMetasRef = (config.metasCaminhadas || []).map(m => ({ codigo: m.codigo, nome: m.nome }));
       const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
@@ -6792,9 +7236,9 @@
       }
 
       // Listas como chips/tags.
-      criarTagInput('cfg-classificacoes', { valores: config.classificacoesMeta5Dias || [], placeholder: 'Ex.: NEVER EVENT' });
-      criarTagInput('cfg-alerta-emails', { valores: alertas.destinatarios || [], placeholder: 'fulano@hospital.org', validar: v => ADMIN_EMAIL_RE.test(v) });
-      criarTagInput('cfg-admins', { valores: resp.admins || [], placeholder: 'fulano@hospital.org', validar: v => ADMIN_EMAIL_RE.test(v) });
+      criarTagInput('cfg-classificacoes', { valores: config.classificacoesMeta5Dias || [], placeholder: 'Ex.: NEVER EVENT', onChange: atualizarDirtyAdmin });
+      criarTagInput('cfg-alerta-emails', { valores: alertas.destinatarios || [], placeholder: 'fulano@hospital.org', validar: v => ADMIN_EMAIL_RE.test(v), onChange: atualizarDirtyAdmin });
+      criarTagInput('cfg-admins', { valores: resp.admins || [], placeholder: 'fulano@hospital.org', validar: v => ADMIN_EMAIL_RE.test(v), onChange: atualizarDirtyAdmin });
 
       // Metas por período (cartões + empty state).
       const wrapAlvo = document.getElementById('cfg-metas-alvo');
@@ -6861,15 +7305,26 @@
         info.innerHTML = partes.length ? partes.join(' ') : 'Ainda sem alterações registradas.';
       }
 
+      renderVisaoGeral(config, resp);
       configurarNavAdmin();
       atualizarStatusAlertas();
 
+      // Detecção de alterações não salvas (delegado, liga uma vez só).
+      const form = document.getElementById('admin-form');
+      if (form && form.dataset.dirtyLigado !== '1') {
+        form.dataset.dirtyLigado = '1';
+        form.addEventListener('input', atualizarDirtyAdmin);
+        form.addEventListener('change', atualizarDirtyAdmin);
+      }
+
       if (!adminPodeEditar) {
         document.querySelectorAll('#admin-form input, #admin-form textarea, #admin-form button, #admin-form select').forEach(el => {
-          if (!el.closest('.admin-nav')) el.setAttribute('disabled', 'disabled');
+          if (!el.closest('.admin-sidebar') && el.id !== 'admin-drawer-toggle') el.setAttribute('disabled', 'disabled');
         });
         Object.keys(adminTagInputs).forEach(id => adminTagInputs[id].setDisabled(true));
       }
+
+      marcarSnapshotAdmin();
     }
 
     function coletarConfigAdmin() {
@@ -6992,6 +7447,7 @@
           } finally {
             btnTeste.disabled = false; btnTeste.innerHTML = original;
             atualizarStatusAlertas();
+            marcarSnapshotAdmin();
           }
         });
       }
@@ -7008,6 +7464,7 @@
           } finally {
             btnGatilho.disabled = false;
             atualizarStatusAlertas();
+            marcarSnapshotAdmin();
           }
         });
       }
@@ -7026,6 +7483,7 @@
           const vazio = wrap.querySelector('.rule-empty');
           if (vazio) vazio.remove();
           wrap.appendChild(adminCriarLinhaMetaAlvo({}));
+          atualizarDirtyAdmin();
         });
       }
 
@@ -7038,37 +7496,33 @@
           const vazio = wrap.querySelector('.rule-empty');
           if (vazio) vazio.remove();
           wrap.appendChild(adminCriarLinhaExcecao({}));
+          atualizarDirtyAdmin();
         });
       }
 
-      const btnSalvarAdmins = document.getElementById('btn-salvar-admins');
-      if (btnSalvarAdmins) {
-        btnSalvarAdmins.addEventListener('click', async () => {
-          if (!adminPodeEditar) return;
-          const lista = adminTagInputs['cfg-admins'] ? adminTagInputs['cfg-admins'].obterValores() : [];
-          const original = btnSalvarAdmins.innerHTML;
-          btnSalvarAdmins.disabled = true; btnSalvarAdmins.innerHTML = 'Salvando...';
-          try {
-            const resp = await adminSalvarAdmins(lista);
-            if (typeof mostrarToast === 'function') mostrarToast((resp && resp.mensagem) || 'Feito.', resp && resp.success ? 'success' : 'error', 'Administração');
-          } catch (erro) {
-            if (typeof mostrarToast === 'function') mostrarToast(String((erro && erro.message) || erro), 'error', 'Administração');
-          } finally {
-            btnSalvarAdmins.disabled = false; btnSalvarAdmins.innerHTML = original;
-          }
+      // Descartar: volta o formulário ao último estado salvo/carregado.
+      const btnDescartar = document.getElementById('btn-config-descartar');
+      if (btnDescartar) {
+        btnDescartar.addEventListener('click', () => {
+          if (!adminUltimoConfig) return;
+          renderConfigAdmin(adminUltimoConfig, adminUltimaResp || {});
+          if (typeof mostrarToast === 'function') mostrarToast('Alterações descartadas.', 'success', 'Administração');
         });
       }
 
+      // Salvar tudo (configurações + administradores num só fluxo).
       if (form) {
         form.addEventListener('submit', async (ev) => {
           ev.preventDefault();
           if (!adminPodeEditar) return;
           const btn = document.getElementById('btn-config-salvar');
           const original = btn ? btn.innerHTML : '';
-          if (btn) { btn.disabled = true; btn.innerHTML = 'Salvando...'; }
+          if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin" aria-hidden="true"></i> Salvando…'; }
           try {
+            const admins = adminTagInputs['cfg-admins'] ? adminTagInputs['cfg-admins'].obterValores() : [];
             const resp = await adminSalvarConfig(coletarConfigAdmin());
             if (resp && resp.success) {
+              try { await adminSalvarAdmins(admins); } catch (_) {}
               await recarregarConfigAdmin();
               if (typeof mostrarToast === 'function') mostrarToast(resp.mensagem || 'Configurações salvas.', 'success', 'Administração');
             } else if (typeof mostrarToast === 'function') {
@@ -7081,6 +7535,12 @@
           }
         });
       }
+
+      // Aviso ao sair com alterações pendentes.
+      window.addEventListener('beforeunload', (ev) => {
+        const bar = document.getElementById('admin-savebar');
+        if (adminPodeEditar && bar && !bar.hidden) { ev.preventDefault(); ev.returnValue = ''; }
+      });
       if (btnReset) {
         btnReset.addEventListener('click', async () => {
           if (!adminPodeEditar) return;
