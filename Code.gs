@@ -359,7 +359,7 @@ function obterConfigCosep() {
       config: obterConfig(),
       podeEditar: podeEditar,
       usuario: emailUsuarioAtual(),
-      admins: listaAdmins(),
+      admins: podeEditar ? listaAdmins() : [],
       historico: podeEditar ? lerLogConfig(10) : [],
       setores: setores,
       anos: anos,
