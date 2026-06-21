@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">Boletim COSEP - indicators guide</title>
+  <desc id="desc">Demo guide image with fictitious indicator charts.</desc>
+  <rect width="1280" height="720" fill="#f8fafc"/>
+  <rect x="56" y="44" width="1168" height="632" rx="24" fill="#ffffff" stroke="#dbe4f0"/>
+  <text x="92" y="98" font-family="Inter,Arial,sans-serif" font-size="31" font-weight="700" fill="#0f172a">Indicadores de seguranca do paciente</text>
+  <text x="92" y="126" font-family="Inter,Arial,sans-serif" font-size="15" fill="#64748b">Imagem demonstrativa - graficos e dados ficticios</text>
+  <g font-family="Inter,Arial,sans-serif">
+    <rect x="92" y="166" width="516" height="410" rx="18" fill="#ffffff" stroke="#dbe4f0"/>
+    <text x="126" y="212" font-size="20" font-weight="700" fill="#0f172a">Tendencia mensal</text>
+    <polyline points="132,480 205,438 278,452 351,390 424,360 497,312 570,288" fill="none" stroke="#0f766e" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+    <polyline points="132,520 205,500 278,490 351,462 424,430 497,410 570,384" fill="none" stroke="#94a3b8" stroke-width="4" stroke-dasharray="10 10"/>
+    <line x1="126" y1="528" x2="574" y2="528" stroke="#cbd5e1"/><line x1="126" y1="258" x2="126" y2="528" stroke="#cbd5e1"/>
+    <circle cx="570" cy="288" r="10" fill="#0f766e"/><text x="496" y="270" font-size="16" fill="#0f766e">91%</text>
+    <rect x="650" y="166" width="482" height="192" rx="18" fill="#f8fafc" stroke="#dbe4f0"/>
+    <text x="684" y="212" font-size="20" font-weight="700" fill="#0f172a">Distribuicao de notificacoes</text>
+    <circle cx="734" cy="280" r="42" fill="#14b8a6"/><circle cx="818" cy="280" r="42" fill="#f59e0b"/><circle cx="902" cy="280" r="42" fill="#ef4444"/>
+    <text x="714" y="287" font-size="20" font-weight="700" fill="#fff">64</text><text x="798" y="287" font-size="20" font-weight="700" fill="#fff">38</text><text x="882" y="287" font-size="20" font-weight="700" fill="#fff">26</text>
+    <rect x="650" y="384" width="482" height="192" rx="18" fill="#fff7ed" stroke="#fed7aa"/>
+    <text x="684" y="430" font-size="20" font-weight="700" fill="#7c2d12">Pontos de atencao</text>
+    <text x="684" y="472" font-size="16" fill="#7c2d12">1. Respostas criticas fora do prazo</text>
+    <text x="684" y="510" font-size="16" fill="#7c2d12">2. Unidades abaixo da meta mensal</text>
+    <text x="684" y="548" font-size="16" fill="#7c2d12">3. Eventos pendentes de classificacao</text>
+  </g>
+</svg>
