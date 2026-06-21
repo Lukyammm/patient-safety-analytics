@@ -139,3 +139,18 @@ Sistema desenvolvido para gestão operacional de segurança do paciente com foco
 ---
 
 Se este projeto te ajudou, fique à vontade para abrir uma issue com sugestões de evolução. 🤝
+
+
+
+## Guia visual do sistema
+
+> Telas demonstrativas baseadas nos componentes, textos, cores e fluxos encontrados no código deste repositório. Os dados exibidos são fictícios e não representam pacientes, profissionais ou instituições reais.
+
+### Boletim - filtros COSEP e notificações
+![Boletim - filtros COSEP e notificações](./docs/screenshots/dashboard-home.svg)
+
+### Boletim - página COSEP
+![Boletim - página COSEP](./docs/screenshots/dashboard-filtros.svg)
+
+### Boletim - página de notificações
+![Boletim - página de notificações](./docs/screenshots/dashboard-indicadores.svg)
