@@ -139,16 +139,3 @@ Sistema desenvolvido para gestão operacional de segurança do paciente com foco
 ---
 
 Se este projeto te ajudou, fique à vontade para abrir uma issue com sugestões de evolução. 🤝
-
-## Guia visual do sistema
-
-> Mockups demonstrativos do sistema, com dados ficticios e sem informacoes reais de pacientes ou da instituicao.
-
-### Painel inicial
-![Painel inicial](./docs/screenshots/dashboard-home.svg)
-
-### Filtros e unidades
-![Filtros e unidades](./docs/screenshots/dashboard-filtros.svg)
-
-### Indicadores e graficos
-![Indicadores e graficos](./docs/screenshots/dashboard-indicadores.svg)
