@@ -84,16 +84,16 @@ O Boletim COSEP resolve isso ao padronizar a leitura dos dados e entregar indica
 
 ## 🖼️ Capturas de tela
 
-> Substitua os caminhos abaixo pelos prints reais do projeto.
+> Imagens demonstrativas para guiar a apresentação do projeto. Os dados exibidos são fictícios e não representam informações reais de pacientes ou da instituição.
 
 ### Tela inicial do painel
-![Tela inicial do Boletim COSEP](./docs/screenshots/dashboard-home.png)
+![Tela inicial do Boletim COSEP](./docs/screenshots/dashboard-home.svg)
 
 ### Filtros e visão por unidade
-![Filtros por período e unidade](./docs/screenshots/dashboard-filtros.png)
+![Filtros por período e unidade](./docs/screenshots/dashboard-filtros.svg)
 
 ### Indicadores e gráficos
-![Indicadores de segurança do paciente](./docs/screenshots/dashboard-indicadores.png)
+![Indicadores de segurança do paciente](./docs/screenshots/dashboard-indicadores.svg)
 
 ---
 
