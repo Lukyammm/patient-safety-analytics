@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">Boletim COSEP - filter guide</title>
+  <desc id="desc">Demo guide image with fictitious filter and unit data.</desc>
+  <rect width="1280" height="720" fill="#f5f7fb"/>
+  <rect x="54" y="44" width="1172" height="632" rx="24" fill="#ffffff" stroke="#d8e1ee"/>
+  <rect x="54" y="44" width="260" height="632" rx="24" fill="#0f172a"/>
+  <text x="88" y="96" font-family="Inter,Arial,sans-serif" font-size="27" font-weight="700" fill="#ffffff">Filtros</text>
+  <text x="88" y="124" font-family="Inter,Arial,sans-serif" font-size="14" fill="#cbd5e1">Imagem demonstrativa</text>
+  <g font-family="Inter,Arial,sans-serif">
+    <text x="92" y="178" font-size="15" fill="#94a3b8">Ano</text><rect x="88" y="194" width="188" height="42" rx="10" fill="#1e293b"/><text x="112" y="222" font-size="17" fill="#fff">2026</text>
+    <text x="92" y="272" font-size="15" fill="#94a3b8">Mes</text><rect x="88" y="288" width="188" height="42" rx="10" fill="#1e293b"/><text x="112" y="316" font-size="17" fill="#fff">Junho</text>
+    <text x="92" y="366" font-size="15" fill="#94a3b8">Unidade</text><rect x="88" y="382" width="188" height="42" rx="10" fill="#1e293b"/><text x="112" y="410" font-size="17" fill="#fff">Todas</text>
+    <rect x="88" y="468" width="188" height="48" rx="12" fill="#14b8a6"/><text x="128" y="499" font-size="17" font-weight="700" fill="#042f2e">Aplicar filtros</text>
+    <text x="356" y="94" font-size="30" font-weight="700" fill="#0f172a">Visao por unidade</text>
+    <text x="356" y="122" font-size="15" fill="#64748b">Recortes para analise operacional - dados ficticios</text>
+    <rect x="356" y="158" width="806" height="88" rx="16" fill="#ecfeff" stroke="#a5f3fc"/>
+    <text x="386" y="196" font-size="18" font-weight="700" fill="#155e75">Resumo filtrado</text><text x="386" y="224" font-size="15" fill="#475569">Periodo, unidade, metas e notificacoes atualizadas automaticamente.</text>
+    <rect x="356" y="286" width="806" height="284" rx="16" fill="#ffffff" stroke="#dbe4f0"/>
+    <text x="386" y="330" font-size="18" font-weight="700" fill="#0f172a">Tabela de unidades</text>
+    <rect x="386" y="358" width="720" height="38" fill="#f1f5f9"/><text x="408" y="383" font-size="14" font-weight="700" fill="#334155">Unidade</text><text x="650" y="383" font-size="14" font-weight="700" fill="#334155">Conformidade</text><text x="842" y="383" font-size="14" font-weight="700" fill="#334155">Status</text>
+    <text x="408" y="431" font-size="15" fill="#334155">Unidade A</text><rect x="650" y="414" width="210" height="16" rx="8" fill="#d1fae5"/><rect x="650" y="414" width="178" height="16" rx="8" fill="#10b981"/><text x="890" y="431" font-size="15" fill="#047857">Dentro da meta</text>
+    <text x="408" y="485" font-size="15" fill="#334155">Unidade B</text><rect x="650" y="468" width="210" height="16" rx="8" fill="#ffedd5"/><rect x="650" y="468" width="130" height="16" rx="8" fill="#f97316"/><text x="890" y="485" font-size="15" fill="#c2410c">Atencao</text>
+    <text x="408" y="539" font-size="15" fill="#334155">Unidade C</text><rect x="650" y="522" width="210" height="16" rx="8" fill="#fee2e2"/><rect x="650" y="522" width="94" height="16" rx="8" fill="#ef4444"/><text x="890" y="539" font-size="15" fill="#b91c1c">Priorizar</text>
+  </g>
+</svg>
