@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720" role="img" aria-labelledby="title desc">
+  <title id="title">Boletim COSEP - dashboard home guide</title>
+  <desc id="desc">Demo guide image with fictitious patient safety dashboard data.</desc>
+  <rect width="1280" height="720" fill="#f4f7fb"/>
+  <rect x="48" y="42" width="1184" height="636" rx="24" fill="#ffffff" stroke="#d9e2ef"/>
+  <rect x="48" y="42" width="1184" height="86" rx="24" fill="#0f766e"/>
+  <text x="84" y="94" font-family="Inter,Arial,sans-serif" font-size="30" font-weight="700" fill="#ffffff">Boletim COSEP</text>
+  <text x="84" y="120" font-family="Inter,Arial,sans-serif" font-size="15" fill="#d7fffb">Imagem demonstrativa - dados ficticios para guia do README</text>
+  <g font-family="Inter,Arial,sans-serif">
+    <rect x="84" y="162" width="250" height="112" rx="14" fill="#ecfdf5" stroke="#a7f3d0"/>
+    <text x="112" y="204" font-size="16" fill="#047857">Conformidade geral</text><text x="112" y="246" font-size="38" font-weight="700" fill="#064e3b">91%</text>
+    <rect x="364" y="162" width="250" height="112" rx="14" fill="#eff6ff" stroke="#bfdbfe"/>
+    <text x="392" y="204" font-size="16" fill="#1d4ed8">Notificacoes analisadas</text><text x="392" y="246" font-size="38" font-weight="700" fill="#1e3a8a">128</text>
+    <rect x="644" y="162" width="250" height="112" rx="14" fill="#fff7ed" stroke="#fed7aa"/>
+    <text x="672" y="204" font-size="16" fill="#c2410c">Pendencias criticas</text><text x="672" y="246" font-size="38" font-weight="700" fill="#7c2d12">06</text>
+    <rect x="924" y="162" width="250" height="112" rx="14" fill="#f8fafc" stroke="#cbd5e1"/>
+    <text x="952" y="204" font-size="16" fill="#475569">Unidades monitoradas</text><text x="952" y="246" font-size="38" font-weight="700" fill="#0f172a">14</text>
+    <rect x="84" y="316" width="650" height="300" rx="16" fill="#ffffff" stroke="#dbe4f0"/>
+    <text x="116" y="360" font-size="20" font-weight="700" fill="#0f172a">Conformidade por meta</text>
+    <rect x="122" y="520" width="80" height="56" rx="6" fill="#0f766e"/><rect x="234" y="470" width="80" height="106" rx="6" fill="#14b8a6"/><rect x="346" y="430" width="80" height="146" rx="6" fill="#2dd4bf"/><rect x="458" y="392" width="80" height="184" rx="6" fill="#99f6e4"/><rect x="570" y="450" width="80" height="126" rx="6" fill="#ccfbf1"/>
+    <line x1="116" y1="576" x2="688" y2="576" stroke="#94a3b8"/>
+    <rect x="770" y="316" width="404" height="300" rx="16" fill="#ffffff" stroke="#dbe4f0"/>
+    <text x="802" y="360" font-size="20" font-weight="700" fill="#0f172a">Alertas para acao</text>
+    <circle cx="820" cy="414" r="8" fill="#ef4444"/><text x="842" y="421" font-size="16" fill="#334155">Evento grave aguardando resposta</text>
+    <circle cx="820" cy="466" r="8" fill="#f59e0b"/><text x="842" y="473" font-size="16" fill="#334155">Meta abaixo do esperado</text>
+    <circle cx="820" cy="518" r="8" fill="#10b981"/><text x="842" y="525" font-size="16" fill="#334155">Indicadores atualizados</text>
+  </g>
+</svg>
