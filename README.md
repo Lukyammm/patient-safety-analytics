@@ -1,6 +1,6 @@
-# Patient Safety Bulletin
+# Patient Safety Analytics
 
-Repository: `Boletim`
+Repository: `patient-safety-analytics`
 
 ## Overview
 
